@@ -1,0 +1,5 @@
+language: gcc
+script: rake web_sync
+env:
+  global:
+    secure: hd/vszAxSESG5mKPZTPNUEAobPZAax/cW04zrWOyz5y40a9WuwCrD37uAVMWF/wVIHSg5yjQRlSoBmGI89xwW4SRLANiYInpUjZ9u7wjWkBpXnih+Sx6vg355YHkC3TKhRvB9Uaft9eYz4GcOyIYEjsByUDzlU0OdD8OWoQUdYw=
