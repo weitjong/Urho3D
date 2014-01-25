@@ -1,0 +1,23 @@
+# Build directories
+Build/
+*-Build/
+
+# Output directories
+Bin/
+*-Bin/
+Lib/
+*-Lib/
+
+# Documentation directory
+Docs/
+
+# Source directory
+Source/
+
+# Misc.
+configure*
+*~
+*.swp
+.DS_Store
+*.log
+*.bak
