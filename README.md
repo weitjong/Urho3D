@@ -10,6 +10,8 @@ The purpose of this branch is to trigger a web-sync on weitjong/Urho3D fork.
 
 [![Build Status](https://travis-ci.org/urho3d/Urho3D.png?branch=RPI-CI)](https://travis-ci.org/urho3d/Urho3D?branch=RPI-CI) RPI-CI
 
+[![Build Status](https://travis-ci.org/urho3d/Urho3D.png?branch=Emscripten-CI)](https://travis-ci.org/urho3d/Urho3D?branch=Emscripten-CI) Emscripten-CI
+
 ---
 
 ### Origin (weitjong/Urho3D)
@@ -21,6 +23,8 @@ The purpose of this branch is to trigger a web-sync on weitjong/Urho3D fork.
 [![Build Status](https://travis-ci.org/weitjong/Urho3D.png?branch=Android-CI)](https://travis-ci.org/weitjong/Urho3D?branch=Android-CI) Android-CI
 
 [![Build Status](https://travis-ci.org/weitjong/Urho3D.png?branch=RPI-CI)](https://travis-ci.org/weitjong/Urho3D?branch=RPI-CI) RPI-CI
+
+[![Build Status](https://travis-ci.org/weitjong/Urho3D.png?branch=Emscripten-CI)](https://travis-ci.org/weitjong/Urho3D?branch=Emscripten-CI) Emscripten-CI
 
 ---
 
