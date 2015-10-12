@@ -43,7 +43,7 @@ enum JSONValueType
 };
 
 /// JSON number type.
-enum JSONNumberType
+enum NONSCRIPTABLE JSONNumberType
 {
     /// Not a number.
     JSONNT_NAN = 0,

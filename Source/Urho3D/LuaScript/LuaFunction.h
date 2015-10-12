@@ -35,7 +35,7 @@ class LuaScriptInstance;
 class Variant;
 
 /// C++ representation of Lua function object.
-class URHO3D_API LuaFunction : public RefCounted
+class URHO3D_API NONSCRIPTABLE LuaFunction : public RefCounted
 {
 public:
     /// Construct from a Lua function object at the specified stack index.

@@ -60,7 +60,7 @@ struct FontGlyph
 };
 
 /// %Font face description.
-class URHO3D_API FontFace : public RefCounted
+class URHO3D_API NONSCRIPTABLE FontFace : public RefCounted
 {
     friend class Font;
 

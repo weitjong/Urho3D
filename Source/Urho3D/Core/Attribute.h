@@ -50,7 +50,7 @@ static const unsigned AM_NODEIDVECTOR = 0x40;
 class Serializable;
 
 /// Abstract base class for invoking attribute accessors.
-class URHO3D_API AttributeAccessor : public RefCounted
+class URHO3D_API NONSCRIPTABLE AttributeAccessor : public RefCounted
 {
 public:
     /// Get the attribute.

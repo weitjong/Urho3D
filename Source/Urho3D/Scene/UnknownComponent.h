@@ -28,7 +28,7 @@ namespace Urho3D
 {
 
 /// Placeholder for allowing unregistered components to be loaded & saved along with scenes.
-class URHO3D_API UnknownComponent : public Component
+class URHO3D_API NONSCRIPTABLE UnknownComponent : public Component
 {
 public:
     /// Construct.

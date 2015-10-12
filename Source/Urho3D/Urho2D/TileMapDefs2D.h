@@ -81,7 +81,7 @@ enum TileMapLayerType2D
 };
 
 /// Tile map object type.
-enum TileMapObjectType2D
+enum NONSCRIPTABLE TileMapObjectType2D
 {
     /// Rectangle.
     OT_RECTANGLE = 0,

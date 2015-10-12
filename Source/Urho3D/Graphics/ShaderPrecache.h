@@ -33,7 +33,7 @@ class Graphics;
 class ShaderVariation;
 
 /// Utility class for collecting used shader combinations during runtime for precaching.
-class URHO3D_API ShaderPrecache : public Object
+class URHO3D_API NONSCRIPTABLE ShaderPrecache : public Object
 {
     OBJECT(ShaderPrecache);
 

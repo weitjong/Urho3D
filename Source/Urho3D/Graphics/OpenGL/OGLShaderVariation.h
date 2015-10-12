@@ -34,7 +34,7 @@ class Shader;
 class ShaderProgram;
 
 /// Vertex or pixel shader on the GPU.
-class URHO3D_API ShaderVariation : public RefCounted, public GPUObject
+class URHO3D_API NONSCRIPTABLE ShaderVariation : public RefCounted, public GPUObject
 {
 public:
     /// Construct.

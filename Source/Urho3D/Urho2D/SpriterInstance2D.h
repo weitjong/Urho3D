@@ -31,7 +31,7 @@ namespace Spriter
 {
 
 /// Loop Mode.
-enum LoopMode
+enum NONSCRIPTABLE LoopMode
 {
     Default = 0,
     ForceLooped,

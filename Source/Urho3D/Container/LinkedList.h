@@ -32,7 +32,7 @@ namespace Urho3D
 {
 
 /// Singly-linked list node base class.
-struct URHO3D_API LinkedListNode
+struct URHO3D_API NONSCRIPTABLE LinkedListNode
 {
     /// Construct.
     LinkedListNode() :

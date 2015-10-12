@@ -31,7 +31,7 @@ namespace Urho3D
 class ShaderVariation;
 
 /// %Shader resource consisting of several shader variations.
-class URHO3D_API Shader : public Resource
+class URHO3D_API NONSCRIPTABLE Shader : public Resource
 {
     OBJECT(Shader);
 

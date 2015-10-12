@@ -94,7 +94,7 @@ struct PackageUpload
 };
 
 /// Send modes for observer position/rotation. Activated by the client setting either position or rotation.
-enum ObserverPositionSendMode
+enum NONSCRIPTABLE ObserverPositionSendMode
 {
     OPSM_NONE = 0,
     OPSM_POSITION,

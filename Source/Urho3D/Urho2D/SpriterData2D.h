@@ -188,7 +188,7 @@ struct Ref
 };
 
 /// Object type.
-enum ObjectType
+enum NONSCRIPTABLE ObjectType
 {
     BONE = 0,
     SPRITE
@@ -210,7 +210,7 @@ struct Timeline
 };
 
 /// Curve type.
-enum CurveType 
+enum NONSCRIPTABLE CurveType 
 {
     INSTANT = 0,
     LINEAR,

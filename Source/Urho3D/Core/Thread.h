@@ -39,7 +39,7 @@ namespace Urho3D
 {
 
 /// Operating system thread.
-class URHO3D_API Thread
+class URHO3D_API NONSCRIPTABLE Thread
 {
 public:
     /// Construct. Does not start the thread yet.

@@ -35,7 +35,7 @@ class Script;
 class ScriptFile;
 
 /// Inbuilt scripted component methods.
-enum ScriptInstanceMethod
+enum NONSCRIPTABLE ScriptInstanceMethod
 {
     METHOD_START = 0,
     METHOD_STOP,

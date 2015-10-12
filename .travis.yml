@@ -42,7 +42,7 @@ matrix:
     - &Linux-64bit
       addons: {apt: {sources: [kubuntu-backports, ubuntu-toolchain-r-test], packages: [*native_deps, cmake, g++-4.9]}}
       compiler: gcc-64bit-static
-      env: LINUX=1 URHO3D_LIB_TYPE=STATIC URHO3D_UPDATE_SOURCE_TREE=1 COVERITY_SCAN_THRESHOLD=100 SF_DEFAULT=linux:Linux-64bit-STATIC.tar.gz
+      env: LINUX=1 URHO3D_LIB_TYPE=STATIC URHO3D_UPDATE_SOURCE_TREE=1 URHO3D_PCH=0 URHO3D_BINDINGS=1 COVERITY_SCAN_THRESHOLD=100 SF_DEFAULT=linux:Linux-64bit-STATIC.tar.gz
     - &Linux-64bit-shared
       compiler: gcc-64bit-shared
       env: LINUX=1 URHO3D_LIB_TYPE=SHARED

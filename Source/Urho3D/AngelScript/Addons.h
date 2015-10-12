@@ -42,7 +42,7 @@ struct SArrayBuffer;
 struct SArrayCache;
 
 /// %Script array class.
-class URHO3D_API CScriptArray
+class URHO3D_API NONSCRIPTABLE CScriptArray
 {
 public:
     // Set the memory functions that should be used by all CScriptArrays
@@ -147,7 +147,7 @@ protected:
 class CScriptDictionary;
 
 /// %Script dictionary value.
-class URHO3D_API CScriptDictValue
+class URHO3D_API NONSCRIPTABLE CScriptDictValue
 {
 public:
     // This class must not be declared as local variable in C++, because it needs 
@@ -188,7 +188,7 @@ protected:
 };
 
 /// %Script dictionary class.
-class URHO3D_API CScriptDictionary
+class URHO3D_API NONSCRIPTABLE CScriptDictionary
 {
 public:
     // Factory functions

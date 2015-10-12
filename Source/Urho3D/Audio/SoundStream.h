@@ -28,7 +28,7 @@ namespace Urho3D
 {
 
 /// Base class for sound streams.
-class URHO3D_API SoundStream : public RefCounted
+class URHO3D_API NONSCRIPTABLE SoundStream : public RefCounted
 {
 public:
     /// Construct.

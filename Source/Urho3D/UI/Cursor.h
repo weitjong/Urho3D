@@ -50,7 +50,7 @@ enum CursorShape
 };
 
 /// %Cursor image and hotspot information.
-struct URHO3D_API CursorShapeInfo
+struct URHO3D_API NONSCRIPTABLE CursorShapeInfo
 {
     /// Construct with defaults.
     CursorShapeInfo() :

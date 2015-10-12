@@ -32,7 +32,7 @@ namespace Urho3D
 {
 
 /// %Condition on which a thread can wait.
-class URHO3D_API Condition
+class URHO3D_API NONSCRIPTABLE Condition
 {
 public:
     /// Construct.

@@ -148,7 +148,7 @@ private:
 };
 
 /// Helper class for forwarding events to script objects that are not part of a scene.
-class URHO3D_API ScriptEventInvoker : public Object
+class URHO3D_API NONSCRIPTABLE ScriptEventInvoker : public Object
 {
     OBJECT(ScriptEventInvoker);
 

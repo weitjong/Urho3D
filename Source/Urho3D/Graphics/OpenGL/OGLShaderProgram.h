@@ -52,7 +52,7 @@ struct ShaderParameter
 };
 
 /// Linked shader program on the GPU.
-class URHO3D_API ShaderProgram : public RefCounted, public GPUObject
+class URHO3D_API NONSCRIPTABLE ShaderProgram : public RefCounted, public GPUObject
 {
 public:
     /// Construct.

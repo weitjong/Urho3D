@@ -32,7 +32,7 @@ class Deserializer;
 class Serializer;
 
 /// Asynchronous loading state of a resource.
-enum AsyncLoadState
+enum NONSCRIPTABLE AsyncLoadState
 {
     /// No async operation in progress.
     ASYNC_DONE = 0,

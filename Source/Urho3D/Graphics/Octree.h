@@ -36,7 +36,7 @@ static const int NUM_OCTANTS = 8;
 static const unsigned ROOT_INDEX = M_MAX_UNSIGNED;
 
 /// %Octree octant
-class URHO3D_API Octant
+class URHO3D_API NONSCRIPTABLE Octant
 {
 public:
     /// Construct.

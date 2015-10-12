@@ -94,7 +94,7 @@ struct FrameBufferObject
 };
 
 /// %Graphics subsystem implementation. Holds API-specific objects.
-class URHO3D_API GraphicsImpl
+class URHO3D_API NONSCRIPTABLE GraphicsImpl
 {
     friend class Graphics;
 

@@ -31,7 +31,7 @@ class Image;
 class Serializer;
 
 /// Bitmap font face description.
-class URHO3D_API FontFaceBitmap : public FontFace
+class URHO3D_API NONSCRIPTABLE FontFaceBitmap : public FontFace
 {
 public:
     /// Construct.

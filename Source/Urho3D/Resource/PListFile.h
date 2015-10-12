@@ -30,7 +30,7 @@ namespace Urho3D
 class XMLElement;
 
 /// PList value types.
-enum PListValueType
+enum NONSCRIPTABLE PListValueType
 {
     PLVT_NONE = 0,
     PLVT_INT,
@@ -50,7 +50,7 @@ typedef HashMap<String, PListValue> PListValueMap;
 typedef Vector<PListValue> PListValueVector;
 
 /// PList value.
-class URHO3D_API PListValue
+class URHO3D_API NONSCRIPTABLE PListValue
 {
 public:
     // Construct.
@@ -135,7 +135,7 @@ private:
 };
 
 /// Property list (plist).
-class URHO3D_API PListFile : public Resource
+class URHO3D_API NONSCRIPTABLE PListFile : public Resource
 {
     OBJECT(PListFile);
 

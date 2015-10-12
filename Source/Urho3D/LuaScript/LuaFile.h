@@ -31,7 +31,7 @@ namespace Urho3D
 {
 
 /// Lua file.
-class URHO3D_API LuaFile : public Resource
+class URHO3D_API NONSCRIPTABLE LuaFile : public Resource
 {
     OBJECT(LuaFile);
 

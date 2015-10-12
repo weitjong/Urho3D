@@ -37,7 +37,7 @@ static const int MATRIX_CONVERSION_BUFFER_LENGTH = 256;
 class WString;
 
 /// %String class.
-class URHO3D_API String
+class URHO3D_API NONSCRIPTABLE String
 {
 public:
     typedef RandomAccessIterator<char> Iterator;
@@ -563,7 +563,7 @@ inline String operator +(const wchar_t* lhs, const String& rhs)
 }
 
 /// Wide character string. Only meant for converting from String and passing to the operating system where necessary.
-class URHO3D_API WString
+class URHO3D_API NONSCRIPTABLE WString
 {
 public:
     /// Construct empty.

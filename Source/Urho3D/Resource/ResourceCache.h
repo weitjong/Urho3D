@@ -57,14 +57,14 @@ struct ResourceGroup
 };
 
 /// Resource request types.
-enum ResourceRequest
+enum NONSCRIPTABLE ResourceRequest
 {
     RESOURCE_CHECKEXISTS = 0,
     RESOURCE_GETFILE = 1
 };
 
 /// Optional resource request processor. Can deny requests, re-route resource file names, or perform other processing per request.
-class URHO3D_API ResourceRouter : public Object
+class URHO3D_API NONSCRIPTABLE ResourceRouter : public Object
 {
 public:
     /// Construct.

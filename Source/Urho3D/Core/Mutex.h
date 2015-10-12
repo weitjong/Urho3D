@@ -32,7 +32,7 @@ namespace Urho3D
 {
 
 /// Operating system mutual exclusion primitive.
-class URHO3D_API Mutex
+class URHO3D_API NONSCRIPTABLE Mutex
 {
 public:
     /// Construct.
@@ -51,7 +51,7 @@ private:
 };
 
 /// Lock that automatically acquires and releases a mutex.
-class URHO3D_API MutexLock
+class URHO3D_API NONSCRIPTABLE MutexLock
 {
 public:
     /// Construct and acquire the mutex.

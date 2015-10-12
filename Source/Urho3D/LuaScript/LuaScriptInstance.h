@@ -36,7 +36,7 @@ class LuaScript;
 class LuaScriptEventInvoker;
 
 /// Lua Script object methods.
-enum LuaScriptObjectMethod
+enum NONSCRIPTABLE LuaScriptObjectMethod
 {
     LSOM_START = 0,
     LSOM_STOP,
@@ -54,7 +54,7 @@ enum LuaScriptObjectMethod
 };
 
 /// Lua script object component.
-class URHO3D_API LuaScriptInstance : public Component, public LuaScriptEventListener
+class URHO3D_API NONSCRIPTABLE LuaScriptInstance : public Component, public LuaScriptEventListener
 {
     OBJECT(LuaScriptInstance);
 

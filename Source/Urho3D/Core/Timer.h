@@ -45,7 +45,7 @@ private:
 };
 
 /// High-resolution operating system timer used in profiling.
-class URHO3D_API HiresTimer
+class URHO3D_API NONSCRIPTABLE HiresTimer
 {
     friend class Time;
 

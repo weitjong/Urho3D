@@ -90,7 +90,7 @@ struct ListIteratorBase
 };
 
 /// Doubly-linked list base class.
-class URHO3D_API ListBase
+class URHO3D_API NONSCRIPTABLE ListBase
 {
 public:
     /// Construct.

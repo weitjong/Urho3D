@@ -32,7 +32,7 @@ namespace Urho3D
 {
 
 /// Frustum planes.
-enum FrustumPlane
+enum NONSCRIPTABLE FrustumPlane
 {
     PLANE_NEAR = 0,
     PLANE_LEFT,

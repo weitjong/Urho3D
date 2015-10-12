@@ -47,7 +47,7 @@ struct DelayedCall
 };
 
 /// Interface class for allowing script objects or functions to subscribe to events.
-class URHO3D_API ScriptEventListener
+class URHO3D_API NONSCRIPTABLE ScriptEventListener
 {
 public:
     /// Destruct

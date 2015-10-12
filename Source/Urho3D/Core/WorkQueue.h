@@ -72,7 +72,7 @@ private:
 };
 
 /// Work queue subsystem for multithreading.
-class URHO3D_API WorkQueue : public Object
+class URHO3D_API NONSCRIPTABLE WorkQueue : public Object
 {
     OBJECT(WorkQueue);
 

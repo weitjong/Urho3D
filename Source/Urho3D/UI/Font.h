@@ -34,7 +34,7 @@ static const int FONT_TEXTURE_MIN_SIZE = 128;
 static const int FONT_DPI = 96;
 
 /// %Font file type.
-enum FONT_TYPE
+enum NONSCRIPTABLE FONT_TYPE
 {
     FONT_NONE = 0,
     FONT_FREETYPE,

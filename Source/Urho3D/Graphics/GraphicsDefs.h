@@ -49,7 +49,7 @@ enum PrimitiveType
 };
 
 /// %Geometry type.
-enum GeometryType
+enum NONSCRIPTABLE GeometryType
 {
     GEOM_STATIC = 0,
     GEOM_SKINNED = 1,
@@ -105,7 +105,7 @@ enum FillMode
 };
 
 /// Stencil operation.
-enum StencilOp
+enum NONSCRIPTABLE StencilOp
 {
     OP_KEEP = 0,
     OP_ZERO,
@@ -115,7 +115,7 @@ enum StencilOp
 };
 
 /// Vertex/index buffer lock state.
-enum LockState
+enum NONSCRIPTABLE LockState
 {
     LOCK_NONE = 0,
     LOCK_HARDWARE,
@@ -124,7 +124,7 @@ enum LockState
 };
 
 /// Vertex elements.
-enum VertexElement
+enum NONSCRIPTABLE VertexElement
 {
     ELEMENT_POSITION = 0,
     ELEMENT_NORMAL,
@@ -194,7 +194,7 @@ enum CubeMapFace
 };
 
 /// Cubemap single image layout modes.
-enum CubeMapLayout
+enum NONSCRIPTABLE CubeMapLayout
 {
     CML_HORIZONTAL = 0,
     CML_HORIZONTALNVIDIA,
@@ -212,14 +212,14 @@ enum RenderSurfaceUpdateMode
 };
 
 /// Shader types.
-enum ShaderType
+enum NONSCRIPTABLE ShaderType
 {
     VS = 0,
     PS,
 };
 
 /// Shader parameter groups for determining need to update. On APIs that support constant buffers, these correspond to different constant buffers.
-enum ShaderParameterGroup
+enum NONSCRIPTABLE ShaderParameterGroup
 {
     SP_FRAME = 0,
     SP_CAMERA,

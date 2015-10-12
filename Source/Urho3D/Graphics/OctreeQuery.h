@@ -35,7 +35,7 @@ class Drawable;
 class Node;
 
 /// Base class for octree queries.
-class URHO3D_API OctreeQuery
+class URHO3D_API NONSCRIPTABLE OctreeQuery
 {
 public:
     /// Construct with query parameters.
@@ -71,7 +71,7 @@ private:
 };
 
 /// Point octree query.
-class URHO3D_API PointOctreeQuery : public OctreeQuery
+class URHO3D_API NONSCRIPTABLE PointOctreeQuery : public OctreeQuery
 {
 public:
     /// Construct with point and query parameters.
@@ -92,7 +92,7 @@ public:
 };
 
 /// %Sphere octree query.
-class URHO3D_API SphereOctreeQuery : public OctreeQuery
+class URHO3D_API NONSCRIPTABLE SphereOctreeQuery : public OctreeQuery
 {
 public:
     /// Construct with sphere and query parameters.
@@ -113,7 +113,7 @@ public:
 };
 
 /// Bounding box octree query.
-class URHO3D_API BoxOctreeQuery : public OctreeQuery
+class URHO3D_API NONSCRIPTABLE BoxOctreeQuery : public OctreeQuery
 {
 public:
     /// Construct with bounding box and query parameters.
@@ -134,7 +134,7 @@ public:
 };
 
 /// %Frustum octree query.
-class URHO3D_API FrustumOctreeQuery : public OctreeQuery
+class URHO3D_API NONSCRIPTABLE FrustumOctreeQuery : public OctreeQuery
 {
 public:
     /// Construct with frustum and query parameters.
@@ -155,7 +155,7 @@ public:
 };
 
 /// General octree query result. Used for Lua bindings only.
-struct URHO3D_API OctreeQueryResult
+struct URHO3D_API NONSCRIPTABLE OctreeQueryResult
 {
     /// Construct with defaults.
     OctreeQueryResult() :
@@ -221,7 +221,7 @@ struct URHO3D_API RayQueryResult
 };
 
 /// Raycast octree query.
-class URHO3D_API RayOctreeQuery
+class URHO3D_API NONSCRIPTABLE RayOctreeQuery
 {
 public:
     /// Construct with ray and query parameters.
@@ -256,7 +256,7 @@ private:
     RayOctreeQuery& operator =(const RayOctreeQuery& rhs);
 };
 
-class URHO3D_API AllContentOctreeQuery : public OctreeQuery
+class URHO3D_API NONSCRIPTABLE AllContentOctreeQuery : public OctreeQuery
 {
 public:
     /// Construct.

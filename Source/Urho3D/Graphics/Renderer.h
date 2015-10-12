@@ -55,7 +55,7 @@ static const int SHADOW_MIN_PIXELS = 64;
 static const int INSTANCING_BUFFER_DEFAULT_SIZE = 1024;
 
 /// Light vertex shader variations.
-enum LightVSVariation
+enum NONSCRIPTABLE LightVSVariation
 {
     LVS_DIR = 0,
     LVS_SPOT,
@@ -67,7 +67,7 @@ enum LightVSVariation
 };
 
 /// Per-vertex light vertex shader variations.
-enum VertexLightVSVariation
+enum NONSCRIPTABLE VertexLightVSVariation
 {
     VLVS_NOLIGHTS = 0,
     VLVS_1LIGHT,
@@ -78,7 +78,7 @@ enum VertexLightVSVariation
 };
 
 /// Light pixel shader variations.
-enum LightPSVariation
+enum NONSCRIPTABLE LightPSVariation
 {
     LPS_NONE = 0,
     LPS_SPOT,
@@ -100,7 +100,7 @@ enum LightPSVariation
 };
 
 /// Deferred light volume vertex shader variations.
-enum DeferredLightVSVariation
+enum NONSCRIPTABLE DeferredLightVSVariation
 {
     DLVS_NONE = 0,
     DLVS_DIR,
@@ -110,7 +110,7 @@ enum DeferredLightVSVariation
 };
 
 /// Deferred light volume pixels shader variations.
-enum DeferredLightPSVariation
+enum NONSCRIPTABLE DeferredLightPSVariation
 {
     DLPS_NONE = 0,
     DLPS_SPOT,
