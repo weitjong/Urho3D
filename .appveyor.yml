@@ -27,11 +27,11 @@ platform:
 clone_depth: 50
 environment:
   GIT_NAME:
-    secure: onlJNy/nGFT1GXNdusL4jokojSPZ732EFaXwdhPnpM0=
+    secure: rUVYYb1+C4EI2xAlvF4pEA==
   GIT_EMAIL:
-    secure: RdTdiZIl3fnggJFH8JhmqT2TAg/23ENX/4sFCrJfQ3s=
+    secure: ls0sOtf/IGC0qWsktlmJxEJT+MTUPF2lGg6zq0FBES0=
   GH_TOKEN:
-    secure: i0IY2jTTJqkU4vuta8aXP06B4cVUWVAC/NvRMqK11/gk1eb1gJgLk5/BRcohOkrX
+    secure: 63jjOMszmVn8ye8RXg271i8q1/fQXVgZpU/4JwkAaofj1jM4x8tn7GEOlD+yqx7u
   SF_KEY:
     secure: JgsjFoVAP5yjNxyS/+S+4byhtnTKCWfI3bkCmHws3P1MwSaUS5+0C6WV1pHIJTVW00Qvo3+JsgVqMYUJ7fo2m/bXvUPNCoSa4BifXZlS6bE=
   SF_API:

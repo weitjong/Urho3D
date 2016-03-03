@@ -28,7 +28,7 @@ sudo: false
 addons: {apt: {sources: &default_sources george-edison55-precise-backports, packages: &default_packages [doxygen, graphviz]}}
 env:
   global:
-    - secure: EwMMVLbHCvh2AMvRrcEI7atNCeUFxk5iLOBH9+dFHyIc0c1XRH3vR0vXMTmr3WEpoZ5AaRhCrT0TTW9knZPYrqSd6deZML4pjksBAOOcs043cAo2WttCQGgvT8PF3DVWivdWmGommZXf7wHz0s9sb1Iynwt2uY/P+307ZWko3Fg=
+    - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - numjobs=4
     - USE_CCACHE=1
     - CCACHE_SLOPPINESS=pch_defines,time_macros
@@ -132,11 +132,11 @@ platform: x64
 clone_depth: 50
 environment:
   GIT_NAME:
-    secure: onlJNy/nGFT1GXNdusL4jokojSPZ732EFaXwdhPnpM0=
+    secure: rUVYYb1+C4EI2xAlvF4pEA==
   GIT_EMAIL:
-    secure: RdTdiZIl3fnggJFH8JhmqT2TAg/23ENX/4sFCrJfQ3s=
+    secure: ls0sOtf/IGC0qWsktlmJxEJT+MTUPF2lGg6zq0FBES0=
   GH_TOKEN:
-    secure: i0IY2jTTJqkU4vuta8aXP06B4cVUWVAC/NvRMqK11/gk1eb1gJgLk5/BRcohOkrX
+    secure: 63jjOMszmVn8ye8RXg271i8q1/fQXVgZpU/4JwkAaofj1jM4x8tn7GEOlD+yqx7u
   SF_KEY:
     secure: JgsjFoVAP5yjNxyS/+S+4byhtnTKCWfI3bkCmHws3P1MwSaUS5+0C6WV1pHIJTVW00Qvo3+JsgVqMYUJ7fo2m/bXvUPNCoSa4BifXZlS6bE=
   SF_API:
@@ -195,7 +195,7 @@ addons:
     branch_pattern: .*Coverity-Scan$
 env:
   global:
-    - secure: EwMMVLbHCvh2AMvRrcEI7atNCeUFxk5iLOBH9+dFHyIc0c1XRH3vR0vXMTmr3WEpoZ5AaRhCrT0TTW9knZPYrqSd6deZML4pjksBAOOcs043cAo2WttCQGgvT8PF3DVWivdWmGommZXf7wHz0s9sb1Iynwt2uY/P+307ZWko3Fg=
+    - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - secure: N4zqaSj/QZ2Z2j5hJc1Y2wBls4tvS0u8bFgutG3dEDxX5HF9tj6nw1wykDY3fvkpFP4gLEUJ6wV9HFXTR6PxwtCly9dsy0Bkb9+4CnRLTTeyUdqJA+Ca2bnjFPsYP/p6+kmOOo9rbYXsT5BGXVsm3euqJiKhCDP2CIG/YDvYtdw=
     - LINUX=1
     - USE_CCACHE=1
@@ -220,7 +220,7 @@ sudo: false
 addons: {apt: {sources: [kubuntu-backports, ubuntu-toolchain-r-test], packages: [cmake, g++-4.9, libasound2-dev, libpulse-dev]}}
 env:
   global:
-    - secure: EwMMVLbHCvh2AMvRrcEI7atNCeUFxk5iLOBH9+dFHyIc0c1XRH3vR0vXMTmr3WEpoZ5AaRhCrT0TTW9knZPYrqSd6deZML4pjksBAOOcs043cAo2WttCQGgvT8PF3DVWivdWmGommZXf7wHz0s9sb1Iynwt2uY/P+307ZWko3Fg=
+    - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - numjobs=4
     - USE_CCACHE=1
     - CCACHE_SLOPPINESS=pch_defines,time_macros
@@ -247,7 +247,7 @@ sudo: false
 addons: {apt: {sources: &default_sources george-edison55-precise-backports, packages: &default_packages [doxygen, graphviz, g++-multilib]}}
 env:
   global:
-    - secure: EwMMVLbHCvh2AMvRrcEI7atNCeUFxk5iLOBH9+dFHyIc0c1XRH3vR0vXMTmr3WEpoZ5AaRhCrT0TTW9knZPYrqSd6deZML4pjksBAOOcs043cAo2WttCQGgvT8PF3DVWivdWmGommZXf7wHz0s9sb1Iynwt2uY/P+307ZWko3Fg=
+    - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - numjobs=4
     - ANDROID=1
     - ANDROID_TMP=~/tmp
@@ -321,7 +321,7 @@ sudo: false
 addons: {apt: {sources: &default_sources george-edison55-precise-backports, packages: &default_packages [doxygen, graphviz, g++-multilib, rpm]}}
 env:
   global:
-    - secure: EwMMVLbHCvh2AMvRrcEI7atNCeUFxk5iLOBH9+dFHyIc0c1XRH3vR0vXMTmr3WEpoZ5AaRhCrT0TTW9knZPYrqSd6deZML4pjksBAOOcs043cAo2WttCQGgvT8PF3DVWivdWmGommZXf7wHz0s9sb1Iynwt2uY/P+307ZWko3Fg=
+    - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - numjobs=4
     - RPI=1
     - PACKAGE_JOB_END=5
@@ -364,7 +364,7 @@ language: objective-c
 osx_image: xcode7.1
 env:
   global:
-    - secure: EwMMVLbHCvh2AMvRrcEI7atNCeUFxk5iLOBH9+dFHyIc0c1XRH3vR0vXMTmr3WEpoZ5AaRhCrT0TTW9knZPYrqSd6deZML4pjksBAOOcs043cAo2WttCQGgvT8PF3DVWivdWmGommZXf7wHz0s9sb1Iynwt2uY/P+307ZWko3Fg=
+    - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - numjobs=3
     - OSX=1
     - USE_CCACHE=2
@@ -406,7 +406,7 @@ sudo: false
 addons: {apt: {sources: [george-edison55-precise-backports, kubuntu-backports, ubuntu-toolchain-r-test], packages: [cmake, doxygen, graphviz, g++-4.9]}}
 env:
   global:
-    - secure: EwMMVLbHCvh2AMvRrcEI7atNCeUFxk5iLOBH9+dFHyIc0c1XRH3vR0vXMTmr3WEpoZ5AaRhCrT0TTW9knZPYrqSd6deZML4pjksBAOOcs043cAo2WttCQGgvT8PF3DVWivdWmGommZXf7wHz0s9sb1Iynwt2uY/P+307ZWko3Fg=
+    - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - numjobs=2
     - WEB=1
     - EMSCRIPTEN_SHARE_DATA=1
