@@ -527,6 +527,16 @@ end
 # Usage: NOT intended to be used manually
 desc 'Delete CI mirror branch'
 task :ci_delete_mirror do
+  puts "ENV['TRAVIS_BRANCH'] = #{ENV['TRAVIS_BRANCH']}"
+  puts "ENV['APPVEYOR_REPO_BRANCH'] = #{ENV['APPVEYOR_REPO_BRANCH']}"
+  puts "ENV['TRAVIS_BRANCH'] || ENV['APPVEYOR_REPO_BRANCH'] = #{ENV['TRAVIS_BRANCH'] || ENV['APPVEYOR_REPO_BRANCH']}"
+  puts "ENV['TRAVIS_COMMIT'] = #{ENV['TRAVIS_COMMIT']}"
+  puts "ENV['APPVEYOR_REPO_COMMIT'] = #{ENV['APPVEYOR_REPO_COMMIT']}"
+  puts "ENV['TRAVIS_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT'] = #{ENV['TRAVIS_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT']}"
+  puts "ENV['RELEASE_TAG'] = #{ENV['RELEASE_TAG']}"
+  puts '^' + `git log -1 --pretty=format:'%H' origin/#{ENV['TRAVIS_BRANCH'] || ENV['APPVEYOR_REPO_BRANCH']}` + '$'
+  puts '^' + `git show -s --format='%H' #{ENV['TRAVIS_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT']}`.rstrip + '$'
+  puts 'Equal = ' + `git log -1 --pretty=format:'%H' origin/#{ENV['TRAVIS_BRANCH'] || ENV['APPVEYOR_REPO_BRANCH']}` == `git show -s --format='%H' #{ENV['TRAVIS_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT']}`.rstrip
   # Skip if the mirror branch has been forced pushed remotely or when we are performing a release (in case we need to rerun the job to recreate the package)
   unless `git log -1 --pretty=format:'%H' origin/#{ENV['TRAVIS_BRANCH'] || ENV['APPVEYOR_REPO_BRANCH']}` == `git show -s --format='%H' #{ENV['TRAVIS_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT']}`.rstrip && !ENV['RELEASE_TAG']
     # Do not use "abort" here because AppVeyor, unlike Travis, also handles the exit status of the processes invoked in the "on_finish" section of the .appveyor.yml
