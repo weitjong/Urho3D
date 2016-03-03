@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2015 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -998,6 +998,7 @@ SharedPtr<Material> Material::Clone(const String& cloneName) const
     ret->SetName(cloneName);
     ret->techniques_ = techniques_;
     ret->shaderParameters_ = shaderParameters_;
+    ret->shaderParameterHash_ = shaderParameterHash_;
     ret->textures_ = textures_;
     ret->occlusion_ = occlusion_;
     ret->specular_ = specular_;

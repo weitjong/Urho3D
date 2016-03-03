@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2015 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -208,6 +208,26 @@ static bool Texture3DSetData(Image* image, bool useAlpha, Texture3D* ptr)
 static bool TextureCubeSetData(CubeMapFace face, Image* image, bool useAlpha, TextureCube* ptr)
 {
     return ptr->SetData(face, SharedPtr<Image>(image), useAlpha);
+}
+
+static Image* TextureCubeGetImage(CubeMapFace face, TextureCube* texCube)
+{
+    Image* rawImage = new Image(texCube->GetContext());
+    const unsigned texSize = texCube->GetDataSize(texCube->GetWidth(), texCube->GetHeight());
+    const unsigned format = texCube->GetFormat();
+
+    if (format == Graphics::GetRGBAFormat())
+        rawImage->SetSize(texCube->GetWidth(), texCube->GetHeight(), 4);
+    else if (format == Graphics::GetRGBFormat())
+        rawImage->SetSize(texCube->GetWidth(), texCube->GetHeight(), 3);
+    else
+    {
+        delete rawImage;
+        return 0;
+    }
+
+    texCube->GetData(face, 0, rawImage->GetData());
+    return rawImage;
 }
 
 static void ConstructRenderTargetInfo(RenderTargetInfo* ptr)
@@ -514,6 +534,7 @@ static void RegisterTextures(asIScriptEngine* engine)
     RegisterTexture<TextureCube>(engine, "TextureCube");
     engine->RegisterObjectMethod("TextureCube", "bool SetSize(int, uint, TextureUsage usage = TEXTURE_STATIC)", asMETHOD(TextureCube, SetSize), asCALL_THISCALL);
     engine->RegisterObjectMethod("TextureCube", "bool SetData(CubeMapFace, Image@+, bool useAlpha = false)", asFUNCTION(TextureCubeSetData), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("TextureCube", "Image@+ GetImage(CubeMapFace) const", asFUNCTION(TextureCubeGetImage), asCALL_CDECL_OBJLAST); 
     engine->RegisterObjectMethod("TextureCube", "RenderSurface@+ get_renderSurfaces(CubeMapFace) const", asMETHOD(TextureCube, GetRenderSurface), asCALL_THISCALL);
 
     engine->RegisterGlobalFunction("uint GetAlphaFormat()", asFUNCTION(Graphics::GetAlphaFormat), asCALL_CDECL);
@@ -534,6 +555,15 @@ static void RegisterTextures(asIScriptEngine* engine)
     engine->RegisterGlobalFunction("uint GetReadableDepthFormat()", asFUNCTION(Graphics::GetReadableDepthFormat), asCALL_CDECL);
     engine->RegisterGlobalFunction("uint GetFormat(const String&in)", asFUNCTIONPR(Graphics::GetFormat, (const String&), unsigned), asCALL_CDECL);
     engine->RegisterGlobalFunction("uint GetMaxBones()", asFUNCTION(Graphics::GetMaxBones), asCALL_CDECL);
+}
+
+static Technique* TechniqueClone(const String& cloneName, Technique* ptr)
+{
+    SharedPtr<Technique> clone = ptr->Clone(cloneName);
+    // The shared pointer will go out of scope, so have to increment the reference count
+    // (here an auto handle can not be used)
+    clone->AddRef();
+    return clone.Get();
 }
 
 static Material* MaterialClone(const String& cloneName, Material* ptr)
@@ -813,6 +843,7 @@ static void RegisterMaterial(asIScriptEngine* engine)
     RegisterResource<Technique>(engine, "Technique");
     engine->RegisterObjectMethod("Technique", "Pass@+ CreatePass(const String&in)", asMETHOD(Technique, CreatePass), asCALL_THISCALL);
     engine->RegisterObjectMethod("Technique", "void RemovePass(const String&in)", asMETHOD(Technique, RemovePass), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Technique", "Technique@ Clone(const String&in cloneName = String()) const", asFUNCTION(TechniqueClone), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("Technique", "bool HasPass(const String&in) const", asMETHODPR(Technique, HasPass, (const String&) const, bool), asCALL_THISCALL);
     engine->RegisterObjectMethod("Technique", "Pass@+ GetPass(const String&in)", asMETHODPR(Technique, GetPass, (const String&) const, Pass*), asCALL_THISCALL);
     engine->RegisterObjectMethod("Technique", "Pass@+ GetSupportedPass(const String&in)", asMETHODPR(Technique, GetSupportedPass, (const String&) const, Pass*), asCALL_THISCALL);
@@ -1260,6 +1291,7 @@ static void RegisterAnimatedModel(asIScriptEngine* engine)
     engine->RegisterObjectMethod("AnimatedModel", "float GetMorphWeight(uint) const", asMETHODPR(AnimatedModel, GetMorphWeight, (unsigned) const, float), asCALL_THISCALL);
     engine->RegisterObjectMethod("AnimatedModel", "AnimationState@+ GetAnimationState(Animation@+) const", asMETHODPR(AnimatedModel, GetAnimationState, (Animation*) const, AnimationState*), asCALL_THISCALL);
     engine->RegisterObjectMethod("AnimatedModel", "AnimationState@+ GetAnimationState(uint) const", asMETHODPR(AnimatedModel, GetAnimationState, (unsigned) const, AnimationState*), asCALL_THISCALL);
+    engine->RegisterObjectMethod("AnimatedModel", "void UpdateBoneBoundingBox()", asMETHOD(AnimatedModel, UpdateBoneBoundingBox), asCALL_THISCALL);
     engine->RegisterObjectMethod("AnimatedModel", "void set_model(Model@+)", asFUNCTION(AnimatedModelSetModel), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("AnimatedModel", "void set_animationLodBias(float)", asMETHOD(AnimatedModel, SetAnimationLodBias), asCALL_THISCALL);
     engine->RegisterObjectMethod("AnimatedModel", "float get_animationLodBias() const", asMETHOD(AnimatedModel, GetAnimationLodBias), asCALL_THISCALL);
@@ -1319,12 +1351,14 @@ static void RegisterBillboardSet(asIScriptEngine* engine)
     engine->RegisterEnumValue("FaceCameraMode", "FC_ROTATE_Y", FC_ROTATE_Y);
     engine->RegisterEnumValue("FaceCameraMode", "FC_LOOKAT_XYZ", FC_LOOKAT_XYZ);
     engine->RegisterEnumValue("FaceCameraMode", "FC_LOOKAT_Y", FC_LOOKAT_Y);
+    engine->RegisterEnumValue("FaceCameraMode", "FC_DIRECTION", FC_DIRECTION);
 
     engine->RegisterObjectType("Billboard", 0, asOBJ_REF);
     engine->RegisterObjectBehaviour("Billboard", asBEHAVE_ADDREF, "void f()", asFUNCTION(FakeAddRef), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("Billboard", asBEHAVE_RELEASE, "void f()", asFUNCTION(FakeReleaseRef), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectProperty("Billboard", "Vector3 position", offsetof(Billboard, position_));
     engine->RegisterObjectProperty("Billboard", "Vector2 size", offsetof(Billboard, size_));
+    engine->RegisterObjectProperty("Billboard", "Vector3 direction", offsetof(Billboard, direction_));
     engine->RegisterObjectProperty("Billboard", "Rect uv", offsetof(Billboard, uv_));
     engine->RegisterObjectProperty("Billboard", "Color color", offsetof(Billboard, color_));
     engine->RegisterObjectProperty("Billboard", "float rotation", offsetof(Billboard, rotation_));
@@ -1429,6 +1463,8 @@ static void RegisterParticleEffect(asIScriptEngine* engine)
     engine->RegisterObjectMethod("ParticleEffect", "float get_sizeAdd() const", asMETHOD(ParticleEffect, GetSizeAdd), asCALL_THISCALL);
     engine->RegisterObjectMethod("ParticleEffect", "void set_sizeMul(float)", asMETHOD(ParticleEffect, SetSizeMul), asCALL_THISCALL);
     engine->RegisterObjectMethod("ParticleEffect", "float get_sizeMul() const", asMETHOD(ParticleEffect, GetSizeMul), asCALL_THISCALL);
+    engine->RegisterObjectMethod("ParticleEffect", "void set_faceCameraMode(FaceCameraMode)", asMETHOD(ParticleEffect, SetFaceCameraMode), asCALL_THISCALL);
+    engine->RegisterObjectMethod("ParticleEffect", "FaceCameraMode get_faceCameraMode() const", asMETHOD(ParticleEffect, GetFaceCameraMode), asCALL_THISCALL);
 
     engine->RegisterObjectMethod("ParticleEffect", "void AddColorTime(Color&, float)", asMETHOD(ParticleEffect, AddColorTime), asCALL_THISCALL);
     engine->RegisterObjectMethod("ParticleEffect", "void AddColorFrame(ColorFrame@+)", asMETHOD(ParticleEffect, AddColorFrame), asCALL_THISCALL);

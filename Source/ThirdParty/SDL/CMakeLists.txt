@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2015 the Urho3D project.
+# Copyright (c) 2008-2016 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -83,6 +83,8 @@ else ()
     # On Linux, make sure development libraries exist, and use their include file directories
     if (RPI)
         file (GLOB VIDEO_DRIVER_C_FILES src/video/raspberry/*.c src/core/linux/*.c)
+        # Break fix to support building SDL on Raspbian Jessie - the __USE_EXTERN_INLINE is defined in Jessie causing stdlib.h to look for bits/stdlib-bsearch.h which is not in the default include search path
+        include_directories (${SYSROOT}/usr/include/arm-linux-gnueabihf)    # This should work for native build as well because SYSROOT variable is empty when not cross-compiling
     else ()
         find_package (OpenGL REQUIRED)
         include_directories (${OpenGL_INCLUDE_DIRS})
@@ -128,9 +130,9 @@ else ()
     include_directories (${ALSA_INCLUDE_DIRS})
 
     find_package (PulseAudio)
-    if (PA_FOUND)
-      include_directories (${PA_INCLUDE_DIRS})
-      get_filename_component (PA_SIMPLE ${PA_LIBRARIES} NAME)
+    if (PULSEAUDIO_FOUND)
+      include_directories (${PULSEAUDIO_INCLUDE_DIRS})
+      get_filename_component (PA_SIMPLE ${PULSEAUDIO_LIBRARIES} NAME)
       add_definitions (-DSDL_AUDIO_DRIVER_PULSEAUDIO=1 -DSDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC="${PA_SIMPLE}")
       file (GLOB PULSEAUDIO_SOURCES src/audio/pulseaudio/*.c)
     endif ()

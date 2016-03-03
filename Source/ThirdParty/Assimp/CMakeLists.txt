@@ -754,4 +754,5 @@ else ()
     set (AMALG_SINGLE_TARGET 1)
 endif ()
 
+list (APPEND TARGET_PROPERTIES XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH YES)   # Since we only build AssetImporter as a single-arch native tool, there is no point to build Assimp as universal binary library
 setup_library ()

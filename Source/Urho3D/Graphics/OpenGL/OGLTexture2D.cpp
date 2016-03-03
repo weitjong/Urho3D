@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2015 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -402,13 +402,13 @@ bool Texture2D::SetData(SharedPtr<Image> image, bool useAlpha)
 
 bool Texture2D::GetData(unsigned level, void* dest) const
 {
-#ifndef GL_ES_VERSION_2_0
     if (!object_ || !graphics_)
     {
         URHO3D_LOGERROR("No texture created, can not get data");
         return false;
     }
 
+#ifndef GL_ES_VERSION_2_0
     if (!dest)
     {
         URHO3D_LOGERROR("Null destination for getting data");
@@ -437,6 +437,16 @@ bool Texture2D::GetData(unsigned level, void* dest) const
     graphics_->SetTexture(0, 0);
     return true;
 #else
+    // Special case on GLES: if the texture is a rendertarget, can make it current and use glReadPixels()
+    if (usage_ == TEXTURE_RENDERTARGET)
+    {
+        graphics_->SetRenderTarget(0, const_cast<Texture2D*>(this));
+        // Ensure the FBO is current; this viewport is actually never rendered to
+        graphics_->SetViewport(IntRect(0, 0, width_, height_));
+        glReadPixels(0, 0, width_, height_, GetExternalFormat(format_), GetDataType(format_), dest);
+        return true;
+    }
+
     URHO3D_LOGERROR("Getting texture data not supported");
     return false;
 #endif
@@ -522,8 +532,13 @@ bool Texture2D::Create()
 
 void Texture2D::HandleRenderSurfaceUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (renderSurface_ && renderSurface_->GetUpdateMode() == SURFACE_UPDATEALWAYS)
-        renderSurface_->QueueUpdate();
+    if (renderSurface_ && (renderSurface_->GetUpdateMode() == SURFACE_UPDATEALWAYS || renderSurface_->IsUpdateQueued()))
+    {
+        Renderer* renderer = GetSubsystem<Renderer>();
+        if (renderer)
+            renderer->QueueRenderSurface(renderSurface_);
+        renderSurface_->ResetUpdateQueued();
+    }
 }
 
 }

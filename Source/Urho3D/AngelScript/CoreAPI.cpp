@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2015 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -778,6 +778,8 @@ static void RegisterProcessUtils(asIScriptEngine* engine)
     engine->RegisterGlobalFunction("String GetPlatform()", asFUNCTION(GetPlatform), asCALL_CDECL);
     engine->RegisterGlobalFunction("uint GetNumPhysicalCPUs()", asFUNCTION(GetNumPhysicalCPUs), asCALL_CDECL);
     engine->RegisterGlobalFunction("uint GetNumLogicalCPUs()", asFUNCTION(GetNumLogicalCPUs), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void SetMiniDumpDir(const String&in)", asFUNCTION(SetMiniDumpDir), asCALL_CDECL);
+    engine->RegisterGlobalFunction("String GetMiniDumpDir()", asFUNCTION(GetMiniDumpDir), asCALL_CDECL);
 }
 
 static void ConstructAttributeInfo(AttributeInfo* ptr)

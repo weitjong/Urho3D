@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2015 the Urho3D project.
+# Copyright (c) 2008-2016 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL Urho3D)
     include (Urho3D-CMake-common)
 
     # Add dependency targets
-    add_subdirectory (${BAKED_CMAKE_SOURCE_DIR}/Source/ThirdParty/Lua${JIT} host/Lua${JIT})
+    add_subdirectory (${BAKED_CMAKE_SOURCE_DIR}/Source/ThirdParty/Lua host/Lua)
     add_subdirectory (${BAKED_CMAKE_SOURCE_DIR}/Source/ThirdParty/toluapp/src/lib host/toluapp)
 endif ()
 
@@ -70,14 +70,11 @@ add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/toluabind.c
 define_source_files (EXTRA_CPP_FILES tolua.c ${CMAKE_CURRENT_BINARY_DIR}/generated/toluabind.c)
 
 # Define dependency libs
-set (LIBS toluapp Lua${JIT})
+set (LIBS toluapp Lua)
 if (NOT MSVC)
     list (APPEND LIBS m)
 endif ()
-set (INCLUDE_DIRS ../../include ../../../../ThirdParty/Lua${JIT}/src)
-
-# All tools must be natively built and output to bin/tool subdir to differentiate them from target platfrom binaries in the bin directory
-set_tool_output_directories ()
+set (INCLUDE_DIRS ../../include ../../../../ThirdParty/Lua/src)
 
 # Setup target
-setup_executable (NODEPS)
+setup_executable (TOOL NODEPS)
