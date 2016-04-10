@@ -350,6 +350,7 @@ float GetAttributeAnimationTime(const String&) const;
 WrapMode GetAttributeAnimationWrapMode(const String&) const;
 Variant GetAttributeDefault(const String&) const;
 float GetAutoFade(const String&) const;
+AnimationBlendMode GetBlendMode(const String&) const;
 float GetFadeTarget(const String&) const;
 float GetFadeTime(const String&) const;
 bool GetInterceptNetworkUpdate(const String&) const;
@@ -390,6 +391,7 @@ void SetAttributeAnimationSpeed(const String&, float);
 void SetAttributeAnimationTime(const String&, float);
 void SetAttributeAnimationWrapMode(const String&, WrapMode);
 bool SetAutoFade(const String&, float);
+bool SetBlendMode(const String&, AnimationBlendMode);
 void SetInterceptNetworkUpdate(const String&, bool);
 bool SetLayer(const String&, uint8);
 bool SetLooped(const String&, bool);
@@ -492,6 +494,7 @@ void SetBoneWeight(uint, float, bool = false);
 // Properties:
 /* readonly */
 Animation animation;
+AnimationBlendMode blendMode;
 Array<float> boneWeights;
 /* readonly */
 bool enabled;
@@ -581,7 +584,11 @@ class Audio
 bool HasMasterGain(const String&) const;
 bool HasSubscribedToEvent(Object, const String&);
 bool HasSubscribedToEvent(const String&);
+bool IsSoundTypePaused(const String&);
+void PauseSoundType(const String&);
 bool Play();
+void ResumeAll();
+void ResumeSoundType(const String&);
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
 void SetMode(int, int, bool, bool = true);
 void Stop();
@@ -5355,12 +5362,16 @@ bool RecordGesture();
 void RemoveAllGestures();
 bool RemoveGesture(uint);
 bool RemoveScreenJoystick(int);
+void ResetMouseGrabbed();
+void ResetMouseMode();
 void ResetMouseVisible();
 bool SaveGesture(File, uint);
 bool SaveGesture(VectorBuffer&, uint);
 bool SaveGestures(File);
 bool SaveGestures(VectorBuffer&);
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
+void SetMouseGrabbed(bool, bool = false);
+void SetMouseMode(MouseMode, bool = false);
 void SetMouseVisible(bool, bool = false);
 
 // Properties:
@@ -5373,6 +5384,8 @@ Array<JoystickState> joysticks;
 /* readonly */
 Array<JoystickState> joysticksByIndex;
 /* readonly */
+Array<JoystickState> joysticksByName;
+/* readonly */
 Array<bool> keyDown;
 /* readonly */
 Array<bool> keyPress;
@@ -5383,6 +5396,8 @@ Array<bool> mouseButtonDown;
 /* readonly */
 Array<bool> mouseButtonPress;
 bool mouseGrabbed;
+/* readonly */
+bool mouseLocked;
 MouseMode mouseMode;
 /* readonly */
 IntVector2 mouseMove;
@@ -10541,6 +10556,7 @@ IntRect rectangle;
 /* readonly */
 int refs;
 Texture2D texture;
+float textureEdgeOffset;
 /* readonly */
 StringHash type;
 /* readonly */
@@ -10572,7 +10588,6 @@ uint memoryUse;
 String name;
 /* readonly */
 int refs;
-/* readonly */
 Texture2D texture;
 /* readonly */
 StringHash type;
@@ -11646,6 +11661,68 @@ int weakRefs;
 int width;
 };
 
+class Texture2DArray
+{
+// Methods:
+void ClearDataLost();
+bool HasSubscribedToEvent(Object, const String&);
+bool HasSubscribedToEvent(const String&);
+bool Load(File);
+bool Load(VectorBuffer&);
+bool Save(File) const;
+bool Save(VectorBuffer&) const;
+void SendEvent(const String&, VariantMap& = VariantMap ( ));
+bool SetData(uint, Image, bool = false);
+void SetNumLevels(uint);
+bool SetSize(uint, int, int, uint, TextureUsage = TEXTURE_STATIC);
+
+// Properties:
+Array<TextureAddressMode> addressMode;
+Texture backupTexture;
+Color borderColor;
+/* readonly */
+String category;
+/* readonly */
+uint components;
+/* readonly */
+bool compressed;
+/* readonly */
+bool dataLost;
+TextureFilterMode filterMode;
+/* readonly */
+uint format;
+/* readonly */
+int height;
+uint layers;
+/* readonly */
+Array<int> levelHeight;
+/* readonly */
+Array<int> levelWidth;
+/* readonly */
+uint levels;
+/* readonly */
+uint memoryUse;
+Array<int> mipsToSkip;
+String name;
+/* readonly */
+int refs;
+/* readonly */
+RenderSurface renderSurface;
+bool sRGB;
+/* readonly */
+StringHash type;
+/* readonly */
+String typeName;
+/* readonly */
+TextureUsage usage;
+/* readonly */
+uint useTimer;
+/* readonly */
+int weakRefs;
+/* readonly */
+int width;
+};
+
 class Texture3D
 {
 // Methods:
@@ -12567,6 +12644,7 @@ const Color& GetColor() const;
 void FromString(VariantType, const String&);
 void FromString(const String&, const String&);
 bool GetBool() const;
+VectorBuffer GetBuffer() const;
 double GetDouble() const;
 float GetFloat() const;
 int GetInt() const;
@@ -12590,7 +12668,6 @@ const VariantMap& GetVariantMap() const;
 const Vector2& GetVector2() const;
 const Vector3& GetVector3() const;
 const Vector4& GetVector4() const;
-const VectorBuffer GetBuffer() const;
 
 // Properties:
 /* readonly */
@@ -13552,6 +13629,12 @@ Texture zoneTexture;
 
 // Enumerations
 
+enum AnimationBlendMode
+{
+ABM_LERP,
+ABM_ADDITIVE,
+};
+
 enum BlendMode
 {
 BLEND_REPLACE,
@@ -14108,6 +14191,7 @@ String GetFileSizeString(uint64);
 uint GetFloat16Format();
 uint GetFloat32Format();
 uint GetFormat(const String&);
+Variant GetGlobalVar(const String&);
 String GetInternalPath(const String&);
 uint GetLinearDepthFormat();
 uint GetLuminanceAlphaFormat();
@@ -14169,6 +14253,7 @@ String RemoveTrailingSlash(const String&);
 String ReplaceExtension(const String&, const String&);
 uint SDBMHash(uint, uint8);
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
+void SetGlobalVar(const String&, Variant&);
 void SetMiniDumpDir(const String&);
 void SetRandomSeed(uint);
 float Sign(float);
@@ -14199,6 +14284,7 @@ DebugHud debugHud;
 DebugRenderer debugRenderer;
 Engine engine;
 FileSystem fileSystem;
+VariantMap globalVars;
 Graphics graphics;
 Input input;
 Localization localization;
@@ -14434,6 +14520,7 @@ int M_MIN_INT;
 uint M_MIN_UNSIGNED;
 float M_PI;
 float M_RADTODEG;
+uint NPOS;
 float PIXEL_SIZE;
 int QUALITY_HIGH;
 int QUALITY_LOW;
@@ -14704,4 +14791,3 @@ uint VO_LOW_MATERIAL_QUALITY;
 uint VO_NONE;
 Color WHITE;
 Color YELLOW;
-VariantMap globalVars;

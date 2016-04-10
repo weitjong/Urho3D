@@ -947,8 +947,8 @@ public:
         return type_ == VAR_QUATERNION ? *reinterpret_cast<const Quaternion*>(&value_) : Quaternion::IDENTITY;
     }
 
-    /// Return color or default on type mismatch.
-    const Color& GetColor() const { return type_ == VAR_COLOR ? *reinterpret_cast<const Color*>(&value_) : Color::WHITE; }
+    /// Return color or default on type mismatch. Vector4 is aliased to Color if necessary.
+    const Color& GetColor() const { return (type_ == VAR_COLOR || type_ == VAR_VECTOR4) ? *reinterpret_cast<const Color*>(&value_) : Color::WHITE; }
 
     /// Return string or empty on type mismatch.
     const String& GetString() const { return type_ == VAR_STRING ? *reinterpret_cast<const String*>(&value_) : String::EMPTY; }
@@ -960,7 +960,7 @@ public:
     }
 
     /// Return %VectorBuffer containing the buffer or empty on type mismatch.
-    const VectorBuffer GetVectorBuffer() const;
+    VectorBuffer GetVectorBuffer() const;
 
     /// Return void pointer or null on type mismatch. RefCounted pointer will be converted.
     void* GetVoidPtr() const

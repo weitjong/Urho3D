@@ -32,6 +32,7 @@ Urho3D development, contributions and bugfixes by:
 - Gunnar Kriik
 - Ali Kämäräinen
 - Pete Leigh
+- Frode 'Modanung' Lindeijer
 - Thorbjørn Lindeijer
 - Xavier Maupeu
 - Jonne Nauha
@@ -51,12 +52,12 @@ Urho3D development, contributions and bugfixes by:
 - Daniel Wiberg
 - Steven Zhang
 - AGreatFish
+- BlueMagnificent
 - Enhex
 - Firegorilla
 - Lumak
 - Magic.Lixin
 - Mike3D
-- Modanung
 - MonkeyFirst
 - Newb I the Newbd
 - OvermindDL1
@@ -69,17 +70,24 @@ Urho3D development, contributions and bugfixes by:
 - att
 - celeron55
 - cosmy1
+- damu
+- dragonCASTjosh
 - feltech
 - hdunderscore
+- lvshiling
 - marynate
 - mightyCelu
+- neat3d
 - nemerle
 - ninjastone
 - raould
 - rasteron
 - reattiva
 - rifai
+- rikorin
+- r-ku
 - skaiware
+- ssinai1
 - svifylabs
 - szamq
 - thebluefish
@@ -117,23 +125,22 @@ Urho3D uses the following third-party libraries:
 - GLEW 1.9.0 (http://glew.sourceforge.net/)
 - jo_jpeg 1.52 (http://www.jonolick.com/uploads/7/9/2/1/7921194/jo_jpeg.cpp)
 - kNet (https://github.com/juj/kNet)
-- libcpuid 0.2.0 (http://libcpuid.sourceforge.net/)
+- libcpuid 0.2.2 (https://github.com/anrieff/libcpuid)
 - Lua 5.1 (http://www.lua.org)
 - LuaJIT 2.1.0+ (http://www.luajit.org)
 - LZ4 (http://code.google.com/p/lz4/)
 - MojoShader (http://icculus.org/mojoshader/)
 - Mustache 1.0 (http://mustache.github.io/, https://github.com/kainjow/Mustache)
-- nanodbc 2.11.3+ (http://lexicalunit.github.io/nanodbc/)
+- nanodbc 2.12.4 (http://lexicalunit.github.io/nanodbc/)
 - Open Asset Import Library (http://assimp.sourceforge.net/)
-- pugixml 1.5 (http://pugixml.org/)
+- pugixml 1.7 (http://pugixml.org/)
 - rapidjson 0.11 (https://code.google.com/p/rapidjson/)
 - Recast/Detour (https://github.com/memononen/recastnavigation/)
-- SDL 2.0.3 (http://www.libsdl.org/)
-- StanHull (http://codesuppository.blogspot.com/2006/03/
-  john-ratcliffs-code-suppository-blog.html)
-- stb_image 2.05 (http://nothings.org/)
-- stb_image_write 0.98 (http://nothings.org/)
-- stb_vorbis 1.05 (http://nothings.org/)
+- SDL 2.0.4 (http://www.libsdl.org/)
+- StanHull (http://codesuppository.blogspot.com/2006/03/john-ratcliffs-code-suppository-blog.html)
+- stb_image 2.10 (http://nothings.org/)
+- stb_image_write 1.01 (http://nothings.org/)
+- stb_vorbis 1.07 (http://nothings.org/)
 - SQLite 3.8.10.2 (https://www.sqlite.org/)
 - tolua++ 1.0.93 (http://www.codenix.com/~tolua)
 

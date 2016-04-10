@@ -185,6 +185,7 @@ namespace Urho3D
 <a href="#Class_Text3D"><b>Text3D</b></a>
 <a href="#Class_Texture"><b>Texture</b></a>
 <a href="#Class_Texture2D"><b>Texture2D</b></a>
+<a href="#Class_Texture2DArray"><b>Texture2DArray</b></a>
 <a href="#Class_Texture3D"><b>Texture3D</b></a>
 <a href="#Class_TextureCube"><b>TextureCube</b></a>
 <a href="#Class_TextureFrame"><b>TextureFrame</b></a>
@@ -381,6 +382,7 @@ Methods:
 - bool SetTime(const String name, float time)
 - bool SetWeight(const String name, float weight)
 - bool SetLooped(const String name, bool enable)
+- bool SetBlendMode(const String name, AnimationBlendMode mode)
 - bool SetSpeed(const String name, float speed)
 - bool SetAutoFade(const String name, float fadeOutTime)
 - bool SetRemoveOnCompletion(const String name, bool removeOnCompletion)
@@ -394,6 +396,7 @@ Methods:
 - float GetTime(const String name) const
 - float GetWeight(const String name) const
 - bool IsLooped(const String name) const
+- AnimationBlendMode GetBlendMode(const String name) const
 - float GetLength(const String name) const
 - float GetSpeed(const String name) const
 - float GetFadeTarget(const String name) const
@@ -447,6 +450,7 @@ Methods:
 - void AddWeight(float delta)
 - void AddTime(float delta)
 - void SetLayer(char layer)
+- void SetBlendMode(AnimationBlendMode mode)
 - Animation* GetAnimation() const
 - Bone* GetStartBone() const
 - float GetBoneWeight(const String name) const
@@ -460,6 +464,7 @@ Methods:
 - float GetTime() const
 - float GetLength() const
 - char GetLayer() const
+- AnimationBlendMode GetBlendMode() const
 
 Properties:
 
@@ -471,6 +476,7 @@ Properties:
 - float time
 - float length (readonly)
 - char layer
+- AnimationBlendMode blendMode
 
 <a name="Class_AnimationTrack"></a>
 ### AnimationTrack
@@ -517,6 +523,9 @@ Methods:
 - bool Play()
 - void Stop()
 - void SetMasterGain(const String type, float gain)
+- void PauseSoundType(const String type)
+- void ResumeSoundType(const String type)
+- void ResumeAll()
 - void SetListener(SoundListener* listener)
 - void StopSound(Sound* sound)
 - unsigned GetSampleSize() const
@@ -527,6 +536,7 @@ Methods:
 - bool IsInitialized() const
 - bool HasMasterGain(const String type) const
 - float GetMasterGain(const String type) const
+- bool IsSoundTypePaused(const String type) const
 - SoundListener* GetListener() const
 - const PODVector<SoundSource*>& GetSoundSources() const
 - void AddSoundSource(SoundSource* soundSource)
@@ -2685,8 +2695,9 @@ Methods:
 
 - void SetToggleFullscreen(bool enable)
 - void SetMouseVisible(bool enable, bool suppressEvent = false)
-- void SetMouseGrabbed(bool grab)
-- void SetMouseMode(MouseMode mode)
+- void SetMouseGrabbed(bool grab, bool suppressEvent = false)
+- void SetMouseMode(MouseMode mode, bool suppressEvent = false)
+- bool IsMouseLocked()
 - int AddScreenJoystick(XMLFile* layoutFile = 0, XMLFile* styleFile = 0)
 - bool RemoveScreenJoystick(int id)
 - void SetScreenJoystickVisible(int id, bool enable)
@@ -2726,6 +2737,7 @@ Methods:
 - unsigned GetNumJoysticks() const
 - JoystickState* GetJoystick(int id)
 - JoystickState* GetJoystickByIndex(unsigned index)
+- JoystickState* GetJoystickByName(const String name)
 - bool GetToggleFullscreen() const
 - bool GetScreenKeyboardSupport() const
 - bool IsScreenJoystickVisible(int id) const
@@ -2754,6 +2766,7 @@ Properties:
 - bool touchEmulation
 - bool mouseVisible
 - bool mouseGrabbed
+- bool mouseLocked (readonly)
 - bool focus (readonly)
 - bool minimized (readonly)
 
@@ -5623,11 +5636,13 @@ Methods:
 - void SetRectangle(const IntRect& rectangle)
 - void SetHotSpot(const Vector2& hotSpot)
 - void SetOffset(const IntVector2& offset)
+- void SetTextureEdgeOffset(float offset)
 - void SetSpriteSheet(SpriteSheet2D* spriteSheet)
 - Texture2D* GetTexture() const
 - const IntRect& GetRectangle() const
 - const Vector2& GetHotSpot() const
 - const IntVector2& GetOffset() const
+- float GetTextureEdgeOffset() const
 - SpriteSheet2D* GetSpriteSheet() const
 
 Properties:
@@ -5636,6 +5651,7 @@ Properties:
 - IntRect rectangle
 - Vector2 hotSpot
 - IntVector2 offset
+- float textureEdgeOffset
 - SpriteSheet2D* spriteSheet
 
 <a name="Class_SpriteSheet2D"></a>
@@ -5643,11 +5659,16 @@ Properties:
 
 Methods:
 
+- void SetTexture(Texture2D* texture)
 - Texture2D* GetTexture() const
 - Sprite2D* GetSprite(const String name) const
 - void DefineSprite(const String name, const IntRect& rectangle)
 - void DefineSprite(const String name, const IntRect& rectangle, const Vector2& hotSpot)
 - void DefineSprite(const String name, const IntRect& rectangle, const Vector2& hotSpot, const IntVector2& originSize)
+
+Properties:
+
+- Texture2D* texture
 
 <a name="Class_StaticModel"></a>
 ### StaticModel : Drawable
@@ -6085,6 +6106,25 @@ Methods:
 
 Properties:
 
+- RenderSurface* renderSurface (readonly)
+
+<a name="Class_Texture2DArray"></a>
+### Texture2DArray : Texture
+
+Methods:
+
+- Texture2DArray() (GC)
+- Texture2DArray* new()
+- void delete()
+- void SetLayers(unsigned layers)
+- bool SetSize(unsigned layers, int width, int height, unsigned format, TextureUsage usage = TEXTURE_STATIC)
+- bool SetData(unsigned layer, Image* image, bool useAlpha = false)
+- unsigned GetLayers() const
+- RenderSurface* GetRenderSurface() const
+
+Properties:
+
+- unsigned layers
 - RenderSurface* renderSurface (readonly)
 
 <a name="Class_Texture3D"></a>
@@ -6642,7 +6682,7 @@ Methods:
 - const Color& GetColor() const
 - const String GetString() const
 - const PODVector<unsigned char>& GetRawBuffer() const
-- const VectorBuffer GetBuffer() const
+- VectorBuffer GetBuffer() const
 - void* GetVoidPtr(const char* type) const
 - const ResourceRef& GetResourceRef() const
 - const ResourceRefList& GetResourceRefList() const
@@ -7214,6 +7254,11 @@ Properties:
 
 \section LuaScriptAPI_Enums Enumerations
 
+### AnimationBlendMode
+
+- int ABM_LERP
+- int ABM_ADDITIVE
+
 ### BlendMode
 
 - int BLEND_REPLACE
@@ -7360,6 +7405,7 @@ Properties:
 - int FC_ROTATE_Y
 - int FC_LOOKAT_XYZ
 - int FC_LOOKAT_Y
+- int FC_DIRECTION
 
 ### FaceCameraMode
 
@@ -7368,7 +7414,6 @@ Properties:
 - int FC_ROTATE_Y
 - int FC_LOOKAT_XYZ
 - int FC_LOOKAT_Y
-- int FC_DIRECTION
 
 ### FileMode
 
@@ -7793,6 +7838,8 @@ Properties:
 - String GetFileNameAndExtension(const String fullPath, bool lowercaseExtension = false)
 - String GetFileSizeString(long memorySize)
 - FileSystem* GetFileSystem()
+- Variant GetGlobalVar(const String key)
+- VariantMap& GetGlobalVars()
 - Graphics* GetGraphics()
 - Input* GetInput()
 - String GetInternalPath(const String pathName)
@@ -7828,8 +7875,8 @@ Properties:
 - int Rand()
 - float RandStandardNormal()
 - float Random()
-- float Random(float min, float max)
 - float Random(float range)
+- float Random(float min, float max)
 - int RandomInt(int min, int max)
 - int RandomInt(int range)
 - float RandomNormal(float meanValue, float variance)
@@ -7838,13 +7885,14 @@ Properties:
 - unsigned SDBMHash(unsigned hash, char c)
 - void SendEvent(const String eventName, VariantMap& eventData)
 - void SetExecuteConsoleCommands(bool enable)
+- void SetGlobalVar(const String key, Variant value)
 - void SetMiniDumpDir(const String pathName)
 - void SetRandomSeed(unsigned seed)
 - float Sign(float value)
 - float Sin(float angle)
 - float SmoothStep(float lhs, float rhs, float t)
-- void SubscribeToEvent(const String eventName, void* functionOrFunctionName)
 - void SubscribeToEvent(void* sender, const String eventName, void* functionOrFunctionName)
+- void SubscribeToEvent(const String eventName, void* functionOrFunctionName)
 - float Tan(float angle)
 - bool ToBool(const String source)
 - Color ToColor(const String source)

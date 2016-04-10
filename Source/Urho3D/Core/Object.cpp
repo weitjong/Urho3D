@@ -181,6 +181,18 @@ void Object::SubscribeToEvent(Object* sender, StringHash eventType, EventHandler
     context_->AddEventReceiver(this, sender, eventType);
 }
 
+#if URHO3D_CXX11
+void Object::SubscribeToEvent(StringHash eventType, const std::function<void(StringHash, VariantMap&)>& function, void* userData/*=0*/)
+{
+    SubscribeToEvent(eventType, new EventHandler11Impl(function, userData));
+}
+
+void Object::SubscribeToEvent(Object* sender, StringHash eventType, const std::function<void(StringHash, VariantMap&)>& function, void* userData/*=0*/)
+{
+    SubscribeToEvent(sender, eventType, new EventHandler11Impl(function, userData));
+}
+#endif
+
 void Object::UnsubscribeFromEvent(StringHash eventType)
 {
     for (;;)
@@ -391,6 +403,21 @@ void Object::SendEvent(StringHash eventType, VariantMap& eventData)
 VariantMap& Object::GetEventDataMap() const
 {
     return context_->GetEventDataMap();
+}
+
+const Variant& Object::GetGlobalVar(StringHash key) const
+{
+    return context_->GetGlobalVar(key);
+}
+
+const VariantMap& Object::GetGlobalVars() const 
+{ 
+    return context_->GetGlobalVars(); 
+}
+
+void Object::SetGlobalVar(StringHash key, const Variant& value)
+{
+    context_->SetGlobalVar(key, value);
 }
 
 Object* Object::GetSubsystem(StringHash type) const

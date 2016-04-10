@@ -25,7 +25,7 @@
 language: cpp
 cache: ccache
 sudo: false
-addons: {apt: {sources: &default_sources george-edison55-precise-backports, packages: &default_packages [doxygen, graphviz]}}
+addons: {apt: {sources: &default_sources [george-edison55-precise-backports, kubuntu-backports], packages: &default_packages [doxygen, graphviz, cmake]}}
 env:
   global:
     - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
@@ -40,7 +40,7 @@ matrix:
   fast_finish: true
   include:
     - &Linux-64bit
-      addons: {apt: {sources: [*default_sources, kubuntu-backports, ubuntu-toolchain-r-test], packages: [cmake, g++-4.9, &linux_packages [*default_packages, libasound2-dev, libpulse-dev, rpm]]}}
+      addons: {apt: {sources: [*default_sources, ubuntu-toolchain-r-test], packages: [g++-4.9, &linux_packages [*default_packages, libasound2-dev, libpulse-dev, rpm]]}}
       compiler: gcc-64bit-static
       env: LINUX=1 URHO3D_LIB_TYPE=STATIC URHO3D_UPDATE_SOURCE_TREE=1 COVERITY_SCAN_THRESHOLD=100 SF_DEFAULT=linux:Linux-64bit-STATIC.tar.gz
     - &Linux-64bit-shared
@@ -104,7 +104,7 @@ matrix:
     # compiler: i686-w64-mingw32-gcc-d3d11-shared
     # env: WIN32=1 URHO3D_LIB_TYPE=SHARED URHO3D_64BIT=0 URHO3D_D3D11=1
 before_script:
-  - SECONDS=0
+  - rake ci_timer
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
   # export TAG=$(git describe --exact-match $TRAVIS_COMMIT 2>/dev/null); if [[ $TAG =~ [[:digit:]]+\.[[:digit:]]+ ]]; then export RELEASE_TAG=$TAG; fi
   # if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then if [ ${TRAVIS_JOB_NUMBER##*.} == 1 ]; then export SITE_UPDATE=1; fi; if [ "$CC" == "gcc" ] && ([ $RELEASE_TAG ] || echo $COMMIT_MESSAGE |grep -cq '\[ci package\]'); then export PACKAGE_UPLOAD=1; fi; fi
@@ -118,7 +118,7 @@ before_script:
   # For some reason clang compiler toolchain installation in Travis CI VM does not have symlink in the ccache symlinks directory, so workaround it
   - if [ "$CC"  == "clang" ]; then ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH; fi
   - rake ci_setup_cache
-script: ELAPSED=$SECONDS rake ci && if [ $SITE_UPDATE ]; then ELAPSED=$SECONDS rake ci_site_update; fi && if [ $PACKAGE_UPLOAD ]; then ELAPSED=$SECONDS rake ci_package_upload && if [ $LINUX ] && [ ! "$URHO3D_64BIT" == "0" ]; then ELAPSED=$SECONDS rake ci_package_upload URHO3D_USE_LIB64_RPM=1; fi; fi
+script: rake ci && if [ $SITE_UPDATE ]; then rake ci_site_update; fi && if [ $PACKAGE_UPLOAD ]; then rake ci_package_upload && if [ $LINUX ] && [ ! "$URHO3D_64BIT" == "0" ]; then rake ci_package_upload URHO3D_USE_LIB64_RPM=1; fi; fi && rake ci_timer
 after_script:
   - rake ci_teardown_cache
   - if [ ${TRAVIS_JOB_NUMBER##*.} == 1 ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then rake ci_create_mirrors; fi
@@ -242,7 +242,7 @@ after_script: rake ci_teardown_cache
 branch: {name: Android-CI, active: yes}
 language: android
 android: {components: [build-tools-22.0.1]}
-cache: {directories: $HOME/.ccache}
+jdk: oraclejdk8
 sudo: false
 addons: {apt: {sources: &default_sources george-edison55-precise-backports, packages: &default_packages [doxygen, graphviz, g++-multilib]}}
 env:
@@ -251,57 +251,33 @@ env:
     - numjobs=4
     - ANDROID=1
     - ANDROID_TMP=~/tmp
-    - PACKAGE_JOB_END=9
+    - USE_CCACHE=2
     - CCACHE_SLOPPINESS=pch_defines,time_macros
     - CCACHE_COMPRESS=1
     - CCACHE_MAXSIZE=100M
     - URHO3D_AMALG=0
+  matrix:
+    # x86 and x86_64 emulation currently requires hardware acceleration which Travis-CI cannot provide, so skip testing using AVD for now
+    - ANDROID_ABI=x86_64 URHO3D_LIB_TYPE=STATIC INSTALL=sys-img-x86_64-android-21   # Using default native API level 21
+    - ANDROID_ABI=x86_64 URHO3D_LIB_TYPE=SHARED INSTALL=sys-img-x86_64-android-21
+    - ANDROID_ABI=x86    URHO3D_LIB_TYPE=STATIC INSTALL=sys-img-x86-android-21 ANDROID_NATIVE_API_LEVEL=21  # 9 is the default but at least 12 is needed when LuaJIT is enabled
+    - ANDROID_ABI=x86    URHO3D_LIB_TYPE=SHARED INSTALL=sys-img-x86-android-21 ANDROID_NATIVE_API_LEVEL=21
+    - ANDROID_ABI=armeabi-v7a URHO3D_LIB_TYPE=STATIC          # Using default native API Level 9
+    - ANDROID_ABI=armeabi-v7a URHO3D_LIB_TYPE=SHARED AVD=21
 matrix:
   fast_finish: true
   include:
-    # x86 and x86_64 emulation currently requires hardware acceleration which Travis-CI cannot provide, so skip AVD for now
-    # env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=x86_64      URHO3D_LIB_TYPE=SHARED INSTALL=sys-img-x86_64-android-21 AVD=test_21_x86_64 USE_CCACHE=2
-    # env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=x86         URHO3D_LIB_TYPE=SHARED INSTALL=sys-img-x86-android-21 AVD=test_21_x86       USE_CCACHE=2
-
-    # Travis CI does not create one cache per job at the moment, so workaround it to have still high cache hit/miss ratio
-    # We use jdk key as the cache storage differentiator! Our library is compiled using NDK so it should not be affected by JDK version
-    # We have to ensure those jobs with AVD test are run using the correct JDK version, i.e. Oracle JDK 7 which is the default
-    # We can only cache 5 jobs due to limited supply of valid JDK versions when using Travis CI native ccache support
-    # The other 5 jobs are cached using our own cache store (originally designed for Travis CI legacy build infra)
-    - &cache1
-      jdk: oraclejdk8
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=x86_64      URHO3D_LIB_TYPE=STATIC INSTALL=sys-img-x86_64-android-21     USE_CCACHE=1
-    - &alternative-cache
-      cache: false
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=x86_64      URHO3D_LIB_TYPE=SHARED INSTALL=sys-img-x86_64-android-21     USE_CCACHE=2
-    - &cache2
-      jdk: openjdk7
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=x86         URHO3D_LIB_TYPE=STATIC INSTALL=sys-img-x86-android-21        USE_CCACHE=1
-    - <<: *alternative-cache
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=x86         URHO3D_LIB_TYPE=SHARED INSTALL=sys-img-x86-android-21        USE_CCACHE=2
-    - &cache3
-      jdk: openjdk6
-      addons: &newer_gcc {apt: {sources: [*default_sources, ubuntu-toolchain-r-test], packages: [*default_packages, g++-4.9]}}
-      # ANDROID_ANDROID_ABI=arm64-v8a uses NEON by default, so the following two CI jobs also test NEON code path in the build
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=arm64-v8a   URHO3D_LIB_TYPE=STATIC NO_SDK_SYSIMG=1                       USE_CCACHE=1
-    - <<: *alternative-cache
-      addons: {<<: *newer_gcc}
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=arm64-v8a   URHO3D_LIB_TYPE=SHARED NO_SDK_SYSIMG=1                       USE_CCACHE=2
-    - <<: *alternative-cache
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=armeabi-v7a URHO3D_LIB_TYPE=STATIC                                       USE_CCACHE=2
-    - &cache4
-      jdk: oraclejdk7
-      env: ANDROID_NATIVE_API_LEVEL=21 ANDROID_ABI=armeabi-v7a URHO3D_LIB_TYPE=SHARED AVD=test_21_armeabi-v7a               USE_CCACHE=1
-    - <<: *alternative-cache
-      env: ANDROID_NATIVE_API_LEVEL=19 ANDROID_ABI=armeabi-v7a URHO3D_LIB_TYPE=STATIC                                       USE_CCACHE=2
-    - &cache5
-      env: ANDROID_NATIVE_API_LEVEL=19 ANDROID_ABI=armeabi-v7a URHO3D_LIB_TYPE=SHARED AVD=test_19_armeabi-v7a               USE_CCACHE=1
+    # ANDROID_ANDROID_ABI=arm64-v8a uses NEON by default, so the following two CI jobs also test NEON code path in the build
+    - addons: &newer_gcc {apt: {sources: [*default_sources, ubuntu-toolchain-r-test], packages: [*default_packages, g++-4.9]}}
+      env: ANDROID_ABI=arm64-v8a URHO3D_LIB_TYPE=STATIC NO_SDK_SYSIMG=1   # Using default native API level 21
+    - addons: {<<: *newer_gcc}
+      env: ANDROID_ABI=arm64-v8a URHO3D_LIB_TYPE=SHARED NO_SDK_SYSIMG=1
 before_script:
-  - SECONDS=0
+  - rake ci_timer
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n1 $TRAVIS_COMMIT)
   # export TAG=$(git describe --exact-match $TRAVIS_COMMIT 2>/dev/null); if [[ $TAG =~ [[:digit:]]+\.[[:digit:]]+ ]]; then export RELEASE_TAG=$TAG; fi
-  # if [ ${TRAVIS_JOB_NUMBER##*.} -lt $PACKAGE_JOB_END ] && ([ $RELEASE_TAG ] || (! [[ $TRAVIS_BRANCH =~ [^-]+-[^-]+-CI ]] && echo $COMMIT_MESSAGE |grep -cq '\[ci package\]')); then export PACKAGE_UPLOAD=1; fi
+  # if [ $RELEASE_TAG ] || (! [[ $TRAVIS_BRANCH =~ [^-]+-[^-]+-CI ]] && echo $COMMIT_MESSAGE |grep -cq '\[ci package\]'); then export PACKAGE_UPLOAD=1; fi
   - git clone --depth 1 --branch strip https://github.com/urho3d/android-ndk.git && export ANDROID_NDK=$(pwd)/android-ndk && if ([ $AVD ] || [ $PACKAGE_UPLOAD ]) && [ $INSTALL ]; then (while :; do echo 'y'; sleep 1; done) |android update sdk --no-ui --all --filter $INSTALL; fi
   - if [ "$ANDROID_ABI" == "x86_64" ]; then export C_PATH=$(pwd)/android-ndk/toolchains/x86_64-4.9/prebuilt/linux-x86_64/bin C_PREFIX=x86_64-linux-android; fi
   - if [ "$ANDROID_ABI" == "x86" ]; then export C_PATH=$(pwd)/android-ndk/toolchains/x86-4.9/prebuilt/linux-x86_64/bin C_PREFIX=i686-linux-android; fi
@@ -309,7 +285,7 @@ before_script:
   - if [ "$ANDROID_ABI" == "armeabi-v7a" ]; then export C_PATH=$(pwd)/android-ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin C_PREFIX=arm-linux-androideabi; fi
   - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$C_PATH:$PATH; for f in $C_PATH/$C_PREFIX-{gcc,g++}; do touch -d "2015-01-01 00:00:00 +0800" $f; done
   - rake ci_setup_cache
-script: ELAPSED=$SECONDS rake ci && if [ $PACKAGE_UPLOAD ]; then ELAPSED=$SECONDS rake ci_package_upload; fi
+script: rake ci && if [ $PACKAGE_UPLOAD ]; then rake ci_package_upload; fi && rake ci_timer
 after_script: rake ci_teardown_cache
 
 ---
@@ -346,7 +322,7 @@ matrix:
     - compiler: gcc-armeabi-v7a-with-NEON-shared
       env: URHO3D_LIB_TYPE=SHARED RPI_ABI='armeabi-v7a with NEON'
 before_script:
-  - SECONDS=0
+  - rake ci_timer
   - git clone --depth 1 https://github.com/raspberrypi/tools.git rpi-tools && export RPI_PREFIX=$(pwd)/rpi-tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf && git clone --depth 1 https://github.com/urho3d/rpi-sysroot.git && export RPI_SYSROOT=$(pwd)/rpi-sysroot && for f in $RPI_PREFIX-{gcc,g++}; do touch -d "2015-01-01 00:00:00 +0800" $f; done
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
@@ -354,7 +330,7 @@ before_script:
   # if [ ${TRAVIS_JOB_NUMBER##*.} -lt $PACKAGE_JOB_END ] && ([ $RELEASE_TAG ] || (! [[ $TRAVIS_BRANCH =~ [^-]+-[^-]+-CI ]] && echo $COMMIT_MESSAGE |grep -cq '\[ci package\]')); then export PACKAGE_UPLOAD=1; fi
   - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):${RPI_PREFIX%/*}:$PATH
   - rake ci_setup_cache
-script: ELAPSED=$SECONDS rake ci && if [ $PACKAGE_UPLOAD ]; then ELAPSED=$SECONDS rake ci_package_upload; fi
+script: rake ci && if [ $PACKAGE_UPLOAD ]; then rake ci_package_upload; fi && rake ci_timer
 after_script: rake ci_teardown_cache
 
 ---
@@ -381,7 +357,7 @@ env:
 matrix:
   fast_finish: true
 before_script:
-  - SECONDS=0
+  - rake ci_timer
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
   # export TAG=$(git describe --exact-match $TRAVIS_COMMIT 2>/dev/null); if [[ $TAG =~ [[:digit:]]+\.[[:digit:]]+ ]]; then export RELEASE_TAG=$TAG; fi
@@ -391,10 +367,13 @@ before_script:
   - which cmake >/dev/null 2>&1 || cmake=cmake
   - if [ $PACKAGE_UPLOAD ]; then doxygen='doxygen graphviz'; fi
   - travis_retry brew install ccache $cmake $doxygen
+  - travis_retry brew uninstall --force boost gcc49 go maven
+  - travis_retry brew cask uninstall --force java rubymotion
+  - travis_retry brew cleanup
   - export PATH=$(brew info ccache |grep -o '\S*lib\S*'):$PATH
   - if [ $XCODE ]; then sudo cp -p $(which ccache) $(dirname $(xcodebuild -find-executable clang)) && for compiler in clang clang++; do path=$(xcodebuild -find-executable $compiler); sudo mv $path{,.orig} && sudo ln -sf $(dirname $path)/clang.orig /usr/bin/$compiler && sudo ln -sf ccache $path; done && if [ $IOS ]; then redundant=AppleTV,Watch; elif [ $TVOS ]; then redundant=iPhone,Watch; else redundant=iPhone,AppleTV,Watch; fi && eval sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/{$redundant}{OS,Simulator}.platform; fi
   - rake ci_setup_cache
-script: ELAPSED=$SECONDS rake ci && if [ $PACKAGE_UPLOAD ]; then ELAPSED=$SECONDS rake ci_package_upload; fi
+script: rake ci && if [ $PACKAGE_UPLOAD ]; then rake ci_package_upload; fi && rake ci_timer
 after_script: rake ci_teardown_cache
 
 ---
@@ -423,7 +402,7 @@ matrix:
     - compiler: gcc-linked-bitcode
       env: URHO3D_LIB_TYPE=SHARED
 before_script:
-  - SECONDS=0
+  - rake ci_timer
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
   # export TAG=$(git describe --exact-match $TRAVIS_COMMIT 2>/dev/null); if [[ $TAG =~ [[:digit:]]+\.[[:digit:]]+ ]]; then export RELEASE_TAG=$TAG; fi
@@ -432,7 +411,7 @@ before_script:
   - git clone --depth 1 https://github.com/urho3d/emscripten-sdk.git && emscripten-sdk/emsdk activate --build=Release sdk-master-64bit && source emscripten-sdk/emsdk_env.sh
   - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH; for f in $EMSCRIPTEN/{emcc,em++}; do touch -d "2015-09-01 00:00:00 +0800" $f; done
   - rake ci_setup_cache
-script: ELAPSED=$SECONDS rake ci && if [ $PACKAGE_UPLOAD ]; then ELAPSED=$SECONDS rake ci_package_upload && if [ "$URHO3D_LIB_TYPE" == "SHARED" ]; then ELAPSED=$SECONDS rake ci_emscripten_samples_update; fi; fi
+script: rake ci && if [ $PACKAGE_UPLOAD ]; then rake ci_package_upload && if [ "$URHO3D_LIB_TYPE" == "SHARED" ]; then rake ci_emscripten_samples_update; fi; fi && rake ci_timer
 after_script: rake ci_teardown_cache
 
 ...

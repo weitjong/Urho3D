@@ -49,6 +49,7 @@ class ShaderProgram;
 class ShaderVariation;
 class Texture;
 class Texture2D;
+class Texture2DArray;
 class TextureCube;
 class Vector3;
 class Vector4;
@@ -249,10 +250,10 @@ public:
     /// Return window position.
     IntVector2 GetWindowPosition() const;
 
-    /// Return window width.
+    /// Return window width in pixels.
     int GetWidth() const { return width_; }
 
-    /// Return window height.
+    /// Return window height in pixels.
     int GetHeight() const { return height_; }
 
     /// Return multisample mode (1 = no multisampling.)
@@ -523,9 +524,9 @@ private:
     Image* windowIcon_;
     /// External window, null if not in use (default.)
     void* externalWindow_;
-    /// Window width.
+    /// Window width in pixels.
     int width_;
-    /// Window height.
+    /// Window height in pixels.
     int height_;
     /// Window position.
     IntVector2 position_;

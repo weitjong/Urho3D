@@ -39,6 +39,7 @@
 #include "../Graphics/Skybox.h"
 #include "../Graphics/Technique.h"
 #include "../Graphics/Texture2D.h"
+#include "../Graphics/Texture2DArray.h"
 #include "../Graphics/Texture3D.h"
 #include "../Graphics/TextureCube.h"
 #include "../Graphics/VertexBuffer.h"
@@ -285,6 +286,8 @@ void SortShadowQueueWork(const WorkItem* item, unsigned threadIndex)
     for (unsigned i = 0; i < start->shadowSplits_.Size(); ++i)
         start->shadowSplits_[i].shadowBatches_.SortFrontToBack();
 }
+
+StringHash ParseTextureTypeXml(ResourceCache* cache, String filename);
 
 View::View(Context* context) :
     Object(context),
@@ -1731,7 +1734,7 @@ void View::SetRenderTargets(RenderPathCommand& command)
         }
     }
 
-    // When rendering to the final destination rendertarget, use the actual viewport. Otherwise texture rendertargets should use 
+    // When rendering to the final destination rendertarget, use the actual viewport. Otherwise texture rendertargets should use
     // their full size as the viewport
     IntVector2 rtSizeNow = graphics_->GetRenderTargetDimensions();
     IntRect viewport = (useViewportOutput && currentRenderTarget_ == renderTarget_) ? viewRect_ : IntRect(0, 0, rtSizeNow.x_,
@@ -1937,7 +1940,7 @@ void View::AllocateScreenBuffers()
     // Due to FBO limitations, in OpenGL deferred modes need to render to texture first and then blit to the backbuffer
     // Also, if rendering to a texture with full deferred rendering, it must be RGBA to comply with the rest of the buffers,
     // unless using OpenGL 3
-    if (((deferred_ || hasScenePassToRTs) && !renderTarget_) || (!Graphics::GetGL3Support() && deferredAmbient_ && renderTarget_ 
+    if (((deferred_ || hasScenePassToRTs) && !renderTarget_) || (!Graphics::GetGL3Support() && deferredAmbient_ && renderTarget_
         && renderTarget_->GetParentTexture()->GetFormat() != Graphics::GetRGBAFormat()))
             needSubstitute = true;
     // Also need substitute if rendering to backbuffer using a custom (readable) depth buffer
@@ -2126,7 +2129,16 @@ void View::UpdateOccluders(PODVector<Drawable*>& occluders, Camera* camera)
             float diagonal = box.Size().Length();
             float compare;
             if (!camera->IsOrthographic())
-                compare = diagonal * halfViewSize / occluder->GetDistance();
+            {
+                // Occluders which are near the camera are more useful then occluders at the end of the camera's draw distance
+                float cameraMaxDistanceFraction = occluder->GetDistance() / camera->GetFarClip();
+                compare = diagonal * halfViewSize / (occluder->GetDistance() * cameraMaxDistanceFraction);
+
+                // Give higher priority to occluders which the camera is inside their AABB
+                const Vector3& cameraPos = camera->GetNode() ? camera->GetNode()->GetWorldPosition() : Vector3::ZERO;
+                if (box.IsInside(cameraPos))
+                    compare *= diagonal;    // size^2
+            }
             else
                 compare = diagonal * invOrthoSize;
 
@@ -2134,9 +2146,10 @@ void View::UpdateOccluders(PODVector<Drawable*>& occluders, Camera* camera)
                 erase = true;
             else
             {
-                // Store amount of triangles divided by screen size as a sorting key
-                // (best occluders are big and have few triangles)
-                occluder->SetSortValue((float)occluder->GetNumOccluderTriangles() / compare);
+                // Best occluders have big triangles (low density)
+                float density = occluder->GetNumOccluderTriangles() / diagonal;
+                // Lower value is higher priority
+                occluder->SetSortValue(density / compare);
             }
         }
         else
@@ -2157,7 +2170,7 @@ void View::DrawOccluders(OcclusionBuffer* buffer, const PODVector<Drawable*>& oc
 {
     buffer->SetMaxTriangles((unsigned)maxOccluderTriangles_);
     buffer->Clear();
-    
+
     if (!buffer->IsThreaded())
     {
         // If not threaded, draw occluders one by one and test the next occluder against already rasterized depth
@@ -3064,6 +3077,8 @@ Texture* View::FindNamedTexture(const String& name, bool isRenderTarget, bool is
         texture = cache->GetExistingResource<TextureCube>(name);
     if (!texture)
         texture = cache->GetExistingResource<Texture3D>(name);
+    if (!texture)
+        texture = cache->GetExistingResource<Texture2DArray>(name);
     if (texture)
         return texture;
 
@@ -3075,8 +3090,14 @@ Texture* View::FindNamedTexture(const String& name, bool isRenderTarget, bool is
         {
             // Assume 3D textures are only bound to the volume map unit, otherwise it's a cube texture
 #ifdef DESKTOP_GRAPHICS
-            if (isVolumeMap)
+            StringHash type = ParseTextureTypeXml(cache, name);
+            if (!type && isVolumeMap)
+                type = Texture3D::GetTypeStatic();
+
+            if (type == Texture3D::GetTypeStatic())
                 return cache->GetResource<Texture3D>(name);
+            else if (type == Texture2DArray::GetTypeStatic())
+                return cache->GetResource<Texture2DArray>(name);
             else
 #endif
                 return cache->GetResource<TextureCube>(name);
