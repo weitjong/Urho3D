@@ -1051,11 +1051,8 @@ macro (setup_target)
         unset (TARGET_PROPERTIES)
     endif ()
 
-    if (DEFINED ENV{TRAVIS})
-        # Workaround to avoid technical error due to Travis CI build time limit
-        add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND rake ci_timeup WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    else ()
-        # Workaround CMake/Xcode generator bug where it always appends '/build' path element to SYMROOT attribute and as such the items in Products are always rendered as red in the Xcode IDE as if they are not yet built
+    # Workaround CMake/Xcode generator bug where it always appends '/build' path element to SYMROOT attribute and as such the items in Products are always rendered as red in the Xcode IDE as if they are not yet built
+    if (NOT DEFINED ENV{TRAVIS})
         if (XCODE AND NOT CMAKE_PROJECT_NAME MATCHES ^Urho3D-ExternalProject-)
             file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/build)
             get_target_property (LOCATION ${TARGET_NAME} LOCATION)
@@ -1925,7 +1922,7 @@ else ()
     # Ensure the output directory exist before creating the symlinks
     file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     # Create symbolic links in the build tree
-    foreach (I CoreData Data)
+    foreach (I Autoload CoreData Data)
         if (NOT EXISTS ${CMAKE_BINARY_DIR}/bin/${I})
             create_symlink (${CMAKE_SOURCE_DIR}/bin/${I} ${CMAKE_BINARY_DIR}/bin/${I} FALLBACK_TO_COPY)
         endif ()

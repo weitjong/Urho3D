@@ -126,17 +126,22 @@ public:
     void Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount);
     /// Draw indexed geometry.
     void Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount);
+    /// Draw indexed geometry with vertex index offset. Only supported on desktop OpenGL 3.2 or greater.
+    void Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned baseVertexIndex, unsigned minVertex, unsigned vertexCount);
     /// Draw indexed, instanced geometry.
     void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount,
         unsigned instanceCount);
+    /// Draw indexed, instanced geometry with vertex index offset. Only supported on desktop OpenGL 3.2 or greater.
+    void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned baseVertexIndex, unsigned minVertex, 
+        unsigned vertexCount, unsigned instanceCount);
     /// Set vertex buffer.
     void SetVertexBuffer(VertexBuffer* buffer);
     /// Set multiple vertex buffers.
     bool SetVertexBuffers
-        (const PODVector<VertexBuffer*>& buffers, const PODVector<unsigned>& elementMasks, unsigned instanceOffset = 0);
+        (const PODVector<VertexBuffer*>& buffers, unsigned instanceOffset = 0);
     /// Set multiple vertex buffers.
     bool SetVertexBuffers
-        (const Vector<SharedPtr<VertexBuffer> >& buffers, const PODVector<unsigned>& elementMasks, unsigned instanceOffset = 0);
+        (const Vector<SharedPtr<VertexBuffer> >& buffers, unsigned instanceOffset = 0);
     /// Set index buffer.
     void SetIndexBuffer(IndexBuffer* buffer);
     /// Set shaders.
@@ -545,6 +550,8 @@ private:
     void BindStencilAttachment(unsigned object, bool isRenderBuffer);
     /// Check FBO completeness using either extension or core functionality.
     bool CheckFramebuffer();
+    /// Set vertex attrib divisor. No-op if unsupported.
+    void SetVertexAttribDivisor(unsigned location, unsigned divisor);
 
     /// Mutex for accessing the GPU objects vector from several threads.
     Mutex gpuObjectMutex_;

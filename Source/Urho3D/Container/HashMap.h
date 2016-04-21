@@ -341,10 +341,34 @@ public:
         return node ? &node->pair_.second_ : 0;
     }
 
+#if URHO3D_CXX11
+    /// Populate the map using variadic template. This handles the base case.
+    HashMap& Populate(const T& key, const U& value)
+    {
+        this->operator [](key) = value;
+        return *this;
+    };
+    /// Populate the map using variadic template.
+    template <typename... Args> HashMap& Populate(const T& key, const U& value, Args... args)
+    {
+        this->operator [](key) = value;
+        return Populate(args...);
+    };
+#endif
+
     /// Insert a pair. Return an iterator to it.
     Iterator Insert(const Pair<T, U>& pair)
     {
         return Iterator(InsertNode(pair.first_, pair.second_));
+    }
+
+    /// Insert a pair. Return iterator and set exists flag according to whether the key already existed.
+    Iterator Insert(const Pair<T, U>& pair, bool& exists)
+    {
+        unsigned oldSize = Size();
+        Iterator ret(InsertNode(pair.first_, pair.second_));
+        exists = (Size() == oldSize);
+        return ret;
     }
 
     /// Insert a map.
@@ -528,6 +552,22 @@ public:
 
         unsigned hashKey = Hash(key);
         return FindNode(key, hashKey) != 0;
+    }
+
+    /// Try to copy value to output. Return true if was found.
+    bool TryGetValue(const T& key, U& out)
+    {
+        if (!ptrs_)
+            return false;
+        unsigned hashKey = Hash(key);
+        Node* node = FindNode(key, hashKey);
+        if (node)
+        {
+            out = node->pair_.second_;
+            return true;
+        }
+        else
+            return false;
     }
 
     /// Return all the keys.

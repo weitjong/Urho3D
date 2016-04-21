@@ -12,7 +12,6 @@ uniform vec3 cAmbientStartColor;
 uniform vec3 cAmbientEndColor;
 uniform mat3 cBillboardRot;
 uniform vec3 cCameraPos;
-uniform mat3 cCameraRot;
 uniform float cNearClip;
 uniform float cFarClip;
 uniform vec4 cDepthMode;
@@ -67,6 +66,10 @@ uniform vec4 cMatDiffColor;
 uniform vec3 cMatEmissiveColor;
 uniform vec3 cMatEnvMapColor;
 uniform vec4 cMatSpecColor;
+#ifdef PBR
+    uniform float cRoughnessPS;
+    uniform float cMetallicPS;
+#endif
 uniform float cNearClipPS;
 uniform float cFarClipPS;
 uniform vec4 cShadowCubeAdjust;
@@ -95,7 +98,6 @@ uniform FrameVS
 uniform CameraVS
 {
     vec3 cCameraPos;
-    mat3 cCameraRot;
     float cNearClip;
     float cFarClip;
     vec4 cDepthMode;
@@ -194,6 +196,10 @@ uniform MaterialPS
     vec3 cMatEmissiveColor;
     vec3 cMatEnvMapColor;
     vec4 cMatSpecColor;
+    #ifdef PBR
+        float cRoughnessPS;
+        float cMetallicPS;
+    #endif
 };
 #endif
 

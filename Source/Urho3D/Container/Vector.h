@@ -300,6 +300,30 @@ public:
         Resize(size_ - length, 0);
     }
 
+    /// Erase a range of elements by swapping elements from the end of the array.
+    void EraseSwap(unsigned pos, unsigned length = 1)
+    {
+        unsigned shiftStartIndex = pos + length;
+        // Return if the range is illegal
+        if (shiftStartIndex > size_ || !length)
+            return;
+
+        unsigned newSize = size_ - length;
+        unsigned trailingCount = size_ - shiftStartIndex;
+        if (trailingCount <= length)
+        {
+            // We're removing more elements from the array than exist past the end of the range being removed, so
+            // perform a normal shift and destroy.
+            MoveRange(pos, shiftStartIndex, trailingCount);
+        }
+        else
+        {
+            // Swap elements from the end of the array into the empty space.
+            CopyElements(Buffer() + pos, Buffer() + newSize, length);
+        }
+        Resize(newSize, 0);
+    }
+
     /// Erase an element by iterator. Return iterator to the next element.
     Iterator Erase(const Iterator& it)
     {
@@ -323,13 +347,26 @@ public:
         return Begin() + pos;
     }
 
-    /// Erase an element if found.
+    /// Erase an element by value. Return true if was found and erased.
     bool Remove(const T& value)
     {
         Iterator i = Find(value);
         if (i != End())
         {
             Erase(i);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    /// Erase an element by value by swapping with the last element. Return true if was found and erased.
+    bool RemoveSwap(const T& value)
+    {
+        Iterator i = Find(value);
+        if (i != End())
+        {
+            EraseSwap(i);
             return true;
         }
         else
@@ -803,13 +840,50 @@ public:
         return Begin() + pos;
     }
 
-    /// Erase an element if found.
+    /// Erase a range of elements by swapping elements from the end of the array.
+    void EraseSwap(unsigned pos, unsigned length = 1)
+    {
+        unsigned shiftStartIndex = pos + length;
+        // Return if the range is illegal
+        if (shiftStartIndex > size_ || !length)
+            return;
+      
+        unsigned newSize = size_ - length;
+        unsigned trailingCount = size_ - shiftStartIndex;
+        if (trailingCount <= length)
+        {
+            // We're removing more elements from the array than exist past the end of the range being removed, so
+            // perform a normal shift and destroy.
+            MoveRange(pos, shiftStartIndex, trailingCount);
+        }
+        else
+        {
+            // Swap elements from the end of the array into the empty space.
+            CopyElements(Buffer() + pos, Buffer() + newSize, length);
+        }
+        Resize(newSize);
+    }
+
+    /// Erase an element by value. Return true if was found and erased.
     bool Remove(const T& value)
     {
         Iterator i = Find(value);
         if (i != End())
         {
             Erase(i);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    /// Erase an element by value by swapping with the last element. Return true if was found and erased.
+    bool RemoveSwap(const T& value)
+    {
+        Iterator i = Find(value);
+        if (i != End())
+        {
+            EraseSwap(i);
             return true;
         }
         else

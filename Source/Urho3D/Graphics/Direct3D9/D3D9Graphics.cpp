@@ -465,7 +465,7 @@ bool Graphics::SetMode(int width, int height, bool fullscreen, bool borderless, 
     if (maximize)
     {
         Maximize();
-        SDL_GL_GetDrawableSize(impl_->window_, &width, &height);
+        SDL_GetWindowSize(impl_->window_, &width, &height);
     }
 
     if (fullscreen)
@@ -603,6 +603,12 @@ bool Graphics::TakeScreenShot(Image& destImage)
     if (!impl_->device_)
         return false;
 
+    if (IsDeviceLost())
+    {
+        URHO3D_LOGERROR("Can not take screenshot while device is lost");
+        return false;
+    }
+
     D3DSURFACE_DESC surfaceDesc;
     impl_->defaultColorSurface_->GetDesc(&surfaceDesc);
 
@@ -729,7 +735,7 @@ bool Graphics::BeginFrame()
     {
         int width, height;
 
-        SDL_GL_GetDrawableSize(impl_->window_, &width, &height);
+        SDL_GetWindowSize(impl_->window_, &width, &height);
         if (width != width_ || height != height_)
             SetMode(width, height);
     }
@@ -903,6 +909,23 @@ void Graphics::Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount
     ++numBatches_;
 }
 
+void Graphics::Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned baseVertexIndex, unsigned minVertex, unsigned vertexCount)
+{
+    if (!indexCount)
+        return;
+
+    ResetStreamFrequencies();
+
+    unsigned primitiveCount;
+    D3DPRIMITIVETYPE d3dPrimitiveType;
+
+    GetD3DPrimitiveType(indexCount, type, primitiveCount, d3dPrimitiveType);
+    impl_->device_->DrawIndexedPrimitive(d3dPrimitiveType, baseVertexIndex, minVertex, vertexCount, indexStart, primitiveCount);
+
+    numPrimitives_ += primitiveCount;
+    ++numBatches_;
+}
+
 void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount,
     unsigned instanceCount)
 {
@@ -914,7 +937,9 @@ void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned i
         VertexBuffer* buffer = vertexBuffers_[i];
         if (buffer)
         {
-            if (buffer->GetElementMask() & MASK_INSTANCEMATRIX1)
+            const PODVector<VertexElement>& elements = buffer->GetElements();
+            // Check if buffer has per-instance data
+            if (elements.Size() && elements[0].perInstance_)
                 SetStreamFrequency(i, D3DSTREAMSOURCE_INSTANCEDATA | 1u);
             else
                 SetStreamFrequency(i, D3DSTREAMSOURCE_INDEXEDDATA | instanceCount);
@@ -931,38 +956,60 @@ void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned i
     ++numBatches_;
 }
 
+void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned baseVertexIndex, unsigned minVertex,
+    unsigned vertexCount, unsigned instanceCount)
+{
+    if (!indexCount || !instanceCount)
+        return;
+
+    for (unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+    {
+        VertexBuffer* buffer = vertexBuffers_[i];
+        if (buffer)
+        {
+            const PODVector<VertexElement>& elements = buffer->GetElements();
+            // Check if buffer has per-instance data
+            if (elements.Size() && elements[0].perInstance_)
+                SetStreamFrequency(i, D3DSTREAMSOURCE_INSTANCEDATA | 1u);
+            else
+                SetStreamFrequency(i, D3DSTREAMSOURCE_INDEXEDDATA | instanceCount);
+        }
+    }
+
+    unsigned primitiveCount;
+    D3DPRIMITIVETYPE d3dPrimitiveType;
+
+    GetD3DPrimitiveType(indexCount, type, primitiveCount, d3dPrimitiveType);
+    impl_->device_->DrawIndexedPrimitive(d3dPrimitiveType, baseVertexIndex, minVertex, vertexCount, indexStart, primitiveCount);
+
+    numPrimitives_ += instanceCount * primitiveCount;
+    ++numBatches_;
+}
+
 void Graphics::SetVertexBuffer(VertexBuffer* buffer)
 {
     // Note: this is not multi-instance safe
     static PODVector<VertexBuffer*> vertexBuffers(1);
-    static PODVector<unsigned> elementMasks(1);
     vertexBuffers[0] = buffer;
-    elementMasks[0] = MASK_DEFAULT;
-    SetVertexBuffers(vertexBuffers, elementMasks);
+    SetVertexBuffers(vertexBuffers);
 }
 
-bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const PODVector<unsigned>& elementMasks,
-    unsigned instanceOffset)
+bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, unsigned instanceOffset)
 {
     if (buffers.Size() > MAX_VERTEX_STREAMS)
     {
         URHO3D_LOGERROR("Too many vertex buffers");
         return false;
     }
-    if (buffers.Size() != elementMasks.Size())
-    {
-        URHO3D_LOGERROR("Amount of element masks and vertex buffers does not match");
-        return false;
-    }
 
-    // Build vertex declaration hash code out of the buffers & masks
+    // Build vertex declaration hash code out of the buffers
     unsigned long long hash = 0;
     for (unsigned i = 0; i < buffers.Size(); ++i)
     {
         if (!buffers[i])
             continue;
 
-        hash |= buffers[i]->GetBufferHash(i, elementMasks[i]);
+        hash |= buffers[i]->GetBufferHash(i);
     }
 
     if (hash)
@@ -970,7 +1017,7 @@ bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const P
         // If no previous vertex declaration for that hash, create new
         if (!vertexDeclarations_.Contains(hash))
         {
-            SharedPtr<VertexDeclaration> newDeclaration(new VertexDeclaration(this, buffers, elementMasks));
+            SharedPtr<VertexDeclaration> newDeclaration(new VertexDeclaration(this, buffers));
             if (!newDeclaration->GetDeclaration())
                 return false;
 
@@ -990,10 +1037,12 @@ bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const P
         VertexBuffer* buffer = 0;
         unsigned offset = 0;
 
-        if (i < buffers.Size())
+        if (i < buffers.Size() && buffers[i])
         {
             buffer = buffers[i];
-            if (buffer && buffer->GetElementMask() & MASK_INSTANCEMATRIX1)
+            const PODVector<VertexElement>& elements = buffer->GetElements();
+            // Check if buffer has per-instance data; add instance offset in that case
+            if (elements.Size() && elements[0].perInstance_)
                 offset = instanceOffset * buffer->GetVertexSize();
         }
 
@@ -1013,10 +1062,9 @@ bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const P
     return true;
 }
 
-bool Graphics::SetVertexBuffers(const Vector<SharedPtr<VertexBuffer> >& buffers, const PODVector<unsigned>& elementMasks,
-    unsigned instanceOffset)
+bool Graphics::SetVertexBuffers(const Vector<SharedPtr<VertexBuffer> >& buffers, unsigned instanceOffset)
 {
-    return SetVertexBuffers(reinterpret_cast<const PODVector<VertexBuffer*>&>(buffers), elementMasks, instanceOffset);
+    return SetVertexBuffers(reinterpret_cast<const PODVector<VertexBuffer*>&>(buffers), instanceOffset);
 }
 
 void Graphics::SetIndexBuffer(IndexBuffer* buffer)
@@ -2049,7 +2097,7 @@ void Graphics::WindowResized()
 
     int newWidth, newHeight;
 
-    SDL_GL_GetDrawableSize(impl_->window_, &newWidth, &newHeight);
+    SDL_GetWindowSize(impl_->window_, &newWidth, &newHeight);
     if (newWidth == width_ && newHeight == height_)
         return;
 
@@ -2410,18 +2458,21 @@ void Graphics::AdjustWindow(int& newWidth, int& newHeight, bool& newFullscreen, 
         if (!newWidth || !newHeight)
         {
             SDL_MaximizeWindow(impl_->window_);
-            SDL_GL_GetDrawableSize(impl_->window_, &newWidth, &newHeight);
+            SDL_GetWindowSize(impl_->window_, &newWidth, &newHeight);
         }
         else
             SDL_SetWindowSize(impl_->window_, newWidth, newHeight);
 
-        SDL_SetWindowFullscreen(impl_->window_, newFullscreen ? SDL_TRUE : SDL_FALSE);
+        // Hack fix: on SDL 2.0.4 a fullscreen->windowed transition results in a maximized window when the D3D device is reset, so hide before
+        SDL_HideWindow(impl_->window_);
+        SDL_SetWindowFullscreen(impl_->window_, newFullscreen ? SDL_WINDOW_FULLSCREEN : 0);
         SDL_SetWindowBordered(impl_->window_, newBorderless ? SDL_FALSE : SDL_TRUE);
+        SDL_ShowWindow(impl_->window_);
     }
     else
     {
         // If external window, must ask its dimensions instead of trying to set them
-        SDL_GL_GetDrawableSize(impl_->window_, &newWidth, &newHeight);
+        SDL_GetWindowSize(impl_->window_, &newWidth, &newHeight);
         newFullscreen = false;
     }
 }

@@ -20,6 +20,21 @@ The list, set and map classes use a fixed-size allocator internally. This can al
 
 In script, the String class is exposed as it is. The template containers can not be directly exposed to script, but instead a template Array type exists, which behaves like a Vector, but does not expose iterators. In addition the VariantMap is available, which is a HashMap<StringHash, Variant>.
 
+\section Containers_cxx11 C++11 features
+
+Aggregate initializers:
+
+\code
+VariantMap parameters = { {"Key1", "Value1"}, {"Key2", "Value2"} };
+\endcode
+
+Range-base for loop:
+\code
+for (auto&& item: container)
+{
+
+}
+\endcode
 
 \page ObjectTypes Object types and factories
 
@@ -95,12 +110,12 @@ In C++ events must always be handled by a member function. In script procedural 
 
 Events can also be unsubscribed from. See \ref Object::UnsubscribeFromEvent "UnsubscribeFromEvent()" for details.
 
-To send an event, fill the event parameters (if necessary) and call \ref Object::SendEvent "SendEvent()". For example, this (in C++) is how the Engine subsystem sends the Update event on each frame. Note the parameter name hashes being inside a namespace which matches the event name:
+To send an event, fill the event parameters (if necessary) and call \ref Object::SendEvent "SendEvent()". For example, this (in C++) is how the Engine subsystem sends the Update event on each frame. For performance reason, in C++ the same map objects are being reused in each frame by calling \ref Context::GetEventDataMap "GetEventDataMap()" instead of creating a new VariantMap object each time. Note the parameter name hashes being inside a namespace which matches the event name:
 
 \code
 using namespace Update;
 
-VariantMap eventData;
+VariantMap& eventData = GetEventDataMap();
 eventData[P_TIMESTEP] = timeStep_;
 SendEvent(E_UPDATE, eventData);
 \endcode
@@ -117,6 +132,46 @@ SendEvent("Update", eventData);
 
 Because the \ref Object::SendEvent "SendEvent()" function is public, an event can be "masqueraded" as originating from any object, even when not actually sent by that object's member function code. This can be used to simplify communication, particularly between components in the scene. For example, the \ref Physics "physics simulation" signals collision events by using the participating \ref Node "scene nodes" as senders. This means that any component can easily subscribe to its own node's collisions without having to know of the actual physics components involved. The same principle can also be used in any game-specific messaging, for example making a "damage received" event originate from the scene node, though it itself has no concept of damage or health.
 
+\section Events_cxx11 C++11 event binding and sending
+
+Events can be bound to lambda functions including capturing context:
+
+\code
+SubscribeToEvent(E_UPDATE, [&](StringHash type, VariantMap& args) {
+
+});
+\endcode
+
+std::bind() class methods:
+
+\code
+void MyObject::OnUpdate(StringHash type, VariantMap& args)
+{
+
+}
+
+SubscribeToEvent(E_UPDATE, std::bind(&MyObject::OnUpdate, this)));
+\endcode
+
+std::bind() discarding unneeded parameters:
+
+\code
+void Class::OnUpdate(VariantMap& args)
+{
+
+}
+
+SubscribeToEvent(E_UPDATE, std::bind(&Class::OnUpdate, this, _2)));
+\endcode
+
+There is a convenient method to send event using C++ variadic template which reduces the amount of boilerplate code required. Using the same example above, in C++11 standard the code can be rewritten as:
+
+\code
+using namespace Update;
+SendEvent(E_UPDATE, P_TIMESTEP, timeStep_);
+\endcode
+
+There is only one parameter pair in the above example, however, this overload method accepts any number of parameter pairs.
 
 \page MainLoop Engine initialization and main loop
 
@@ -940,7 +995,7 @@ See \ref GPUObject::IsDataLost "IsDataLost()" function in VertexBuffer, IndexBuf
 
 \section Rendering_Further Further details
 
-See also \ref Materials "Materials", \ref Shaders "Shaders", \ref Lights "Lights and shadows", \ref RenderPaths "Render path", \ref SkeletalAnimation "Skeletal animation", \ref Particles "Particle systems", \ref Zones "Zones", and \ref AuxiliaryViews "Auxiliary views".
+See also \ref VertexBuffers "Vertex buffers", \ref Materials "Materials", \ref Shaders "Shaders", \ref Lights "Lights and shadows", \ref RenderPaths "Render path", \ref SkeletalAnimation "Skeletal animation", \ref Particles "Particle systems", \ref Zones "Zones", and \ref AuxiliaryViews "Auxiliary views".
 
 See \ref RenderingModes "Rendering modes" for detailed discussion on the forward, light pre-pass and deferred rendering modes.
 
@@ -1035,6 +1090,50 @@ OpenGL ES 2.0 has further limitations:
 - Custom clip planes are not currently supported.
 
 - 3D and 2D array textures are not currently supported.
+
+\page VertexBuffers Vertex buffers
+
+%Geometry data is defined by VertexBuffer objects, which hold a number of vertices of a certain vertex format. For rendering, the data is uploaded to the GPU, but optionally a shadow copy of
+the vertex data can exist in CPU memory, see \ref VertexBuffer::SetShadowed "SetShadowed()" to allow e.g. raycasts into the geometry without having to lock and read GPU memory.
+
+The vertex format can be defined in two ways by two overloads of \ref VertexBuffer::SetSize "SetSize()":
+
+1) With a bitmask representing hardcoded vertex element semantics and datatypes. Each of the following elements may or may not be present, but the order or datatypes may not change. The order is defined by the LegacyVertexElement enum in GraphicsDefs.h, while bitmask defines exist as MASK_POSITION, MASK_NORMAL etc.
+
+- Position (%Vector3)
+- Normal (%Vector3)
+- %Color (unsigned char[4], normalized)
+- Texcoord1 (%Vector2)
+- Texcoord2 (%Vector2)
+- Cubetexcoord1 (%Vector3)
+- Cubetexcoord2 (%Vector3)
+- Tangent (V%ector4)
+- Blendweights (float[4])
+- Blendindices (unsigned char[4])
+- Instancematrix1-3 (%Vector4)
+- %Object index (int, not supported on D3D9)
+
+Note that the texcoord numbers are misleading as the actual texcoord inputs in shaders are zero-based. Instancematrix1-3 are reserved to be used by the engine for instancing and map to
+shader texcoord inputs 4-6.
+
+2) By defining VertexElement structures, which tell the data type, semantic, and zero-based semantic index (for e.g. multiple texcoords), and whether the data is per-vertex or per-instance data.
+This allows to freely define the order and meaning of the elements. However for 3D objects, the first element should always be "Position" and use the Vector3 type to ensure e.g. raycasts and occlusion rendering work properly.
+
+The third parameter of \ref VertexBuffer::SetSize "SetSize()" is whether to create the buffer as static or dynamic. This is a hint to the underlying graphics API how to allocate the buffer data. Dynamic will suit frequent (every frame) modification better, while static has likely better overall performance for world geometry rendering.
+
+After the size and format are defined, the vertex data can be set either by calling \ref VertexBuffer::SetData "SetData()" / \ref VertexBuffer::SetDataRange "SetDataRange()" or locking the vertex buffer for access, writing the data to the memory space returned from the lock, then unlocking when done.
+
+\section VertexBuffers_MultipleBuffers Multiple vertex buffers
+
+Multiple vertex buffers can be set to the Graphics subsystem at once, or defined into a drawable's Geometry definition for rendering.
+
+In case the buffers both contain the same semantic, for example position, a higher index buffer overrides a lower buffer index. This is used by the AnimatedModel component to apply vertex morphs: it creates a separate clone vertex buffer which overrides the original model's position, normal and tangent data, and assigns it on index 1 while index 0 is the original model's vertex buffer.
+
+A vertex buffer should either only contain per-vertex data, or per-instance data. Instancing in the high-level rendering (Renderer & View classes) works by momentarily appending the instance vertex buffer to the geometry being rendered in an instanced fashion.
+
+\section VertexBuffers_IndexBuffers Index buffers
+
+A vertex buffer is often accompanied by an index buffer (IndexBuffer class) to allow indexed rendering which avoids repeating the same vertices over and over. Its API is similar to vertex buffers, but an index buffer only needs to define the number of indices, whether the indices are 16- or 32-bit (largeIndices flag) and whether the buffer is dynamic.
 
 \page Materials Materials
 
@@ -1244,13 +1343,14 @@ Vertex shader uniforms:
 - float3 cAmbientStartColor: the start color value for a zone's ambient gradient
 - float3 cAmbientEndColor: the end color value for a zone's ambient gradient
 - float3 cCameraPos: camera's world position
-- float3x3 cCameraRot: camera's world rotation matrix
 - float cNearClip: camera's near clip distance
 - float cFarClip: camera's far clip distance
 - float cDeltaTime: the timestep of the current frame
 - float4 cDepthMode: parameters for calculating a linear depth value between 0-1 to pass to the pixel shader in an interpolator.
 - float cElapsedTime: scene's elapsed time value. Can be used to implement animating materials
 - float4x3 cModel: the world transform matrix of the object being rendered
+- float4x3 cView: the camera's view matrix
+- float4x3 cViewInv: the inverse of the camera's view matrix (camera world transform)
 - float4x4 cViewProj: the camera's concatenated view and projection matrices
 - float4x3 cZone: zone's transform matrix; used for ambient gradient calculations
 
@@ -1290,7 +1390,9 @@ gl_Position = GetClipPos(worldPos);
 
 On both Direct3D and OpenGL the vertex and pixel shaders are written into the same file, and the entrypoint functions must be called VS() and PS(). In OpenGL mode one of these is transformed behind the scenes to the main() function required by GLSL. When compiling a vertex shader, the compilation define "COMPILEVS" is always present, and likewise "COMPILEPS" when compiling a pixel shader. These are heavily used in the shader include files to prevent constructs that are illegal for the "wrong" type of shader, and to reduce compilation time.
 
-The uniforms must be prefixed in a certain way so that the engine understands them:
+Vertex shader inputs need to be matched to vertex element semantics to render properly.. In HLSL semantics for inputs are defined in each shader with uppercase words (POSITION, NORMAL, TEXCOORD0 etc.) while in GLSL the default attributes are defined in Transform.glsl and are matched to the vertex element semantics with a case-insensitive string "contains" operation, with an optional number postfix to define the semantic index. For example iTexCoord is the first (semantic index 0) texture coordinate, and iTexCoord1 is the second (semantic index 1).
+
+Uniforms must be prefixed in a certain way so that the engine understands them:
 
 - c for uniform constants, for example cMatDiffColor. The c is stripped when referred to inside the engine, so it would be called "MatDiffColor" in eg. \ref Material::SetShaderParameter "SetShaderParameter()"
 - s for texture samplers, for example sDiffMap.
@@ -3038,15 +3140,20 @@ Urho3D tries to use existing file formats whenever possible, and define custom f
 \verbatim
 Model geometry and vertex morph data
 
-byte[4]    Identifier "UMDL"
+byte[4]    Identifier "UMDL" or "UMD2"
 uint       Number of vertex buffers
 
   For each vertex buffer:
   uint       Vertex count
-  uint       Vertex element mask (determines vertex size)
+  uint       Legacy vertex element mask (determines vertex size)
   uint       Morphable vertex range start index
   uint       Morphable vertex count
   byte[]     Vertex data (vertex count * vertex size)
+
+  In "UMD2" format, the legacy vertex element mask is replaced with the following:
+  uint       Vertex element count
+  uint[]     Descriptions for each vertex element, where
+             bits 0-7 = element data type, bits 8-15 = semantic, bits 16-23 = semantic index
 
 uint    Number of index buffers
 
@@ -3174,7 +3281,7 @@ byte[4]    Identifier "USHD"
 
 short      Shader type (0 = vertex, 1 = pixel)
 short      Shader model (4)
-uint       Vertex element mask (0 for pixel shaders)
+uint       Vertex element hash code (0 for pixel shaders)
 
 uint       Number of constant parameters
 

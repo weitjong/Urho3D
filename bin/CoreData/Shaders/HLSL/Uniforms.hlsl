@@ -11,7 +11,6 @@ uniform float3 cAmbientEndColor;
 uniform float3x3 cBillboardRot;
 #endif
 uniform float3 cCameraPos;
-uniform float3x3 cCameraRot;
 uniform float cNearClip;
 uniform float cFarClip;
 uniform float4 cDepthMode;
@@ -56,6 +55,10 @@ uniform float4 cMatDiffColor;
 uniform float3 cMatEmissiveColor;
 uniform float3 cMatEnvMapColor;
 uniform float4 cMatSpecColor;
+#ifdef PBR
+    uniform float cRoughnessPS; 
+    uniform float cMetallicPS;
+#endif
 uniform float cNearClipPS;
 uniform float cFarClipPS;
 uniform float4 cShadowCubeAdjust;
@@ -85,7 +88,6 @@ cbuffer FrameVS : register(b0)
 cbuffer CameraVS : register(b1)
 {
     float3 cCameraPos;
-    float3x3 cCameraRot;
     float cNearClip;
     float cFarClip;
     float4 cDepthMode;
@@ -181,6 +183,10 @@ cbuffer MaterialPS : register(b4)
     float3 cMatEmissiveColor;
     float3 cMatEnvMapColor;
     float4 cMatSpecColor;
+    #ifdef PBR
+        float cRoughnessPS; 
+        float cMetallicPS;
+    #endif
 }
 #endif
 

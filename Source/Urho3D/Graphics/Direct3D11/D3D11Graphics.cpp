@@ -423,7 +423,7 @@ bool Graphics::SetMode(int width, int height, bool fullscreen, bool borderless, 
     if (maximize)
     {
         Maximize();
-        SDL_GL_GetDrawableSize(impl_->window_, &width, &height);
+        SDL_GetWindowSize(impl_->window_, &width, &height);
     }
 
     if (!impl_->device_ || multiSample_ != multiSample)
@@ -612,7 +612,7 @@ bool Graphics::BeginFrame()
     {
         int width, height;
 
-        SDL_GL_GetDrawableSize(impl_->window_, &width, &height);
+        SDL_GetWindowSize(impl_->window_, &width, &height);
         if (width != width_ || height != height_)
             SetMode(width, height);
     }
@@ -824,6 +824,31 @@ void Graphics::Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount
     ++numBatches_;
 }
 
+void Graphics::Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned baseVertexIndex, unsigned minVertex, unsigned vertexCount)
+{
+    if (!vertexCount || !shaderProgram_)
+        return;
+
+    PrepareDraw();
+
+    unsigned primitiveCount;
+    D3D_PRIMITIVE_TOPOLOGY d3dPrimitiveType;
+
+    if (fillMode_ == FILL_POINT)
+        type = POINT_LIST;
+
+    GetD3DPrimitiveType(indexCount, type, primitiveCount, d3dPrimitiveType);
+    if (d3dPrimitiveType != primitiveType_)
+    {
+        impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
+        primitiveType_ = d3dPrimitiveType;
+    }
+    impl_->deviceContext_->DrawIndexed(indexCount, indexStart, baseVertexIndex);
+
+    numPrimitives_ += primitiveCount;
+    ++numBatches_;
+}
+
 void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount,
     unsigned instanceCount)
 {
@@ -850,27 +875,45 @@ void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned i
     ++numBatches_;
 }
 
+void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned baseVertexIndex, unsigned minVertex, unsigned vertexCount,
+    unsigned instanceCount)
+{
+    if (!indexCount || !instanceCount || !shaderProgram_)
+        return;
+
+    PrepareDraw();
+
+    unsigned primitiveCount;
+    D3D_PRIMITIVE_TOPOLOGY d3dPrimitiveType;
+
+    if (fillMode_ == FILL_POINT)
+        type = POINT_LIST;
+
+    GetD3DPrimitiveType(indexCount, type, primitiveCount, d3dPrimitiveType);
+    if (d3dPrimitiveType != primitiveType_)
+    {
+        impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
+        primitiveType_ = d3dPrimitiveType;
+    }
+    impl_->deviceContext_->DrawIndexedInstanced(indexCount, instanceCount, indexStart, baseVertexIndex, 0);
+
+    numPrimitives_ += instanceCount * primitiveCount;
+    ++numBatches_;
+}
+
 void Graphics::SetVertexBuffer(VertexBuffer* buffer)
 {
     // Note: this is not multi-instance safe
     static PODVector<VertexBuffer*> vertexBuffers(1);
-    static PODVector<unsigned> elementMasks(1);
     vertexBuffers[0] = buffer;
-    elementMasks[0] = MASK_DEFAULT;
-    SetVertexBuffers(vertexBuffers, elementMasks);
+    SetVertexBuffers(vertexBuffers);
 }
 
-bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const PODVector<unsigned>& elementMasks,
-    unsigned instanceOffset)
+bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, unsigned instanceOffset)
 {
     if (buffers.Size() > MAX_VERTEX_STREAMS)
     {
         URHO3D_LOGERROR("Too many vertex buffers");
-        return false;
-    }
-    if (buffers.Size() != elementMasks.Size())
-    {
-        URHO3D_LOGERROR("Amount of element masks and vertex buffers does not match");
         return false;
     }
 
@@ -882,13 +925,14 @@ bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const P
         buffer = i < buffers.Size() ? buffers[i] : 0;
         if (buffer)
         {
-            unsigned elementMask = buffer->GetElementMask() & elementMasks[i];
-            unsigned offset = (elementMask & MASK_INSTANCEMATRIX1) ? instanceOffset * buffer->GetVertexSize() : 0;
+            const PODVector<VertexElement>& elements = buffer->GetElements();
+            // Check if buffer has per-instance data
+            bool hasInstanceData = elements.Size() && elements[0].perInstance_;
+            unsigned offset = hasInstanceData ? instanceOffset * buffer->GetVertexSize() : 0;
 
-            if (buffer != vertexBuffers_[i] || elementMask != elementMasks_[i] || offset != impl_->vertexOffsets_[i])
+            if (buffer != vertexBuffers_[i] || offset != impl_->vertexOffsets_[i])
             {
                 vertexBuffers_[i] = buffer;
-                elementMasks_[i] = elementMask;
                 impl_->vertexBuffers_[i] = (ID3D11Buffer*)buffer->GetGPUObject();
                 impl_->vertexSizes_[i] = buffer->GetVertexSize();
                 impl_->vertexOffsets_[i] = offset;
@@ -898,7 +942,6 @@ bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const P
         else if (vertexBuffers_[i])
         {
             vertexBuffers_[i] = 0;
-            elementMasks_[i] = 0;
             impl_->vertexBuffers_[i] = 0;
             impl_->vertexSizes_[i] = 0;
             impl_->vertexOffsets_[i] = 0;
@@ -924,10 +967,9 @@ bool Graphics::SetVertexBuffers(const PODVector<VertexBuffer*>& buffers, const P
     return true;
 }
 
-bool Graphics::SetVertexBuffers(const Vector<SharedPtr<VertexBuffer> >& buffers, const PODVector<unsigned>& elementMasks,
-    unsigned instanceOffset)
+bool Graphics::SetVertexBuffers(const Vector<SharedPtr<VertexBuffer> >& buffers, unsigned instanceOffset)
 {
-    return SetVertexBuffers(reinterpret_cast<const PODVector<VertexBuffer*>&>(buffers), elementMasks, instanceOffset);
+    return SetVertexBuffers(reinterpret_cast<const PODVector<VertexBuffer*>&>(buffers), instanceOffset);
 }
 
 void Graphics::SetIndexBuffer(IndexBuffer* buffer)
@@ -947,13 +989,12 @@ void Graphics::SetIndexBuffer(IndexBuffer* buffer)
 void Graphics::SetShaders(ShaderVariation* vs, ShaderVariation* ps)
 {
     // Switch to the clip plane variations if necessary
-    /// \todo Causes overhead and string manipulation per drawcall
     if (useClipPlane_)
     {
         if (vs)
-            vs = vs->GetOwner()->GetVariation(VS, vs->GetDefines() + " CLIPPLANE");
+            vs = vs->GetOwner()->GetVariation(VS, vs->GetDefinesClipPlane());
         if (ps)
-            ps = ps->GetOwner()->GetVariation(PS, ps->GetDefines() + " CLIPPLANE");
+            ps = ps->GetOwner()->GetVariation(PS, ps->GetDefinesClipPlane());
     }
 
     if (vs == vertexShader_ && ps == pixelShader_)
@@ -1841,7 +1882,7 @@ void Graphics::WindowResized()
 
     int newWidth, newHeight;
 
-    SDL_GL_GetDrawableSize(impl_->window_, &newWidth, &newHeight);
+    SDL_GetWindowSize(impl_->window_, &newWidth, &newHeight);
     if (newWidth == width_ && newHeight == height_)
         return;
 
@@ -2194,18 +2235,21 @@ void Graphics::AdjustWindow(int& newWidth, int& newHeight, bool& newFullscreen, 
         if (!newWidth || !newHeight)
         {
             SDL_MaximizeWindow(impl_->window_);
-            SDL_GL_GetDrawableSize(impl_->window_, &newWidth, &newHeight);
+            SDL_GetWindowSize(impl_->window_, &newWidth, &newHeight);
         }
         else
             SDL_SetWindowSize(impl_->window_, newWidth, newHeight);
 
-        SDL_SetWindowFullscreen(impl_->window_, newFullscreen ? SDL_TRUE : SDL_FALSE);
+        // Hack fix: on SDL 2.0.4 a fullscreen->windowed transition results in a maximized window when the D3D device is reset, so hide before
+        SDL_HideWindow(impl_->window_);
+        SDL_SetWindowFullscreen(impl_->window_, newFullscreen ? SDL_WINDOW_FULLSCREEN : 0);
         SDL_SetWindowBordered(impl_->window_, newBorderless ? SDL_FALSE : SDL_TRUE);
+        SDL_ShowWindow(impl_->window_);
     }
     else
     {
         // If external window, must ask its dimensions instead of trying to set them
-        SDL_GL_GetDrawableSize(impl_->window_, &newWidth, &newHeight);
+        SDL_GetWindowSize(impl_->window_, &newWidth, &newHeight);
         newFullscreen = false;
     }
 }
@@ -2405,7 +2449,6 @@ void Graphics::ResetCachedState()
     for (unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
     {
         vertexBuffers_[i] = 0;
-        elementMasks_[i] = 0;
         impl_->vertexBuffers_[i] = 0;
         impl_->vertexSizes_[i] = 0;
         impl_->vertexOffsets_[i] = 0;
@@ -2481,7 +2524,8 @@ void Graphics::PrepareDraw()
     if (renderTargetsDirty_)
     {
         impl_->depthStencilView_ =
-            depthStencil_ ? (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView() : impl_->defaultDepthStencilView_;
+            (depthStencil_ && depthStencil_->GetUsage() == TEXTURE_DEPTHSTENCIL) ?
+                (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView() : impl_->defaultDepthStencilView_;
 
         // If possible, bind a read-only depth stencil view to allow reading depth in shader
         if (!depthWrite_ && depthStencil_ && depthStencil_->GetReadOnlyView())
@@ -2489,7 +2533,8 @@ void Graphics::PrepareDraw()
 
         for (unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
             impl_->renderTargetViews_[i] =
-                renderTargets_[i] ? (ID3D11RenderTargetView*)renderTargets_[i]->GetRenderTargetView() : 0;
+                (renderTargets_[i] && renderTargets_[i]->GetUsage() == TEXTURE_RENDERTARGET) ?
+                    (ID3D11RenderTargetView*)renderTargets_[i]->GetRenderTargetView() : 0;
         // If rendertarget 0 is null and not doing depth-only rendering, render to the backbuffer
         // Special case: if rendertarget 0 is null and depth stencil has same size as backbuffer, assume the intention is to do
         // backbuffer rendering with a custom depth stencil
@@ -2529,20 +2574,22 @@ void Graphics::PrepareDraw()
 
         unsigned long long newVertexDeclarationHash = 0;
         for (unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
-            newVertexDeclarationHash |= (unsigned long long)elementMasks_[i] << (i * 13);
-
+        {
+            if (vertexBuffers_[i])
+                newVertexDeclarationHash |= vertexBuffers_[i]->GetBufferHash(i);
+        }
         // Do not create input layout if no vertex buffers / elements
         if (newVertexDeclarationHash)
         {
-            newVertexDeclarationHash |= (unsigned long long)vertexShader_->GetElementMask() << 51;
+            /// \todo Is this safe? (Should preferably use non-overlapping bits)
+            newVertexDeclarationHash += vertexShader_->GetElementHash();
             if (newVertexDeclarationHash != vertexDeclarationHash_)
             {
                 HashMap<unsigned long long, SharedPtr<VertexDeclaration> >::Iterator
                     i = vertexDeclarations_.Find(newVertexDeclarationHash);
                 if (i == vertexDeclarations_.End())
                 {
-                    SharedPtr<VertexDeclaration> newVertexDeclaration(new VertexDeclaration(this, vertexShader_, vertexBuffers_,
-                        elementMasks_));
+                    SharedPtr<VertexDeclaration> newVertexDeclaration(new VertexDeclaration(this, vertexShader_, vertexBuffers_));
                     i = vertexDeclarations_.Insert(MakePair(newVertexDeclarationHash, newVertexDeclaration));
                 }
 
