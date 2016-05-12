@@ -91,6 +91,7 @@ namespace Urho3D
 <a href="#Class_Frustum"><b>Frustum</b></a>
 <a href="#Class_Geometry"><b>Geometry</b></a>
 <a href="#Class_Graphics"><b>Graphics</b></a>
+<a href="#Class_HierarchyContainer"><b>HierarchyContainer</b></a>
 <a href="#Class_HttpRequest"><b>HttpRequest</b></a>
 <a href="#Class_Image"><b>Image</b></a>
 <a href="#Class_IndexBuffer"><b>IndexBuffer</b></a>
@@ -317,6 +318,9 @@ Properties:
 
 Methods:
 
+- Animation() (GC)
+- Animation* new()
+- void delete()
 - void SetAnimationName(const String name)
 - void SetLength(float length)
 - AnimationTrack* CreateTrack(const String name)
@@ -327,6 +331,7 @@ Methods:
 - void AddTrigger(float time, bool timeIsNormalized, const Variant& data)
 - void RemoveTrigger(unsigned index)
 - void RemoveAllTriggers()
+- Animation* Clone(const String cloneName = String::EMPTY) const
 - const String GetAnimationName() const
 - float GetLength() const
 - unsigned GetNumTracks() const
@@ -562,9 +567,15 @@ Methods:
 
 - BiasParameters() (GC)
 - BiasParameters* new()
-- BiasParameters(float constantBias, float slopeScaledBias) (GC)
-- BiasParameters* new(float constantBias, float slopeScaledBias)
+- BiasParameters(float constantBias, float slopeScaledBias, float normalOffset = 0.0f) (GC)
+- BiasParameters* new(float constantBias, float slopeScaledBias, float normalOffset = 0.0f)
 - void delete()
+
+Properties:
+
+- float constantBias
+- float slopeScaledBias
+- float normalOffset
 
 <a name="Class_Billboard"></a>
 ### Billboard
@@ -859,6 +870,11 @@ Methods:
 - CascadeParameters(float split1, float split2, float split3, float split4, float fadeStart, float biasAutoAdjust = 1.0f) (GC)
 - CascadeParameters* new(float split1, float split2, float split3, float split4, float fadeStart, float biasAutoAdjust = 1.0f)
 - void delete()
+
+Properties:
+
+- float fadeStart
+- float biasAutoAdjust
 
 <a name="Class_CheckBox"></a>
 ### CheckBox : BorderImage
@@ -2396,6 +2412,14 @@ Methods:
 - FocusParameters* new(bool focus, bool nonUniform, bool autoSize, float quantize, float minView)
 - void delete()
 
+Properties:
+
+- bool focus
+- bool nonUniform
+- bool autoSize
+- float quantize
+- float minView
+
 <a name="Class_Font"></a>
 ### Font : Resource
 
@@ -2491,7 +2515,7 @@ Methods:
 - void SetWindowIcon(Image* windowIcon)
 - void SetWindowPosition(const IntVector2& position)
 - void SetWindowPosition(int x, int y)
-- bool SetMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, bool tripleBuffer, int multiSample)
+- bool SetMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool highDPI, bool vsync, bool tripleBuffer, int multiSample)
 - bool SetMode(int width, int height)
 - void SetSRGB(bool enable)
 - void SetFlushGPU(bool enable)
@@ -2585,6 +2609,9 @@ Properties:
 - bool sRGBSupport (readonly)
 - bool sRGBWriteSupport (readonly)
 - IntVector2 desktopResolution (readonly)
+
+<a name="Class_HierarchyContainer"></a>
+### HierarchyContainer : UIElement
 
 <a name="Class_HttpRequest"></a>
 ### HttpRequest : Deserializer
@@ -4772,6 +4799,7 @@ Methods:
 - void SetThreadedOcclusion(bool enable)
 - void SetMobileShadowBiasMul(float mul)
 - void SetMobileShadowBiasAdd(float add)
+- void SetMobileNormalOffsetMul(float mul)
 - void ReloadShaders()
 - unsigned GetNumViewports() const
 - Viewport* GetViewport(unsigned index) const
@@ -4799,6 +4827,7 @@ Methods:
 - bool GetThreadedOcclusion() const
 - float GetMobileShadowBiasMul() const
 - float GetMobileShadowBiasAdd() const
+- float GetMobileNormalOffsetMul() const
 - unsigned GetNumViews() const
 - unsigned GetNumPrimitives() const
 - unsigned GetNumBatches() const
@@ -4838,6 +4867,7 @@ Properties:
 - bool threadedOcclusion
 - float mobileShadowBiasMul
 - float mobileShadowBiasAdd
+- float mobileNormalOffsetMul
 - unsigned numViews (readonly)
 - unsigned numPrimitives (readonly)
 - unsigned numBatches (readonly)
@@ -4922,6 +4952,8 @@ Methods:
 - ResourceRef* new(StringHash type)
 - ResourceRef(StringHash type, String name) (GC)
 - ResourceRef* new(StringHash type, String name)
+- ResourceRef(String type, String name) (GC)
+- ResourceRef* new(String type, String name)
 - ResourceRef(const ResourceRef& rhs) (GC)
 - ResourceRef* new(const ResourceRef& rhs)
 - void delete()
@@ -7506,6 +7538,7 @@ Properties:
 
 ### InterpMethod
 
+- int IM_NONE
 - int IM_LINEAR
 - int IM_SPLINE
 

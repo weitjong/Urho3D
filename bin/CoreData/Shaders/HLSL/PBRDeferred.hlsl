@@ -58,9 +58,9 @@ void PS(
             depth = ReconstructDepth(depth);
         #endif
         #ifdef ORTHO
-            const float3 worldPos = lerp(iNearRay, iFarRay, depth);
+            float3 worldPos = lerp(iNearRay, iFarRay, depth);
         #else
-            const float3 worldPos = iFarRay * depth;
+            float3 worldPos = iFarRay * depth;
         #endif
         const float4 albedoInput = Sample2DLod0(AlbedoBuffer, iScreenPos);
         const float4 normalInput = Sample2DLod0(NormalBuffer, iScreenPos);
@@ -71,14 +71,18 @@ void PS(
             depth = ReconstructDepth(depth);
         #endif
         #ifdef ORTHO
-            const float3 worldPos = lerp(iNearRay, iFarRay, depth) / iScreenPos.w;
+            float3 worldPos = lerp(iNearRay, iFarRay, depth) / iScreenPos.w;
         #else
-            const float3 worldPos = iFarRay * depth / iScreenPos.w;
+            float3 worldPos = iFarRay * depth / iScreenPos.w;
         #endif
         const float4 albedoInput = Sample2DProj(AlbedoBuffer, iScreenPos);
         const float4 normalInput = Sample2DProj(NormalBuffer, iScreenPos);
         const float4 specularInput = Sample2DProj(SpecMap, iScreenPos);
     #endif
+
+    // Position acquired via near/far ray is relative to camera. Bring position to world space
+    float3 eyeVec = -worldPos;
+    worldPos += cCameraPosPS;
 
     float3 normal = normalInput.rgb;
     const float roughness = length(normal);
@@ -92,7 +96,7 @@ void PS(
     float diff = GetDiffuse(normal, worldPos, lightDir);
 
     #ifdef SHADOW
-        diff *= GetShadowDeferred(projWorldPos, depth);
+        diff *= GetShadowDeferred(projWorldPos, normal, depth);
     #endif
 
     #if defined(SPOTLIGHT)
@@ -104,7 +108,7 @@ void PS(
         const float3 lightColor = cLightColor.rgb;
     #endif
 
-    const float3 toCamera = normalize(-worldPos);
+    const float3 toCamera = normalize(eyeVec);
     const float3 lightVec = normalize(lightDir);
 
     const float3 Hn = normalize(toCamera + lightVec);

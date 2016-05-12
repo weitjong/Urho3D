@@ -20,12 +20,13 @@
 # THE SOFTWARE.
 #
 
-if (NOT URHO3D_URHO2D)
+# Emscripten build does not copy the PBR resources, and would not support the shaders
+if (EMSCRIPTEN)
     return ()
 endif ()
 
 # Define target name
-set (TARGET_NAME 27_Urho2DPhysics)
+set (TARGET_NAME 42_PBRMaterials)
 
 # Define source files
 define_source_files (EXTRA_H_FILES ${COMMON_SAMPLE_H_FILES})

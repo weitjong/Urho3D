@@ -307,19 +307,19 @@ task :ci do
   # Obtain our custom data, if any
   if ENV['APPVEYOR']
     # AppVeyor does not provide job number environment variable in the same semantics as TRAVIS_JOB_NUMBER nor it supports custom data in its .appveyor.yml document
-    if ENV['excluded_sample']
-      pairs = ENV['excluded_sample'].split
+    if ENV['included_sample'] || ENV['excluded_sample']   # Inclusion has higher precedence
+      pairs = (ENV['included_sample'] || ENV['excluded_sample']).split
       samples = pairs.pop.split ','
       matched = true
       pairs.each { |pair|
         kv = pair.split '='
         matched = false if ENV[kv.first] != kv.last
       }
-      samples.each { |name| ENV["EXCLUDE_SAMPLE_#{name}"] = '1' } if matched
+      samples.each { |name| ENV["#{ENV['included_sample'] ? 'INCLUDED' : 'EXCLUDED'}_SAMPLE_#{name}"] = '1' } if matched
     end
   else
     data = YAML::load(File.open('.travis.yml'))['data']
-    data['excluded_sample']["##{ENV['TRAVIS_JOB_NUMBER'].split('.').last}"].each { |name| ENV["EXCLUDE_SAMPLE_#{name}"] = '1' } if data && data['excluded_sample'] && data['excluded_sample']["##{ENV['TRAVIS_JOB_NUMBER'].split('.').last}"]
+    data['excluded_sample']["##{ENV['TRAVIS_JOB_NUMBER'].split('.').last}"].each { |name| ENV["EXCLUDED_SAMPLE_#{name}"] = '1' } if data && data['excluded_sample'] && data['excluded_sample']["##{ENV['TRAVIS_JOB_NUMBER'].split('.').last}"]
   end
   # Unshallow the clone's history when necessary
   if ENV['CI'] && ENV['PACKAGE_UPLOAD'] && !ENV['RELEASE_TAG']
@@ -533,7 +533,7 @@ task :ci_create_mirrors do
   stream = YAML::load_stream(File.open('.travis.yml'))
   notifications = stream[0]['notifications']
   notifications['email']['recipients'] = get_root_commit_and_recipients().last unless notifications['email']['recipients']
-  stream.drop(1).each { |doc| branch = doc.delete('branch'); ci = branch['name']; ci_branch = ENV['RELEASE_TAG'] || (ENV['TRAVIS_BRANCH'] == 'master' && ENV['TRAVIS_PULL_REQUEST'] == 'false') ? ci : (ENV['TRAVIS_PULL_REQUEST'] == 'false' ? "#{ENV['TRAVIS_BRANCH']}-#{ci}" : "PR ##{ENV['TRAVIS_PULL_REQUEST']}-#{ci}"); is_appveyor_ci = branch['appveyor']; next if skip_travis && !is_appveyor_ci; unless (branch['mandatory'] || !head_moved) && ((ci_only && ci_only.map { |i| /#{i}/ =~ ci }.any?) || (!ci_only && (branch['active'] || (scan && /Scan/ =~ ci) || (annotate && /Annotate/ =~ ci)))); system "if git fetch origin #{ci_branch}:#{ci_branch} 2>/dev/null; then git push -qf origin --delete #{ci_branch}; fi"; puts "Skipped creating #{ci_branch} mirror branch due to moving HEAD" if !ci_only && branch['active'] && head_moved; next; end; unless is_appveyor_ci; lastjob = [(doc['env']['matrix'] ? doc['env']['matrix'].length : 0) + (doc['matrix'] && doc['matrix']['include'] ? doc['matrix']['include'].length : 0), 1].max; doc['after_script'] = [*doc['after_script']] << (lastjob == 1 ? '%s' : "if [ ${TRAVIS_JOB_NUMBER##*.} == #{lastjob} ]; then %s; fi") % 'rake ci_delete_mirror'; doc['notifications'] = notifications unless doc['notifications']; doc_name = '.travis.yml'; File.open("#{doc_name}.new", 'w') { |file| file.write doc.to_yaml } else doc['on_finish'] = [*doc['on_finish']] << "if \"%PLATFORM%:%URHO3D_LIB_TYPE%\" == \"#{branch['last_job']}\" rake ci_delete_mirror"; doc_name = '.appveyor.yml'; File.open("#{doc_name}.new", 'w') { |file| file.write doc.to_yaml }; if ENV['TRAVIS']; replaced_content = File.read("#{doc_name}.new").gsub(/! /, ''); File.open("#{doc_name}.new", 'w') { |file| file.puts replaced_content }; end; end; puts "Creating #{ci_branch} mirror branch..."; system "git checkout -qB #{ci_branch} && rm .appveyor.yml .travis.yml && mv #{doc_name}.new #{doc_name} && git add -A . && git commit -qm \"#{escaped_commit_message}\" && git push -qf -u origin #{ci_branch} >/dev/null 2>&1 && git checkout -q -" or abort "Failed to create #{ci_branch} mirror branch" }
+  stream.drop(1).each { |doc| branch = doc.delete('branch'); ci = branch['name']; ci_branch = ENV['RELEASE_TAG'] || (ENV['TRAVIS_BRANCH'] == 'master' && ENV['TRAVIS_PULL_REQUEST'] == 'false') ? ci : (ENV['TRAVIS_PULL_REQUEST'] == 'false' ? "#{ENV['TRAVIS_BRANCH']}-#{ci}" : "PR ##{ENV['TRAVIS_PULL_REQUEST']}-#{ci}"); is_appveyor_ci = branch['appveyor']; next if skip_travis && !is_appveyor_ci; unless (branch['mandatory'] || !head_moved) && ((ci_only && ci_only.map { |i| /#{i}/ =~ ci }.any?) || (!ci_only && (branch['active'] || (scan && /Scan/ =~ ci) || (annotate && /Annotate/ =~ ci)))); system "if git fetch origin #{ci_branch}:#{ci_branch} 2>/dev/null; then git push -qf origin --delete #{ci_branch}; fi"; puts "Skipped creating #{ci_branch} mirror branch due to moving HEAD" if !ci_only && branch['active'] && head_moved; next; end; unless is_appveyor_ci; lastjob = [(doc['env']['matrix'] ? doc['env']['matrix'].length : 0) + (doc['matrix'] && doc['matrix']['include'] ? doc['matrix']['include'].length : 0), 1].max; doc['after_script'] = [*doc['after_script']] << (lastjob == 1 ? '%s' : "if [ ${TRAVIS_JOB_NUMBER##*.} == #{lastjob} ]; then %s; fi") % 'rake ci_delete_mirror'; doc['notifications'] = notifications unless doc['notifications']; doc_name = '.travis.yml'; File.open("#{doc_name}.new", 'w') { |file| file.write doc.to_yaml } else doc['on_finish'] = [*doc['on_finish']] << "if \"%PLATFORM%:%URHO3D_LIB_TYPE%\" == \"#{branch['last_job']}\" rake ci_delete_mirror"; doc_name = '.appveyor.yml'; File.open("#{doc_name}.new", 'w') { |file| file.write doc.to_yaml }; if ENV['TRAVIS']; replaced_content = File.read("#{doc_name}.new").gsub(/! /, ''); File.open("#{doc_name}.new", 'w') { |file| file.puts replaced_content }; end; end; puts "Creating #{ci_branch} mirror branch..."; system "git checkout -qB #{ci_branch} && rm .appveyor.yml .travis.yml && mv #{doc_name}.new #{doc_name} && git add -A . && git commit -qm \"#{escaped_commit_message}\" && git push -qf -u origin #{ci_branch} >/dev/null 2>&1 && git checkout -q - && sleep 5" or abort "Failed to create #{ci_branch} mirror branch" }
   # Push pending commits if any
   system "git push origin #{head}:#{ENV['TRAVIS_BRANCH']} -q >/dev/null 2>&1" or abort "Failed to push pending commits to #{ENV['TRAVIS_BRANCH']}" if head_moved
 end
@@ -569,9 +569,10 @@ task :ci_package_upload do
       ENV['SITE_UPDATE'] = nil
     end
   elsif !File.exists?("#{ENV['build_tree']}/Docs/html/index.html")
-    puts "Generating documentation...\n\n"; $stdout.flush
-    # Ignore the exit status from 'make doc' on Windows host system only due to Doxygen may not return exit status correctly on Windows
+    puts "Generating documentation...\n"; $stdout.flush
+    # Ignore the exit status from 'make doc' on Windows host system because Doxygen may not return exit status correctly on Windows
     system "bash -c 'rake make target=doc >/dev/null'" or ENV['OS'] or abort 'Failed to generate documentation'
+    next if timeup
   end
   # Make the package
   puts "Packaging artifacts...\n\n"; $stdout.flush
@@ -591,7 +592,9 @@ task :ci_package_upload do
      end
     system "bash -c '#{!ENV['OS'] && (ENV['URHO3D_64BIT'] || ENV['RPI']) ? 'setarch i686' : ''} rake make target=package'" or abort 'Failed to make binary package'
   end
+  next if timeup
   # Determine the upload location
+  puts "Uploading artifacts...\n\n"; $stdout.flush
   setup_digital_keys
   repo = ENV[ENV['TRAVIS'] ? 'TRAVIS_REPO_SLUG' : 'APPVEYOR_REPO_NAME']
   unless ENV['RELEASE_TAG']
@@ -718,9 +721,9 @@ endif ()
 EOF
   # TODO: Rewrite in pure Ruby when it supports symlink creation on Windows platform and avoid forward/backward slash conversion
   if ENV['OS']
-    system("@echo off && mkdir \"#{dir}\"\\bin && copy Source\\Tools\\Urho3DPlayer\\Urho3DPlayer.* \"#{dir}\" >nul && (for %f in (*.bat Rakefile) do mklink \"#{dir}\"\\%f %cd%\\%f >nul) && mklink /D \"#{dir}\"\\CMake %cd%\\CMake && (for %d in (CoreData,Data) do mklink /D \"#{dir}\"\\bin\\%d %cd%\\bin\\%d >nul)") && File.write("#{dir}/CMakeLists.txt", build_script) or abort 'Failed to scaffolding'
+    system("@echo off && mkdir \"#{dir}\"\\bin && copy Source\\Tools\\Urho3DPlayer\\Urho3DPlayer.* \"#{dir}\" >nul && (for %f in (*.bat Rakefile) do mklink \"#{dir}\"\\%f %cd%\\%f >nul) && mklink /D \"#{dir}\"\\CMake %cd%\\CMake && (for %d in (Autoload,CoreData,Data) do mklink /D \"#{dir}\"\\bin\\%d %cd%\\bin\\%d >nul)") && File.write("#{dir}/CMakeLists.txt", build_script) or abort 'Failed to scaffolding'
   else
-    system("bash -c \"mkdir -p '#{dir}'/bin && cp Source/Tools/Urho3DPlayer/Urho3DPlayer.* '#{dir}' && for f in {.,}*.sh Rakefile CMake; do ln -sf `pwd`/\\$f '#{dir}'; done && ln -sf `pwd`/bin/{Core,}Data '#{dir}'/bin\"") && File.write("#{dir}/CMakeLists.txt", build_script) or abort 'Failed to scaffolding'
+    system("bash -c \"mkdir -p '#{dir}'/bin && cp Source/Tools/Urho3DPlayer/Urho3DPlayer.* '#{dir}' && for f in {.,}*.sh Rakefile CMake; do ln -sf `pwd`/\\$f '#{dir}'; done && ln -sf `pwd`/bin/{Autoload,CoreData,Data} '#{dir}'/bin\"") && File.write("#{dir}/CMakeLists.txt", build_script) or abort 'Failed to scaffolding'
   end
   return dir
 end
@@ -835,10 +838,11 @@ def wait_for_block comment = '', retries = -1, retry_interval = 60
   str = comment
   retries = retries * 60 / retry_interval unless retries == -1
   until thread.status == false
-    if retries == 0 || timeup(true, 45.0)
+    if retries == 0 || timeup(true)
       thread.kill
       # Also kill the child subproceses spawned by the worker thread if specified
       system "killall #{thread[:subcommand_to_kill]}" if thread[:subcommand_to_kill]
+      sleep 5
       break
     end
     print str; str = '.'; $stdout.flush   # Flush the standard output stream in case it is buffered to prevent Travis-CI into thinking that the build/test has stalled

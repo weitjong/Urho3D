@@ -81,8 +81,9 @@ namespace Urho3D
 - %Width : int
 - %Height : int
 - %Fullscreen : bool
-- %Resizable : bool
 - %Borderless : bool
+- %Resizable : bool
+- %HighDPI : bool
 
 ### WindowPos
 - %X : int
@@ -597,6 +598,31 @@ namespace Urho3D
 - %Qualifiers : int
 
 ### UIMouseDoubleClick
+- %Element : UIElement pointer
+- %X : int
+- %Y : int
+- %Button : int
+- %Buttons : int
+- %Qualifiers : int
+
+### Click
+- %Element : UIElement pointer
+- %X : int
+- %Y : int
+- %Button : int
+- %Buttons : int
+- %Qualifiers : int
+
+### ClickEnd
+- %Element : UIElement pointer
+- %BeginElement : UIElement pointer
+- %X : int
+- %Y : int
+- %Button : int
+- %Buttons : int
+- %Qualifiers : int
+
+### DoubleClick
 - %Element : UIElement pointer
 - %X : int
 - %Y : int
@@ -1388,6 +1414,7 @@ namespace Urho3D
 - %View %Size %Minimum : float
 - %Depth %Constant %Bias : float
 - %Depth %Slope %Bias : float
+- %Normal %Offset : float
 - %Near/Farclip %Ratio : float
 - %View %Mask : int
 - %Light %Mask : int
@@ -2045,6 +2072,7 @@ namespace Urho3D
 - %Width : int
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Opacity : float
 - %Color : Color
 - %Top %Left %Color : Color
 - %Top %Right %Color : Color
@@ -2726,6 +2754,7 @@ Methods:
 
 - void AddTrigger(const AnimationTriggerPoint&)
 - void AddTrigger(float, bool, const Variant&)
+- Animation@ Clone(const String& = String ( )) const
 - AnimationTrack@ CreateTrack(const String&)
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
@@ -3030,6 +3059,7 @@ Properties:
 Properties:
 
 - float constantBias
+- float normalOffset
 - float slopeScaledBias
 
 <a name="Class_Billboard"></a>
@@ -6966,7 +6996,7 @@ Methods:
 - void PrecacheShaders(VectorBuffer&)
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
 - bool SetMode(int, int)
-- bool SetMode(int, int, bool, bool, bool, bool, bool, int)
+- bool SetMode(int, int, bool, bool, bool, bool, bool, bool, int)
 - void SetWindowPosition(int, int)
 - bool TakeScreenShot(Image@)
 - bool ToggleFullscreen()
@@ -9848,6 +9878,7 @@ Properties:
 - int maxShadowMaps
 - int maxSortedInstances
 - int minInstances
+- float mobileNormalOffsetMul
 - float mobileShadowBiasAdd
 - float mobileShadowBiasMul
 - uint numBatches // readonly
@@ -11639,6 +11670,9 @@ Methods:
 - void ApplyAttributes()
 - void BringToFront()
 - UIElement@ CreateChild(const String&, const String& = String ( ), uint = M_MAX_UNSIGNED)
+- void DisableLayoutUpdate()
+- IntVector2 ElementToScreen(const IntVector2&)
+- void EnableLayoutUpdate()
 - uint FindChild(UIElement@) const
 - Variant GetAttribute(const String&) const
 - ValueAnimation@ GetAttributeAnimation(const String&) const
@@ -11657,6 +11691,8 @@ Methods:
 - bool HasSubscribedToEvent(const String&)
 - bool HasTag(const String&) const
 - void InsertChild(uint, UIElement@)
+- bool IsInside(IntVector2, bool)
+- bool IsInsideCombined(IntVector2, bool)
 - bool Load(File@, bool = false)
 - bool Load(VectorBuffer&, bool = false)
 - bool LoadChildXML(XMLFile@, XMLFile@ = null)
@@ -11677,6 +11713,7 @@ Methods:
 - void RemoveInstanceDefault()
 - void RemoveObjectAnimation()
 - bool RemoveTag(const String&)
+- void ResetDeepEnabled()
 - void ResetToDefault()
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
@@ -11684,6 +11721,7 @@ Methods:
 - bool SaveXML(File@, const String& = "\t")
 - bool SaveXML(VectorBuffer&, const String& = "\t")
 - bool SaveXML(XMLElement&) const
+- IntVector2 ScreenToElement(const IntVector2&)
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
 - void SetAlignment(HorizontalAlignment, VerticalAlignment)
 - void SetAnimationTime(float)
@@ -11692,12 +11730,15 @@ Methods:
 - void SetAttributeAnimationSpeed(const String&, float)
 - void SetAttributeAnimationTime(const String&, float)
 - void SetAttributeAnimationWrapMode(const String&, WrapMode)
+- void SetDeepEnabled(bool)
+- void SetEnabledRecursive(bool)
 - void SetFixedHeight(int)
 - void SetFixedSize(int, int)
 - void SetFixedWidth(int)
 - void SetFullImageRect()
 - void SetHotSpot(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
+- void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
 - void SetMaxSize(int, int)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
@@ -11708,6 +11749,7 @@ Methods:
 - bool SetStyle(const String&, XMLFile@ = null)
 - bool SetStyle(const XMLElement&)
 - bool SetStyleAuto(XMLFile@ = null)
+- void UpdateLayout()
 - const Variant& GetVar(const StringHash&)
 
 Properties:
@@ -11720,19 +11762,47 @@ Properties:
 - bool bringToBack
 - bool bringToFront
 - String category // readonly
+- IntVector2 childOffset // readonly
 - UIElement@[] children // readonly
+- IntRect clipBorder
+- bool clipChildren
 - Color color // writeonly
 - bool colorGradient // readonly
 - Color[] colors
+- IntRect combinedScreenRect // readonly
 - XMLFile@ defaultStyle
 - float derivedOpacity // readonly
 - uint dragButtonCombo // readonly
 - int dragButtonCount // readonly
+- uint dragDropMode
+- bool editable
 - bool elementEventSender
+- bool enabled
+- bool enabledSelf // readonly
+- bool fixedHeight // readonly
+- bool fixedSize // readonly
+- bool fixedWidth // readonly
+- bool focus
+- FocusMode focusMode
 - int height
 - HorizontalAlignment horizontalAlignment
 - IntVector2 hotSpot
+- bool hovering // readonly
 - IntRect imageRect
+- int indent
+- int indentSpacing
+- int indentWidth // readonly
+- bool internal
+- IntRect layoutBorder
+- Vector2 layoutFlexScale
+- LayoutMode layoutMode
+- int layoutSpacing
+- int maxHeight
+- IntVector2 maxSize
+- int maxWidth
+- int minHeight
+- IntVector2 minSize
+- int minWidth
 - String name
 - uint numAllChildren // readonly
 - uint numAttributes // readonly
@@ -11746,12 +11816,15 @@ Properties:
 - UIElement@ root // readonly
 - float rotation
 - Vector2 scale
+- IntVector2 screenPosition // readonly
+- bool selected
 - IntVector2 size
 - bool sortChildren
 - String style
 - String[]@ tags // readonly
 - bool temporary
 - Texture@ texture
+- TraversalMode traversalMode
 - StringHash type // readonly
 - String typeName // readonly
 - bool useDerivedOpacity
@@ -14700,6 +14773,7 @@ Properties:
 
 ### InterpMethod
 
+- IM_NONE
 - IM_LINEAR
 - IM_SPLINE
 

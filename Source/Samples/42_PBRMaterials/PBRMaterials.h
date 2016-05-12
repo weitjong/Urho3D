@@ -27,21 +27,25 @@
 namespace Urho3D
 {
 
+class Drawable;
 class Node;
 class Scene;
 
 }
 
-/// Light animation example.
-/// This sample is base on StaticScene, and it demonstrates:
-///     - Usage of attribute animation for light color & UI animation
-class LightAnimation : public Sample
+/// PBR materials example.
+/// This sample demonstrates:
+///      - Loading a scene that showcases physically based materials & shaders
+///
+/// To use with deferred rendering, a PBR deferred renderpath should be chosen:
+/// CoreData/RenderPaths/PBRDeferred.xml or CoreData/RenderPaths/PBRDeferredHWDepth.xml
+class PBRMaterials : public Sample
 {
-    URHO3D_OBJECT(LightAnimation, Sample);
+    URHO3D_OBJECT(PBRMaterials, Sample);
 
 public:
     /// Construct.
-    LightAnimation(Context* context);
+    PBRMaterials(Context* context);
 
     /// Setup after engine initialization and before running the main loop.
     virtual void Start();
@@ -49,14 +53,14 @@ public:
 private:
     /// Construct the scene content.
     void CreateScene();
-    /// Construct an instruction text to the UI.
-    void CreateInstructions();
+    /// Construct user interface elements.
+    void CreateUI();
     /// Set up a viewport for displaying the scene.
     void SetupViewport();
-    /// Read input and moves the camera.
-    void MoveCamera(float timeStep);
-    /// Subscribe to application-wide logic update events.
+    /// Subscribe to application-wide logic update event.
     void SubscribeToEvents();
+    /// Reads input and moves the camera.
+    void MoveCamera(float timeStep);
     /// Handle the logic update event.
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 };

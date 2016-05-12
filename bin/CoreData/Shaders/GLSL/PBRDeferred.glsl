@@ -73,6 +73,10 @@ void PS()
         vec4 specularInput = texture2DProj(sSpecMap, vScreenPos);
     #endif
 
+    // Position acquired via near/far ray is relative to camera. Bring position to world space
+    vec3 eyeVec = -worldPos;
+    worldPos += cCameraPosPS;
+    
     vec3 normal = normalInput.rgb;
     float roughness = length(normal);
     normal = normalize(normal);
@@ -85,7 +89,7 @@ void PS()
     float diff = GetDiffuse(normal, worldPos, lightDir);
 
     #ifdef SHADOW
-        diff *= GetShadowDeferred(projWorldPos, depth);
+        diff *= GetShadowDeferred(projWorldPos, normal, depth);
     #endif
 
     #if defined(SPOTLIGHT)
@@ -98,7 +102,7 @@ void PS()
         vec3 lightColor = cLightColor.rgb;
     #endif
 
-    vec3 toCamera = normalize(-worldPos);
+    vec3 toCamera = normalize(eyeVec);
     vec3 lightVec = normalize(lightDir);
 
     vec3 Hn = normalize(toCamera + lightVec);
