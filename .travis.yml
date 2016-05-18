@@ -240,6 +240,7 @@ after_script: rake ci_teardown_cache
 
 branch: {name: Android-CI, active: yes}
 language: android
+cache: {directories: $HOME/.ccache}
 android: {components: [build-tools-22.0.1]}
 jdk: oraclejdk8
 sudo: false
@@ -250,7 +251,7 @@ env:
     - numjobs=4
     - ANDROID=1
     - ANDROID_TMP=~/tmp
-    - USE_CCACHE=2
+    - USE_CCACHE=1
     - CCACHE_SLOPPINESS=pch_defines,time_macros
     - CCACHE_COMPRESS=1
     - CCACHE_MAXSIZE=100M
@@ -337,12 +338,13 @@ after_script: rake ci_teardown_cache
 branch: {name: OSX-CI, active: yes, mandatory: yes}
 language: objective-c
 osx_image: xcode7.1
+cache: {directories: $HOME/.ccache}
 env:
   global:
     - secure: RVmQnA2IUaWxbVdOrrhi8tlouoh8hGwyeG1bTJx0EmAOPB5YRZRsgb9TBsQbMmw6mFn2DShDnLVqtPRaSbSkwEVRD4NKsHoN1LUOxG++35R06TV0ISqtpxZMqUEZQmUVS8OlCrjMNlHR+wMDciEwn5R1kPn9tlQTYUV8PMwcYws=
     - numjobs=3
     - OSX=1
-    - USE_CCACHE=2
+    - USE_CCACHE=1
     - CCACHE_SLOPPINESS=pch_defines,time_macros
     - CCACHE_COMPRESS=1
     - CCACHE_MAXSIZE=300M
