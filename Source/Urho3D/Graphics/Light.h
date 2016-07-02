@@ -271,6 +271,9 @@ public:
 
     /// Return spotlight frustum.
     Frustum GetFrustum() const;
+    /// Return spotlight frustum in the specified view space.
+    Frustum GetViewSpaceFrustum(const Matrix3x4& view) const;
+
     /// Return number of shadow map cascade splits for a directional light, considering also graphics API limitations.
     int GetNumShadowSplits() const;
 
@@ -303,6 +306,9 @@ public:
     ResourceRef GetRampTextureAttr() const;
     /// Return shape texture attribute.
     ResourceRef GetShapeTextureAttr() const;
+
+    /// Return a transform for deferred fullscreen quad (directional light) rendering.
+    static Matrix3x4 GetFullscreenQuadTransform(Camera* camera);
 
 protected:
     /// Recalculate the world-space bounding box.

@@ -173,7 +173,7 @@ class URHO3D_API Renderer : public Object
     URHO3D_OBJECT(Renderer, Object);
 
 public:
-    typedef void(Object::*ShadowMapFilter)(View* view, Texture2D* shadowMap);
+    typedef void(Object::*ShadowMapFilter)(View* view, Texture2D* shadowMap, float blurScale);
 
     /// Construct.
     Renderer(Context* context);
@@ -218,8 +218,10 @@ public:
     void SetReuseShadowMaps(bool enable);
     /// Set maximum number of shadow maps created for one resolution. Only has effect if reuse of shadow maps is disabled.
     void SetMaxShadowMaps(int shadowMaps);
-    /// Set dynamic instancing on/off.
+    /// Set dynamic instancing on/off. When on (default), drawables using the same static-type geometry and material will be automatically combined to an instanced draw call.
     void SetDynamicInstancing(bool enable);
+    /// Set number of extra instancing buffer elements. Default is 0. Extra 4-vectors are available through TEXCOORD7 and further.
+    void SetNumExtraInstancingBufferElements(int elements);
     /// Set minimum number of instances required in a batch group to render as instanced.
     void SetMinInstances(int instances);
     /// Set maximum number of sorted instances per batch group. If exceeded, instances are rendered unsorted.
@@ -232,17 +234,17 @@ public:
     void SetOccluderSizeThreshold(float screenSize);
     /// Set whether to thread occluder rendering. Default false.
     void SetThreadedOcclusion(bool enable);
-    /// Set shadow depth bias multiplier for mobile platforms (OpenGL ES.) No effect on desktops. Default 2.
+    /// Set shadow depth bias multiplier for mobile platforms to counteract possible worse shadow map precision. Default 1.0 (no effect.)
     void SetMobileShadowBiasMul(float mul);
-    /// Set shadow depth bias addition for mobile platforms (OpenGL ES.) No effect on desktops. Default 0.0001.
+    /// Set shadow depth bias addition for mobile platforms to counteract possible worse shadow map precision. Default 0.0 (no effect.)
     void SetMobileShadowBiasAdd(float add);
-    /// Set shadow normal offset multiplier for mobile platforms (OpenGL ES.) No effect on desktops. Default 2.
+    /// Set shadow normal offset multiplier for mobile platforms to counteract possible worse shadow map precision. Default 1.0 (no effect.)
     void SetMobileNormalOffsetMul(float mul);
     /// Force reload of shaders.
     void ReloadShaders();
 
     /// Apply post processing filter to the shadow map. Called by View.
-    void ApplyShadowMapFilter(View* view, Texture2D* shadowMap);
+    void ApplyShadowMapFilter(View* view, Texture2D* shadowMap, float blurScale);
 
     /// Return number of backbuffer viewports.
     unsigned GetNumViewports() const { return viewports_.Size(); }
@@ -295,6 +297,9 @@ public:
 
     /// Return whether dynamic instancing is in use.
     bool GetDynamicInstancing() const { return dynamicInstancing_; }
+
+    /// Return number of extra instancing buffer elements.
+    int GetNumExtraInstancingBufferElements() const { return numExtraInstancingBufferElements_; };
 
     /// Return minimum number of instances required in a batch group to render as instanced.
     int GetMinInstances() const { return minInstances_; }
@@ -456,7 +461,7 @@ private:
     /// Handle render update event.
     void HandleRenderUpdate(StringHash eventType, VariantMap& eventData);
     /// Blur the shadow map.
-    void BlurShadowMap(View* view, Texture2D* shadowMap);
+    void BlurShadowMap(View* view, Texture2D* shadowMap, float blurScale);
 
     /// Graphics subsystem.
     WeakPtr<Graphics> graphics_;
@@ -580,6 +585,8 @@ private:
     bool reuseShadowMaps_;
     /// Dynamic instancing flag.
     bool dynamicInstancing_;
+    /// Number of extra instancing data elements.
+    int numExtraInstancingBufferElements_;
     /// Threaded occlusion rendering flag.
     bool threadedOcclusion_;
     /// Shaders need reloading flag.

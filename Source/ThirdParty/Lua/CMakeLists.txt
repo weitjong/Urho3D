@@ -30,7 +30,11 @@ set (AMALG_EXCLUDES .)
 # Define dependency libs
 if (READLINE_FOUND)
     add_definitions (-DLUA_USE_READLINE)
-    list (APPEND INCLUDE_DIRS ${READLINE_INCLUDE_DIR})
+    # FIXME: temporary quick fix
+    if (SYSROOT)
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --sysroot=\"${SYSROOT}\"")
+    endif ()
+    list (APPEND INCLUDE_DIRS ${READLINE_INCLUDE_DIRS})
     list (APPEND LIBS ${READLINE_LIBRARIES})
 endif ()
 

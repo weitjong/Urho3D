@@ -123,6 +123,9 @@ namespace Urho3D
 - %Scene : Scene pointer
 - %Camera : Camera pointer
 
+### RenderPathEvent
+- %Name : String
+
 ### DeviceLost
 
 ### DeviceReset
@@ -571,6 +574,16 @@ namespace Urho3D
 ### TemporaryChanged
 - %Serializable : Serializable pointer
 
+### NodeCloned
+- %Scene : Scene pointer
+- %Node : Node pointer
+- %CloneNode : Node pointer
+
+### ComponentCloned
+- %Scene : Scene pointer
+- %Component : Component pointer
+- %CloneComponent : Component pointer
+
 ### InterceptNetworkUpdate
 - %Serializable : Serializable pointer
 - %TimeStamp : unsigned (0-255)
@@ -875,6 +888,7 @@ namespace Urho3D
 - %Relative %Position : bool
 - %Relative %Scale : bool
 - %Sort %By %Distance : bool
+- %Fixed %Screen %Size : bool
 - %Can %Be %Occluded : bool
 - %Cast %Shadows : bool
 - %Face %Camera %Mode : int
@@ -1678,6 +1692,28 @@ namespace Urho3D
 - %Velocity %Iterations : int
 - %Position %Iterations : int
 
+### RibbonTrail
+- %Is %Enabled : bool
+- %Max %Lights : int
+- %View %Mask : int
+- %Light %Mask : int
+- %Shadow %Mask : int
+- %Zone %Mask : int
+- %Material : ResourceRef
+- %Emitting : bool
+- %Update %Invisible : bool
+- %Trail %Type : int
+- %Tail %Lifetime : float
+- %Tail %Column : int
+- %Vertex %Distance : float
+- %Width : float
+- %Start %Scale : float
+- %End %Scale : float
+- %Start %Color : Color
+- %End %Color : Color
+- %Animation %LOD %Bias : float
+- %Sort %By %Distance : bool
+
 ### RigidBody
 - %Is %Enabled : bool
 - %Mass : float
@@ -1768,6 +1804,13 @@ namespace Urho3D
 - %Indent %Spacing : int
 - %Variables : VariantMap
 - %Tags : StringVector
+- %Texture : ResourceRef
+- %Image %Rect : IntRect
+- %Border : IntRect
+- %Image %Border : IntRect
+- %Hover %Image %Offset : IntVector2
+- %Tiled : bool
+- %Blend %Mode : int
 - %Orientation : int
 - %Range : float
 - %Value : float
@@ -2055,6 +2098,9 @@ namespace Urho3D
 - %Selection %Color : Color
 - %Hover %Color : Color
 - %Text %Effect : int
+- %Shadow %Offset : IntVector2
+- %Stroke %Thickness : int
+- %Round %Stroke : bool
 - %Effect %Color : Color
 
 ### Text3D
@@ -2067,6 +2113,7 @@ namespace Urho3D
 - %Row %Spacing : float
 - %Word %Wrap : bool
 - %Can %Be %Occluded : bool
+- %Fixed %Screen %Size : bool
 - %Face %Camera %Mode : int
 - %Draw %Distance : float
 - %Width : int
@@ -2079,6 +2126,9 @@ namespace Urho3D
 - %Bottom %Left %Color : Color
 - %Bottom %Right %Color : Color
 - %Text %Effect : int
+- %Shadow %Offset : IntVector2
+- %Stroke %Thickness : int
+- %Round %Stroke : bool
 - %Effect %Color : Color
 - %Effect %Depth %Bias : float
 
@@ -2389,6 +2439,7 @@ namespace Urho3D
 <a href="#Class_Menu"><b>Menu</b></a>
 <a href="#Class_MessageBox"><b>MessageBox</b></a>
 <a href="#Class_Model"><b>Model</b></a>
+<a href="#Class_NamedPipe"><b>NamedPipe</b></a>
 <a href="#Class_NavArea"><b>NavArea</b></a>
 <a href="#Class_Navigable"><b>Navigable</b></a>
 <a href="#Class_NavigationMesh"><b>NavigationMesh</b></a>
@@ -2427,6 +2478,7 @@ namespace Urho3D
 <a href="#Class_ResourceCache"><b>ResourceCache</b></a>
 <a href="#Class_ResourceRef"><b>ResourceRef</b></a>
 <a href="#Class_ResourceRefList"><b>ResourceRefList</b></a>
+<a href="#Class_RibbonTrail"><b>RibbonTrail</b></a>
 <a href="#Class_RigidBody"><b>RigidBody</b></a>
 <a href="#Class_RigidBody2D"><b>RigidBody2D</b></a>
 <a href="#Class_Scene"><b>Scene</b></a>
@@ -3133,6 +3185,7 @@ Properties:
 - bool enabled
 - bool enabledEffective // readonly
 - FaceCameraMode faceCameraMode
+- bool fixedScreenSize
 - uint id // readonly
 - bool inView // readonly
 - uint lightMask
@@ -7290,6 +7343,7 @@ Properties:
 
 Methods:
 
+- bool FromString(const String&)
 - JSONValue& GetRoot()
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
@@ -8341,6 +8395,98 @@ Properties:
 - uint useTimer // readonly
 - int weakRefs // readonly
 
+<a name="Class_NamedPipe"></a>
+
+### NamedPipe
+
+Methods:
+
+- void Close()
+- bool HasSubscribedToEvent(Object@, const String&)
+- bool HasSubscribedToEvent(const String&)
+- bool Open(const String&, bool)
+- uint8[]@ Read(uint)
+- bool ReadBool()
+- BoundingBox ReadBoundingBox()
+- int8 ReadByte()
+- Color ReadColor()
+- double ReadDouble()
+- String ReadFileID()
+- float ReadFloat()
+- int ReadInt()
+- IntRect ReadIntRect()
+- IntVector2 ReadIntVector2()
+- String ReadLine()
+- Matrix3 ReadMatrix3()
+- Matrix3x4 ReadMatrix3x4()
+- Matrix4 ReadMatrix4()
+- uint ReadNetID()
+- Quaternion ReadPackedQuaternion()
+- Vector3 ReadPackedVector3(float)
+- Quaternion ReadQuaternion()
+- int16 ReadShort()
+- String ReadString()
+- StringHash ReadStringHash()
+- uint8 ReadUByte()
+- uint ReadUInt()
+- uint16 ReadUShort()
+- uint ReadVLE()
+- Variant ReadVariant()
+- VariantMap ReadVariantMap()
+- Vector2 ReadVector2()
+- Vector3 ReadVector3()
+- Vector4 ReadVector4()
+- VectorBuffer ReadVectorBuffer(uint)
+- uint Seek(uint)
+- void SendEvent(const String&, VariantMap& = VariantMap ( ))
+- uint Write(uint8[]@)
+- bool WriteBool(bool)
+- bool WriteBoundingBox(const BoundingBox&)
+- bool WriteByte(int8)
+- bool WriteColor(const Color&)
+- bool WriteDouble(double)
+- bool WriteFileID(const String&)
+- bool WriteFloat(float)
+- bool WriteInt(int)
+- bool WriteIntRect(const IntRect&)
+- bool WriteIntVector2(const IntVector2&)
+- bool WriteLine(const String&)
+- bool WriteMatrix3(const Matrix3&)
+- bool WriteMatrix3x4(const Matrix3x4&)
+- bool WriteMatrix4(const Matrix4&)
+- bool WriteNetID(uint)
+- bool WritePackedQuaternion(const Quaternion&)
+- bool WritePackedVector3(const Vector3&, float)
+- bool WriteQuaternion(const Quaternion&)
+- bool WriteShort(int16)
+- bool WriteString(const String&)
+- bool WriteStringHash(const StringHash&)
+- bool WriteUByte(uint8)
+- bool WriteUInt(uint)
+- bool WriteUShort(uint16)
+- bool WriteVLE(uint)
+- bool WriteVariant(const Variant&)
+- bool WriteVariantMap(const VariantMap&)
+- bool WriteVector2(const Vector2&)
+- bool WriteVector3(const Vector3&)
+- bool WriteVector4(const Vector4&)
+- bool WriteVectorBuffer(const VectorBuffer&)
+
+Properties:
+
+- String category // readonly
+- uint checksum // readonly
+- bool eof // readonly
+- String name // readonly
+- bool open // readonly
+- uint position // readonly
+- int refs // readonly
+- bool server // readonly
+- uint size // readonly
+- StringHash type // readonly
+- String typeName // readonly
+- int weakRefs // readonly
+
 <a name="Class_NavArea"></a>
 
 ### NavArea
@@ -9095,6 +9241,7 @@ Properties:
 - String name // readonly
 - uint numFiles // readonly
 - int refs // readonly
+- uint totalDataSize // readonly
 - uint totalSize // readonly
 - StringHash type // readonly
 - String typeName // readonly
@@ -9138,6 +9285,7 @@ Properties:
 - Vector3 emitterSize
 - EmitterType emitterType
 - FaceCameraMode faceCameraMode
+- bool fixedScreenSize
 - float inactiveTime
 - Material@ material
 - Vector3 maxDirection
@@ -9259,6 +9407,7 @@ Properties:
 - bool enabled
 - bool enabledEffective // readonly
 - FaceCameraMode faceCameraMode
+- bool fixedScreenSize
 - uint id // readonly
 - bool inView // readonly
 - uint lightMask
@@ -9375,6 +9524,7 @@ Properties:
 
 - bool alphaMask
 - BlendMode blendMode
+- CullMode cullMode
 - CompareMode depthTestMode
 - bool depthWrite
 - bool desktop
@@ -9791,6 +9941,7 @@ Properties:
 - uint clearStencil
 - String depthStencilName
 - bool enabled
+- String eventName
 - bool markToStencil
 - String metadata
 - uint numOutputs
@@ -9882,6 +10033,7 @@ Properties:
 - float mobileShadowBiasAdd
 - float mobileShadowBiasMul
 - uint numBatches // readonly
+- int numExtraInstancingBufferElements
 - uint[] numGeometries // readonly
 - uint[] numLights // readonly
 - uint[] numOccluders // readonly
@@ -10009,6 +10161,96 @@ Properties:
 - uint length // readonly
 - String[] names
 - StringHash type
+
+<a name="Class_RibbonTrail"></a>
+
+### RibbonTrail
+
+Methods:
+
+- void ApplyAttributes()
+- void Commit()
+- void DrawDebugGeometry(DebugRenderer@, bool)
+- Variant GetAttribute(const String&) const
+- ValueAnimation@ GetAttributeAnimation(const String&) const
+- float GetAttributeAnimationSpeed(const String&) const
+- float GetAttributeAnimationTime(const String&) const
+- WrapMode GetAttributeAnimationWrapMode(const String&) const
+- Variant GetAttributeDefault(const String&) const
+- bool GetInterceptNetworkUpdate(const String&) const
+- bool HasSubscribedToEvent(Object@, const String&)
+- bool HasSubscribedToEvent(const String&)
+- bool IsInView(Camera@) const
+- bool Load(File@, bool = false)
+- bool Load(VectorBuffer&, bool = false)
+- bool LoadJSON(const JSONValue&, bool = false)
+- bool LoadXML(const XMLElement&, bool = false)
+- void MarkNetworkUpdate() const
+- void Remove()
+- void RemoveAttributeAnimation(const String&)
+- void RemoveInstanceDefault()
+- void RemoveObjectAnimation()
+- void ResetToDefault()
+- bool Save(File@) const
+- bool Save(VectorBuffer&) const
+- bool SaveJSON(JSONValue&) const
+- bool SaveXML(XMLElement&) const
+- void SendEvent(const String&, VariantMap& = VariantMap ( ))
+- void SetAnimationTime(float)
+- bool SetAttribute(const String&, const Variant&)
+- void SetAttributeAnimation(const String&, ValueAnimation@, WrapMode = WM_LOOP, float = 1.0f)
+- void SetAttributeAnimationSpeed(const String&, float)
+- void SetAttributeAnimationTime(const String&, float)
+- void SetAttributeAnimationWrapMode(const String&, WrapMode)
+- void SetInterceptNetworkUpdate(const String&, bool)
+
+Properties:
+
+- bool animationEnabled
+- float animationLodBias
+- Variant[] attributeDefaults // readonly
+- AttributeInfo[] attributeInfos // readonly
+- Variant[] attributes
+- BoundingBox boundingBox // readonly
+- bool castShadows
+- String category // readonly
+- float drawDistance
+- bool emitting
+- bool enabled
+- bool enabledEffective // readonly
+- Color endColor
+- float endScale
+- uint id // readonly
+- bool inView // readonly
+- float lifetime
+- uint lightMask
+- float lodBias
+- Material@ material
+- uint maxLights
+- Node@ node // readonly
+- uint numAttributes // readonly
+- ObjectAnimation@ objectAnimation
+- bool occludee
+- bool occluder
+- int refs // readonly
+- float shadowDistance
+- uint shadowMask
+- bool sorted
+- Color startColor
+- float startScale
+- uint tailColumn
+- bool temporary
+- TrailType trailType
+- StringHash type // readonly
+- String typeName // readonly
+- bool updateInvisible
+- float vertexDistance
+- uint viewMask
+- int weakRefs // readonly
+- float width
+- BoundingBox worldBoundingBox // readonly
+- Zone@ zone // readonly
+- uint zoneMask
 
 <a name="Class_RigidBody"></a>
 
@@ -12544,6 +12786,9 @@ Properties:
 - uint dragDropMode
 - bool editable
 - Color effectColor
+- bool effectRoundStroke
+- IntVector2 effectShadowOffset
+- int effectStrokeThickness
 - bool elementEventSender
 - bool enabled
 - bool enabledSelf // readonly
@@ -12673,9 +12918,13 @@ Properties:
 - float drawDistance
 - Color effectColor
 - float effectDepthBias
+- bool effectRoundStroke
+- IntVector2 effectShadowOffset
+- int effectStrokeThickness
 - bool enabled
 - bool enabledEffective // readonly
 - FaceCameraMode faceCameraMode
+- bool fixedScreenSize
 - Font@ font // readonly
 - int fontSize // readonly
 - HorizontalAlignment horizontalAlignment
@@ -14870,6 +15119,7 @@ Properties:
 - O_ORTHOGONAL
 - O_ISOMETRIC
 - O_STAGGERED
+- O_HEXAGONAL
 
 
 ### PassLightingMode
@@ -14912,6 +15162,7 @@ Properties:
 - CMD_FORWARDLIGHTS
 - CMD_LIGHTVOLUMES
 - CMD_RENDERUI
+- CMD_SENDEVENT
 
 
 ### RenderSurfaceUpdateMode
@@ -15030,6 +15281,12 @@ Properties:
 - OT_POLYLINE
 - OT_TILE
 - OT_INVALID
+
+
+### TrailType
+
+- TT_FACE_CAMERA
+- TT_BONE
 
 
 ### TransformSpace
@@ -15200,6 +15457,7 @@ Properties:
 - int RandomInt(int)
 - int RandomInt(int, int)
 - float RandomNormal(float, float)
+- void RegisterEventName(const String&)
 - void Remove()
 - String RemoveTrailingSlash(const String&)
 - String ReplaceExtension(const String&, const String&)
@@ -15298,6 +15556,7 @@ Properties:
 - uint DD_TARGET
 - uint DEBUGHUD_SHOW_ALL
 - uint DEBUGHUD_SHOW_ALL_MEMORY
+- uint DEBUGHUD_SHOW_EVENTPROFILER
 - uint DEBUGHUD_SHOW_MEMORY
 - uint DEBUGHUD_SHOW_MODE
 - uint DEBUGHUD_SHOW_NONE
@@ -15342,7 +15601,7 @@ Properties:
 - int KEY_DOWN
 - int KEY_E
 - int KEY_END
-- int KEY_ESC
+- int KEY_ESCAPE
 - int KEY_F
 - int KEY_F1
 - int KEY_F10

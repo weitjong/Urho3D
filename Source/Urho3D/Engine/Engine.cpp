@@ -27,6 +27,7 @@
 #include "../Core/CoreEvents.h"
 #include "../Core/ProcessUtils.h"
 #include "../Core/Profiler.h"
+#include "../Core/EventProfiler.h"
 #include "../Core/WorkQueue.h"
 #include "../Engine/Console.h"
 #include "../Engine/DebugHud.h"
@@ -64,6 +65,7 @@
 
 #include "../DebugNew.h"
 
+
 #if defined(_MSC_VER) && defined(_DEBUG)
 // From dbgint.h
 #define nNoMansLandSize 4
@@ -91,7 +93,7 @@ Engine::Engine(Context* context) :
     timeStep_(0.0f),
     timeStepSmoothing_(2),
     minFps_(10),
-#if defined(ANDROID) || defined(IOS) || defined(RPI)
+#if defined(IOS) || defined(__ANDROID__) || defined(__arm__) || defined(__aarch64__)
     maxFps_(60),
     maxInactiveFps_(10),
     pauseMinimized_(true),
@@ -422,7 +424,13 @@ bool Engine::Initialize(const VariantMap& parameters)
             SharedPtr<Object> object = i->second_->CreateObject();
     }
 #endif
-
+#ifdef URHO3D_PROFILING
+    if (GetParameter(parameters, "EventProfiler", true).GetBool())
+    {
+        context_->RegisterSubsystem(new EventProfiler(context_));
+        EventProfiler::SetActive(true);
+    }
+#endif
     frameTimer_.Reset();
 
     URHO3D_LOGINFO("Initialized engine");
@@ -446,6 +454,15 @@ void Engine::RunFrame()
     Time* time = GetSubsystem<Time>();
     Input* input = GetSubsystem<Input>();
     Audio* audio = GetSubsystem<Audio>();
+
+#ifdef URHO3D_PROFILING
+    if (EventProfiler::IsActive())
+    {
+        EventProfiler* eventProfiler = GetSubsystem<EventProfiler>();
+        if (eventProfiler)
+            eventProfiler->BeginFrame();
+    }
+#endif
 
     time->BeginFrame(timeStep_);
 
@@ -536,7 +553,7 @@ void Engine::SetPauseMinimized(bool enable)
 void Engine::SetAutoExit(bool enable)
 {
     // On mobile platforms exit is mandatory if requested by the platform itself and should not be attempted to be disabled
-#if defined(ANDROID) || defined(IOS)
+#if defined(__ANDROID__) || defined(IOS)
     enable = true;
 #endif
     autoExit_ = enable;
@@ -682,7 +699,13 @@ void Engine::ApplyFrameLimit()
 
 #ifndef __EMSCRIPTEN__
     // Perform waiting loop if maximum FPS set
+#ifndef IOS
     if (maxFps)
+#else
+    // If on iOS and target framerate is 60 or above, just let the animation callback handle frame timing
+    // instead of waiting ourselves
+    if (maxFps < 60)
+#endif
     {
         URHO3D_PROFILE(ApplyFrameLimit);
 

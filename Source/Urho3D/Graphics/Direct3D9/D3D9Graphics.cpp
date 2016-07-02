@@ -40,6 +40,7 @@
 #include "../../Graphics/Octree.h"
 #include "../../Graphics/ParticleEffect.h"
 #include "../../Graphics/ParticleEmitter.h"
+#include "../../Graphics/RibbonTrail.h"
 #include "../../Graphics/Shader.h"
 #include "../../Graphics/ShaderPrecache.h"
 #include "../../Graphics/ShaderProgram.h"
@@ -59,6 +60,7 @@
 #include "../../IO/Log.h"
 #include "../../Resource/ResourceCache.h"
 
+#include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
 
 #include "../../DebugNew.h"
@@ -2248,7 +2250,7 @@ void Graphics::CleanupScratchBuffers()
 {
     for (Vector<ScratchBuffer>::Iterator i = scratchBuffers_.Begin(); i != scratchBuffers_.End(); ++i)
     {
-        if (!i->reserved_ && i->size_ > maxScratchBufferRequest_ * 2)
+        if (!i->reserved_ && i->size_ > maxScratchBufferRequest_ * 2 && i->size_ >= 1024 * 1024)
         {
             i->data_ = maxScratchBufferRequest_ > 0 ? new unsigned char[maxScratchBufferRequest_] : 0;
             i->size_ = maxScratchBufferRequest_;
@@ -2805,6 +2807,7 @@ void RegisterGraphicsLibrary(Context* context)
     BillboardSet::RegisterObject(context);
     ParticleEffect::RegisterObject(context);
     ParticleEmitter::RegisterObject(context);
+    RibbonTrail::RegisterObject(context);
     CustomGeometry::RegisterObject(context);
     DecalSet::RegisterObject(context);
     Terrain::RegisterObject(context);

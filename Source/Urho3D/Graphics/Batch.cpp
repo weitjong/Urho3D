@@ -206,7 +206,12 @@ void Batch::Prepare(View* view, Camera* camera, bool setModelTransform, bool all
         graphics->SetBlendMode(blend);
 
         bool isShadowPass = pass_->GetIndex() == Technique::shadowPassIndex;
-        renderer->SetCullMode(isShadowPass ? material_->GetShadowCullMode() : material_->GetCullMode(), camera);
+        CullMode effectiveCullMode = pass_->GetCullMode();
+        // Get cull mode from material if pass doesn't override it
+        if (effectiveCullMode == MAX_CULLMODES)
+            effectiveCullMode = isShadowPass ? material_->GetShadowCullMode() : material_->GetCullMode();
+
+        renderer->SetCullMode(effectiveCullMode, camera);
         if (!isShadowPass)
         {
             const BiasParameters& depthBias = material_->GetDepthBias();
@@ -230,7 +235,7 @@ void Batch::Prepare(View* view, Camera* camera, bool setModelTransform, bool all
     unsigned viewportHash = (unsigned)(viewSize.x_ | (viewSize.y_ << 16));
     if (graphics->NeedParameterUpdate(SP_CAMERA, reinterpret_cast<const void*>(cameraHash + viewportHash)))
     {
-        view->SetCameraShaderParameters(camera, true);
+        view->SetCameraShaderParameters(camera);
         // During renderpath commands the G-Buffer or viewport texture is assumed to always be viewport-sized
         view->SetGBufferShaderParameters(viewSize, IntRect(0, 0, viewSize.x_, viewSize.y_));
     }
@@ -630,18 +635,25 @@ void Batch::Draw(View* view, Camera* camera, bool allowDepthWrite) const
     }
 }
 
-void BatchGroup::SetTransforms(void* lockedData, unsigned& freeIndex)
+void BatchGroup::SetInstancingData(void* lockedData, unsigned stride, unsigned& freeIndex)
 {
     // Do not use up buffer space if not going to draw as instanced
     if (geometryType_ != GEOM_INSTANCED)
         return;
 
     startIndex_ = freeIndex;
-    Matrix3x4* dest = (Matrix3x4*)lockedData;
-    dest += freeIndex;
+    unsigned char* buffer = static_cast<unsigned char*>(lockedData) + startIndex_ * stride;
 
     for (unsigned i = 0; i < instances_.Size(); ++i)
-        *dest++ = *instances_[i].worldTransform_;
+    {
+        const InstanceData& instance = instances_[i];
+
+        memcpy(buffer, instance.worldTransform_, sizeof(Matrix3x4));
+        if (instance.instancingData_)
+            memcpy(buffer + sizeof(Matrix3x4), instance.instancingData_, stride - sizeof(Matrix3x4));
+
+        buffer += stride;
+    }
 
     freeIndex += instances_.Size();
 }
@@ -820,10 +832,10 @@ void BatchQueue::SortFrontToBack2Pass(PODVector<Batch*>& batches)
 #endif
 }
 
-void BatchQueue::SetTransforms(void* lockedData, unsigned& freeIndex)
+void BatchQueue::SetInstancingData(void* lockedData, unsigned stride, unsigned& freeIndex)
 {
     for (HashMap<BatchGroupKey, BatchGroup>::Iterator i = batchGroups_.Begin(); i != batchGroups_.End(); ++i)
-        i->second_.SetTransforms(lockedData, freeIndex);
+        i->second_.SetInstancingData(lockedData, stride, freeIndex);
 }
 
 void BatchQueue::Draw(View* view, Camera* camera, bool markToStencil, bool usingLightOptimization, bool allowDepthWrite) const
