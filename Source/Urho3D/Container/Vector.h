@@ -312,13 +312,12 @@ public:
         unsigned trailingCount = size_ - shiftStartIndex;
         if (trailingCount <= length)
         {
-            // We're removing more elements from the array than exist past the end of the range being removed, so
-            // perform a normal shift and destroy.
+            // We're removing more elements from the array than exist past the end of the range being removed, so perform a normal shift and destroy
             MoveRange(pos, shiftStartIndex, trailingCount);
         }
         else
         {
-            // Swap elements from the end of the array into the empty space.
+            // Swap elements from the end of the array into the empty space
             CopyElements(Buffer() + pos, Buffer() + newSize, length);
         }
         Resize(newSize, 0);
@@ -477,10 +476,10 @@ public:
     /// Return whether vector is empty.
     bool Empty() const { return size_ == 0; }
 
-private:
     /// Return the buffer with right type.
     T* Buffer() const { return reinterpret_cast<T*>(buffer_); }
 
+private:
     /// Resize the vector and create/remove new elements as necessary.
     void Resize(unsigned newSize, const T* src)
     {
@@ -555,7 +554,7 @@ private:
             *dest++ = *src++;
     }
 
-    // Call the elements' destructors.
+    /// Call the elements' destructors.
     static void DestructElements(T* dest, unsigned count)
     {
         while (count--)
@@ -597,7 +596,16 @@ public:
     {
         *this = vector;
     }
-
+#if URHO3D_CXX11
+    /// Aggregate initialization constructor.
+    PODVector(const std::initializer_list<T>& list) : PODVector()
+    {
+        for (auto it = list.begin(); it != list.end(); it++)
+        {
+            Push(*it);
+        }
+    }
+#endif
     /// Destruct.
     ~PODVector()
     {
@@ -852,13 +860,12 @@ public:
         unsigned trailingCount = size_ - shiftStartIndex;
         if (trailingCount <= length)
         {
-            // We're removing more elements from the array than exist past the end of the range being removed, so
-            // perform a normal shift and destroy.
+            // We're removing more elements from the array than exist past the end of the range being removed, so perform a normal shift and destroy
             MoveRange(pos, shiftStartIndex, trailingCount);
         }
         else
         {
-            // Swap elements from the end of the array into the empty space.
+            // Swap elements from the end of the array into the empty space
             CopyElements(Buffer() + pos, Buffer() + newSize, length);
         }
         Resize(newSize);
@@ -1008,10 +1015,10 @@ public:
     /// Return whether vector is empty.
     bool Empty() const { return size_ == 0; }
 
-private:
     /// Return the buffer with right type.
     T* Buffer() const { return reinterpret_cast<T*>(buffer_); }
 
+private:
     /// Move a range of elements within the vector.
     void MoveRange(unsigned dest, unsigned src, unsigned count)
     {

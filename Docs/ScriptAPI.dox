@@ -391,6 +391,7 @@ namespace Urho3D
 - %BodyB : RigidBody2D pointer
 - %NodeA : Node pointer
 - %NodeB : Node pointer
+- %Contact : b2Contact pointer
 
 ### PhysicsEndContact2D
 - %World : PhysicsWorld2D pointer
@@ -398,6 +399,7 @@ namespace Urho3D
 - %BodyB : RigidBody2D pointer
 - %NodeA : Node pointer
 - %NodeB : Node pointer
+- %Contact : b2Contact pointer
 
 ## %Physics events
 
@@ -6225,6 +6227,7 @@ Methods:
 - String ReadFileID()
 - float ReadFloat()
 - int ReadInt()
+- int64 ReadInt64()
 - IntRect ReadIntRect()
 - IntVector2 ReadIntVector2()
 - String ReadLine()
@@ -6240,6 +6243,7 @@ Methods:
 - StringHash ReadStringHash()
 - uint8 ReadUByte()
 - uint ReadUInt()
+- uint64 ReadUInt64()
 - uint16 ReadUShort()
 - uint ReadVLE()
 - Variant ReadVariant()
@@ -6785,6 +6789,7 @@ Methods:
 - String ReadFileID()
 - float ReadFloat()
 - int ReadInt()
+- int64 ReadInt64()
 - IntRect ReadIntRect()
 - IntVector2 ReadIntVector2()
 - String ReadLine()
@@ -6800,6 +6805,7 @@ Methods:
 - StringHash ReadStringHash()
 - uint8 ReadUByte()
 - uint ReadUInt()
+- uint64 ReadUInt64()
 - uint16 ReadUShort()
 - uint ReadVLE()
 - Variant ReadVariant()
@@ -6819,6 +6825,7 @@ Methods:
 - bool WriteFileID(const String&)
 - bool WriteFloat(float)
 - bool WriteInt(int)
+- bool WriteInt64(int64)
 - bool WriteIntRect(const IntRect&)
 - bool WriteIntVector2(const IntVector2&)
 - bool WriteLine(const String&)
@@ -6834,6 +6841,7 @@ Methods:
 - bool WriteStringHash(const StringHash&)
 - bool WriteUByte(uint8)
 - bool WriteUInt(uint)
+- bool WriteUInt64(uint64)
 - bool WriteUShort(uint16)
 - bool WriteVLE(uint)
 - bool WriteVariant(const Variant&)
@@ -7062,6 +7070,7 @@ Properties:
 - bool deferredSupport // readonly
 - IntVector2 desktopResolution // readonly
 - bool deviceLost // readonly
+- bool dither
 - bool flushGPU
 - bool fullscreen // readonly
 - bool hardwareShadowSupport // readonly
@@ -7106,6 +7115,7 @@ Methods:
 - String ReadFileID()
 - float ReadFloat()
 - int ReadInt()
+- int64 ReadInt64()
 - IntRect ReadIntRect()
 - IntVector2 ReadIntVector2()
 - String ReadLine()
@@ -7121,6 +7131,7 @@ Methods:
 - StringHash ReadStringHash()
 - uint8 ReadUByte()
 - uint ReadUInt()
+- uint64 ReadUInt64()
 - uint16 ReadUShort()
 - uint ReadVLE()
 - Variant ReadVariant()
@@ -8414,6 +8425,7 @@ Methods:
 - String ReadFileID()
 - float ReadFloat()
 - int ReadInt()
+- int64 ReadInt64()
 - IntRect ReadIntRect()
 - IntVector2 ReadIntVector2()
 - String ReadLine()
@@ -8429,6 +8441,7 @@ Methods:
 - StringHash ReadStringHash()
 - uint8 ReadUByte()
 - uint ReadUInt()
+- uint64 ReadUInt64()
 - uint16 ReadUShort()
 - uint ReadVLE()
 - Variant ReadVariant()
@@ -8448,6 +8461,7 @@ Methods:
 - bool WriteFileID(const String&)
 - bool WriteFloat(float)
 - bool WriteInt(int)
+- bool WriteInt64(int64)
 - bool WriteIntRect(const IntRect&)
 - bool WriteIntVector2(const IntVector2&)
 - bool WriteLine(const String&)
@@ -8463,6 +8477,7 @@ Methods:
 - bool WriteStringHash(const StringHash&)
 - bool WriteUByte(uint8)
 - bool WriteUInt(uint)
+- bool WriteUInt64(uint64)
 - bool WriteUShort(uint16)
 - bool WriteVLE(uint)
 - bool WriteVariant(const Variant&)
@@ -8869,6 +8884,7 @@ Methods:
 - void RemoveInstanceDefault()
 - void RemoveObjectAnimation()
 - bool RemoveTag(const String&)
+- void ReorderComponent(Component@, uint)
 - void ResetDeepEnabled()
 - void ResetToDefault()
 - void Roll(float, TransformSpace = TS_LOCAL)
@@ -8931,7 +8947,7 @@ Properties:
 - Vector3 direction
 - bool enabled
 - bool enabledSelf // readonly
-- uint id // readonly
+- uint id
 - String name
 - uint numAllChildren // readonly
 - uint numAttributes // readonly
@@ -9257,6 +9273,7 @@ Methods:
 - void AddColorTime(Color&, float)
 - void AddTextureFrame(TextureFrame@)
 - void AddTextureTime(Rect&, float)
+- ParticleEffect@ Clone(const String& = String ( )) const
 - ColorFrame@ GetColorFrame(uint) const
 - TextureFrame@ GetTextureFrame(uint) const
 - bool HasSubscribedToEvent(Object@, const String&)
@@ -9325,6 +9342,7 @@ Properties:
 
 Methods:
 
+- ParticleEffect2D@ Clone(const String& = String ( )) const
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - bool Load(File@)
@@ -10517,6 +10535,7 @@ Methods:
 - void RemoveInstanceDefault()
 - void RemoveObjectAnimation()
 - bool RemoveTag(const String&)
+- void ReorderComponent(Component@, uint)
 - void ResetToDefault()
 - void Roll(float, TransformSpace = TS_LOCAL)
 - void Rotate(const Quaternion&, TransformSpace = TS_LOCAL)
@@ -10587,7 +10606,7 @@ Properties:
 - Vector3 direction
 - float elapsedTime
 - String fileName // readonly
-- uint id // readonly
+- uint id
 - String name
 - uint numAllChildren // readonly
 - uint numAttributes // readonly
@@ -11170,6 +11189,7 @@ Methods:
 - bool WriteFileID(const String&)
 - bool WriteFloat(float)
 - bool WriteInt(int)
+- bool WriteInt64(int64)
 - bool WriteIntRect(const IntRect&)
 - bool WriteIntVector2(const IntVector2&)
 - bool WriteLine(const String&)
@@ -11185,6 +11205,7 @@ Methods:
 - bool WriteStringHash(const StringHash&)
 - bool WriteUByte(uint8)
 - bool WriteUInt(uint)
+- bool WriteUInt64(uint64)
 - bool WriteUShort(uint16)
 - bool WriteVLE(uint)
 - bool WriteVariant(const Variant&)
@@ -12426,7 +12447,7 @@ Methods:
 - Color ToColor() const
 - double ToDouble() const
 - float ToFloat() const
-- int ToInt() const
+- int ToInt(int = 10) const
 - IntRect ToIntRect() const
 - IntVector2 ToIntVector2() const
 - String ToLower() const
@@ -12434,7 +12455,7 @@ Methods:
 - Matrix3x4 ToMatrix3x4() const
 - Matrix4 ToMatrix4() const
 - Quaternion ToQuaternion() const
-- uint ToUInt() const
+- uint ToUInt(int = 10) const
 - String ToUpper() const
 - Vector2 ToVector2() const
 - Vector3 ToVector3() const
@@ -12798,7 +12819,7 @@ Properties:
 - bool focus
 - FocusMode focusMode
 - Font@ font // readonly
-- int fontSize // readonly
+- int fontSize
 - int height
 - HorizontalAlignment horizontalAlignment
 - Color hoverColor
@@ -12926,7 +12947,7 @@ Properties:
 - FaceCameraMode faceCameraMode
 - bool fixedScreenSize
 - Font@ font // readonly
-- int fontSize // readonly
+- int fontSize
 - HorizontalAlignment horizontalAlignment
 - uint id // readonly
 - bool inView // readonly
@@ -14031,6 +14052,7 @@ Methods:
 - String ReadFileID()
 - float ReadFloat()
 - int ReadInt()
+- int64 ReadInt64()
 - IntRect ReadIntRect()
 - IntVector2 ReadIntVector2()
 - String ReadLine()
@@ -14046,6 +14068,7 @@ Methods:
 - StringHash ReadStringHash()
 - uint8 ReadUByte()
 - uint ReadUInt()
+- uint64 ReadUInt64()
 - uint16 ReadUShort()
 - uint ReadVLE()
 - Variant ReadVariant()
@@ -14066,6 +14089,7 @@ Methods:
 - bool WriteFileID(const String&)
 - bool WriteFloat(float)
 - bool WriteInt(int)
+- bool WriteInt64(int64)
 - bool WriteIntRect(const IntRect&)
 - bool WriteIntVector2(const IntVector2&)
 - bool WriteLine(const String&)
@@ -14081,6 +14105,7 @@ Methods:
 - bool WriteStringHash(const StringHash&)
 - bool WriteUByte(uint8)
 - bool WriteUInt(uint)
+- bool WriteUInt64(uint64)
 - bool WriteUShort(uint16)
 - bool WriteVLE(uint)
 - bool WriteVariant(const Variant&)
