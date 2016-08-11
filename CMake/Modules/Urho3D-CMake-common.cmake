@@ -79,9 +79,22 @@ elseif (XCODE)
     endif ()
 endif ()
 
-# Define all supported build options
 include (CheckHost)
 include (CheckCompilerToolchain)
+
+# Extra linker flags for linking against indirect dependencies (linking shared lib with dependencies)
+if (RPI)
+    # Extra linker flags for Raspbian because it installs VideoCore libraries in the "/opt/vc/lib" directory (no harm in doing so for other distros)
+    set (INDIRECT_DEPS_EXE_LINKER_FLAGS "${INDIRECT_DEPS_EXE_LINKER_FLAGS} -Wl,-rpath-link,\"${RPI_SYSROOT}/opt/vc/lib\"")      # RPI_SYSROOT is empty when not cross-compiling
+endif ()
+if (ARM AND CMAKE_SYSTEM_NAME STREQUAL Linux AND CMAKE_CROSSCOMPILING)
+    # Cannot do this in the toolchain file because CMAKE_LIBRARY_ARCHITECTURE is not yet defined when CMake is processing toolchain file
+    set (INDIRECT_DEPS_EXE_LINKER_FLAGS "${INDIRECT_DEPS_EXE_LINKER_FLAGS} -Wl,-rpath-link,\"${ARM_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}\":\"${ARM_SYSROOT}/lib/${CMAKE_LIBRARY_ARCHITECTURE}\"")
+endif ()
+set (CMAKE_REQUIRED_FLAGS "${INDIRECT_DEPS_EXE_LINKER_FLAGS} ${CMAKE_REQUIRED_FLAGS}")
+set (CMAKE_EXE_LINKER_FLAGS "${INDIRECT_DEPS_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS}")
+
+# Define all supported build options
 include (CMakeDependentOption)
 option (URHO3D_AMALG "Enable amalgamated build")
 option (URHO3D_C++11 "Enable C++11 standard")
@@ -94,7 +107,7 @@ cmake_dependent_option (URHO3D_NETWORK "Enable networking support" TRUE "NOT WEB
 option (URHO3D_PHYSICS "Enable physics support" TRUE)
 option (URHO3D_URHO2D "Enable 2D graphics and physics support" TRUE)
 if (ARM AND NOT ANDROID AND NOT RPI AND NOT IOS AND NOT TVOS)
-    set (ARM_ABI_FLAGS "" CACHE STRING "Specify ABI compiler flags (Linux on ARM cross-compiling build only); e.g. Orange-Pi Mini 2 could use '-mcpu=cortex-a7 -mfpu=neon-vfpv4'")
+    set (ARM_ABI_FLAGS "" CACHE STRING "Specify ABI compiler flags (ARM on Linux cross-compiling build only); e.g. Orange-Pi Mini 2 could use '-mcpu=cortex-a7 -mfpu=neon-vfpv4'")
 endif ()
 if (IOS OR (RPI AND "${RPI_ABI}" MATCHES NEON) OR (ARM AND (URHO3D_64BIT OR "${ARM_ABI_FLAGS}" MATCHES neon)))    # Stringify in case RPI_ABI/ARM_ABI_FLAGS is not set explicitly
     # The 'NEON' CMake variable is already set by android.toolchain.cmake when the chosen ANDROID_ABI uses NEON
@@ -105,6 +118,7 @@ if (RPI)
     # TODO: this logic is earmarked to be moved into SDL's CMakeLists.txt when refactoring the library dependency handling
     find_package (VideoCore REQUIRED)
     include_directories (${VIDEOCORE_INCLUDE_DIRS})
+    link_directories (${VIDEOCORE_LIBRARY_DIRS})
 endif ()
 if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
     set (URHO3D_LIB_TYPE STATIC CACHE STRING "Specify Urho3D library type, possible values are STATIC (default) and SHARED")
@@ -285,6 +299,10 @@ if (CMAKE_VERSION VERSION_GREATER 2.8 OR CMAKE_VERSION VERSION_EQUAL 2.8)
         set_property (CACHE RPI_ABI PROPERTY STRINGS ${RPI_SUPPORTED_ABIS})
     endif ()
 endif()
+
+# Union all the sysroot variables into one so it can be referred to generically later
+# TODO: to be replaced with CMAKE_SYSROOT later if it is more beneficial
+set (SYSROOT ${ANDROID_SYSROOT} ${RPI_SYSROOT} ${ARM_SYSROOT} ${MINGW_SYSROOT} ${IOS_SYSROOT} ${EMSCRIPTEN_SYSROOT} CACHE INTERNAL "Path to system root of the cross-compiling target")  # SYSROOT is empty for native build
 
 # Clang tools building
 if (URHO3D_CLANG_TOOLS OR URHO3D_BINDINGS)
@@ -525,13 +543,12 @@ if (APPLE)
         else ()
             set (CMAKE_OSX_ARCHITECTURES $(ARCHS_STANDARD_32_BIT))
         endif ()
-        set (LINKER_FLAGS "-framework AudioToolbox -framework CoreAudio -framework CoreGraphics -framework CoreMotion -framework Foundation -framework GameController -framework OpenGLES -framework QuartzCore -framework UIKit")  # Need to stringify to keep it as a string instead of as a list
     else ()
         if (XCODE)
             # OSX-specific setup
             if (URHO3D_64BIT)
                 if (DEFINED ENV{XCODE_64BIT_ONLY})
-                    set (CMAKE_OSX_ARCHITECTURES x86_64)        # This is a hack, idem; the idea is to finish within the allocated time and cache the objects for subsequent builds
+                    set (CMAKE_OSX_ARCHITECTURES x86_64)
                 else ()
                     set (CMAKE_OSX_ARCHITECTURES $(ARCHS_STANDARD_32_64_BIT))
                 endif ()
@@ -539,10 +556,7 @@ if (APPLE)
                 set (CMAKE_OSX_ARCHITECTURES $(ARCHS_STANDARD_32_BIT))
             endif ()
         endif ()
-        set (LINKER_FLAGS "-framework AudioUnit -framework Carbon -framework Cocoa -framework CoreAudio -framework CoreServices -framework CoreVideo -framework ForceFeedback -framework IOKit -framework OpenGL")
     endif ()
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINKER_FLAGS}")
-    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
     # Common OSX and iOS bundle setup
     if (IOS OR URHO3D_MACOSX_BUNDLE)
         # Only set the bundle properties to its default when they are not explicitly specified by user
@@ -557,7 +571,6 @@ endif ()
 if (MSVC)
     # VS-specific setup
     add_definitions (-D_CRT_SECURE_NO_WARNINGS)
-    # Note: All CMAKE_xxx_FLAGS variables are not in list context (although they should be)
     set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${DEBUG_RUNTIME}")
     set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} ${RELEASE_RUNTIME} /fp:fast /Zi /GS-")
     set (CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELWITHDEBINFO})
@@ -585,12 +598,13 @@ if (MSVC)
 else ()
     # GCC/Clang-specific setup
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
-    if (NOT ANDROID AND NOT IOS AND NOT TVOS)    # Most of the flags are already setup in android.toolchain.cmake module or already has correct default setup for iOS
-        if (ARM)
+    if (NOT ANDROID)    # Most of the flags are already setup in android.toolchain.cmake module
+        if (ARM AND CMAKE_SYSTEM_NAME STREQUAL Linux)
             # Common compiler flags for aarch64-linux-gnu and arm-linux-gnueabihf, we do not support Windows on arm for now
-            set (ARM_CFLAGS "${ARM_CFLAGS} -pipe")
+            set (ARM_CFLAGS "${ARM_CFLAGS} -fsigned-char -pipe")
             if (NOT URHO3D_64BIT)
-                set (ARM_CFLAGS "${ARM_CFLAGS} -mfloat-abi=hard -Wno-psabi")    # We only support armhf distros, so turn on hard-float by default
+                # We only support armhf distros, so turn on hard-float by default
+                set (ARM_CFLAGS "${ARM_CFLAGS} -mfloat-abi=hard -Wno-psabi")
             endif ()
             # The configuration is done here instead of in CMake toolchain file because we also support native build which does not use toolchain file at all
             if (RPI)
@@ -614,6 +628,9 @@ else ()
                 if (URHO3D_64BIT)
                     # aarch64 has only one valid arch so far
                     set (ARM_CFLAGS "${ARM_CFLAGS} -march=armv8-a")
+                elseif (URHO3D_ANGELSCRIPT)
+                    # Angelscript seems to fail to compile using Thumb states, so force to use ARM states by default
+                    set (ARM_CFLAGS "${ARM_CFLAGS} -marm")
                 endif ()
                 if (ARM_ABI_FLAGS)
                     # Instead of guessing all the possible ABIs, user would have to specify the ABI compiler flags explicitly via ARM_ABI_FLAGS build option
@@ -759,20 +776,18 @@ endif ()
 # LuaJIT specific - extra linker flags for linking against LuaJIT (adapted from LuaJIT's original Makefile)
 if (URHO3D_LUAJIT)
     if (URHO3D_64BIT AND APPLE AND NOT IOS)
-        # 64-bit Mac OS X: it simply won't work without these flags; if you are reading this comment then you may want to know the follolwing also
+        # 64-bit Mac OS X: it simply won't work without these flags; if you are reading this comment then you may want to know the following also
         # it's recommended to rebase all (self-compiled) shared libraries which are loaded at runtime on OSX/x64 (e.g. C extension modules for Lua), see: man rebase
         set (LUAJIT_EXE_LINKER_FLAGS_APPLE "-pagezero_size 10000 -image_base 100000000")
         set (LUAJIT_SHARED_LINKER_FLAGS_APPLE "-image_base 7fff04c4a000")
         if (NOT XCODE)
-            foreach (TYPE EXE SHARED)
-                set (LUAJIT_${TYPE}_LINKER_FLAGS ${LUAJIT_${TYPE}_LINKER_FLAGS_APPLE})
-                set (CMAKE_${TYPE}_LINKER_FLAGS "${CMAKE_${TYPE}_LINKER_FLAGS} ${LUAJIT_${TYPE}_LINKER_FLAGS_APPLE}")
-            endforeach ()
+            set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LUAJIT_EXE_LINKER_FLAGS_APPLE}")
+            set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LUAJIT_SHARED_LINKER_FLAGS_APPLE}")
         endif ()
-    elseif (NOT WIN32 AND NOT APPLE)    # The original condition also checks: AND NOT SunOS AND NOT PS3
-        # GCC-specific: export all public symbols from main executable when linking with LuaJIT statically (LuaJIT as all other 3rd-party libs in Urho3D are static libs)
-        set (LUAJIT_EXE_LINKER_FLAGS -Wl,-E)
-        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LUAJIT_EXE_LINKER_FLAGS}")
+    elseif (URHO3D_LIB_TYPE STREQUAL STATIC AND NOT WIN32 AND NOT APPLE)    # The original condition also checks: AND NOT SunOS AND NOT PS3
+        # We assume user may want to load C modules compiled for plain Lua with require(), so we have to ensure all the public symbols are exported when linking with Urho3D (and therefore LuaJIT) statically
+        # Note: this implies that loading such modules on Windows platform may only work with SHARED library type
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-E")
     endif ()
 endif ()
 
@@ -864,7 +879,7 @@ macro (enable_pch HEADER_PATHNAME)
     # No op when PCH support is not enabled
     if (URHO3D_PCH)
         # Get the optional LANG parameter to indicate whether the header should be treated as C or C++ header, default to C++
-        if ("${ARGN}" STREQUAL C)   # Stringigy as the LANG paramater could be empty
+        if ("${ARGN}" STREQUAL C)   # Stringify as the LANG paramater could be empty
             set (EXT c)
             set (LANG C)
             set (LANG_H c-header)
@@ -1108,9 +1123,7 @@ macro (setup_library)
     prepare_amalgamated_build ()
     add_library (${TARGET_NAME} ${ARG_UNPARSED_ARGUMENTS} ${SOURCE_FILES})
     get_target_property (LIB_TYPE ${TARGET_NAME} TYPE)
-    if (ARG_NODEPS)
-        set (CMAKE_SHARED_LINKER_FLAGS ${LUAJIT_SHARED_LINKER_FLAGS})  # Don't need extra linker flags that are meant for main shared library only, except those from LuaJIT (if enabled)
-    elseif (NOT PROJECT_NAME STREQUAL Urho3D)
+    if (NOT ARG_NODEPS AND NOT PROJECT_NAME STREQUAL Urho3D)
         define_dependency_libs (Urho3D)
     endif ()
     if (XCODE AND LUAJIT_SHARED_LINKER_FLAGS_APPLE AND LIB_TYPE STREQUAL SHARED_LIBRARY)
@@ -1164,9 +1177,7 @@ macro (setup_executable)
             set (RUNTIME_DIR ${CMAKE_BINARY_DIR}/bin/tool)
         endif ()
     endif ()
-    if (ARG_NODEPS)
-        set (CMAKE_EXE_LINKER_FLAGS ${LUAJIT_EXE_LINKER_FLAGS})  # Don't need extra linker flags that are meant for main executable only, except those from LuaJIT (if enabled)
-    else ()
+    if (NOT ARG_NODEPS)
         define_dependency_libs (Urho3D)
     endif ()
     if (XCODE AND LUAJIT_EXE_LINKER_FLAGS_APPLE)
@@ -1580,6 +1591,12 @@ macro (define_dependency_libs TARGET)
             if (URHO3D_MINIDUMPS)
                 list (APPEND LIBS dbghelp)
             endif ()
+        elseif (APPLE)
+            if (IOS OR TVOS)
+                list (APPEND LIBS "-framework AudioToolbox" "-framework CoreAudio" "-framework CoreGraphics" "-framework CoreMotion" "-framework Foundation" "-framework GameController" "-framework OpenGLES" "-framework QuartzCore" "-framework UIKit")
+            else ()
+                list (APPEND LIBS "-framework AudioUnit" "-framework Carbon" "-framework Cocoa" "-framework CoreAudio" "-framework CoreServices" "-framework CoreVideo" "-framework ForceFeedback" "-framework IOKit" "-framework OpenGL")
+            endif ()
         endif ()
 
         # Graphics
@@ -1589,9 +1606,7 @@ macro (define_dependency_libs TARGET)
             elseif (WIN32)
                 list (APPEND LIBS opengl32)
             elseif (ANDROID OR ARM)
-                if (NOT RPI)
-                    list (APPEND LIBS GLESv1_CM GLESv2)
-                endif ()
+                list (APPEND LIBS GLESv1_CM GLESv2)
             else ()
                 list (APPEND LIBS GL)
             endif ()

@@ -259,6 +259,14 @@ namespace Urho3D
 
 ### ExitRequested
 
+### SDLRawInput
+- %SDLEvent : SDL_Event*
+- %Consumed : bool
+
+### InputBegin
+
+### InputEnd
+
 ## %Navigation events
 
 ### NavigationMeshRebuilt
@@ -15580,7 +15588,6 @@ Properties:
 - uint DD_SOURCE_AND_TARGET
 - uint DD_TARGET
 - uint DEBUGHUD_SHOW_ALL
-- uint DEBUGHUD_SHOW_ALL_MEMORY
 - uint DEBUGHUD_SHOW_EVENTPROFILER
 - uint DEBUGHUD_SHOW_MEMORY
 - uint DEBUGHUD_SHOW_MODE

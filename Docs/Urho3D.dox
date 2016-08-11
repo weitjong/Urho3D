@@ -56,6 +56,8 @@ For credits, copyright and licensing information, see \ref Credits & \ref Licens
 
 For release history and major changes, see \ref History.
 
+Also see \ref PortingNotes for necessary changes when moving to a newer Urho3D version.
+
 \page Credits Credits
 
 Urho3D development, contributions and bugfixes by:
@@ -83,6 +85,7 @@ Urho3D development, contributions and bugfixes by:
 - Gunnar Kriik
 - Aliaksandr Kryvashein
 - Artem Kulyk
+- Rokas Kupstys
 - Ali K&auml;m&auml;r&auml;inen
 - Pete Leigh
 - Frode 'Modanung' Lindeijer
@@ -145,7 +148,6 @@ Urho3D development, contributions and bugfixes by:
 - reattiva
 - rifai
 - rikorin
-- r-ku
 - skaiware
 - ssinai1
 - svifylabs
@@ -221,7 +223,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 V1.6
 
 - Physically based rendering shaders, techniques, renderpaths and example materials / demo scene.
-- AngelScript support on also on Emscripten and 64-bit iOS, based on generic bindings.
+- AngelScript support on Emscripten and 64-bit iOS, based on generic bindings.
 - JSON load/save option for scenes, nodes and materials.
 - Tags added to nodes & %UI elements.
 - %EventProfiler subsystem.
@@ -242,7 +244,6 @@ V1.6
 - C++11 binding to Urho events using std::bind.
 - C++11 variadic template version of SendEvent().
 - 64-bit integer support in %Serializer / %Deserializer.
-- %String + number operators.
 - Template versions of math functions.
 - Container class API improvements.
 - %SharedPtr / %WeakPtr implicit upcasting support.
@@ -275,7 +276,7 @@ V1.6
 - Allow %Vector4 to substitute for %Color in %Variant::GetColor().
 - Additional %Variant types can function as parameters for AngelScript function / method calls.
 - Improve FixedUpdate event to allow it to originate from either %PhysicsWorld or %PhysicsWorld2D.
-- %Particle effect & animation playback finish events.
+- %Particle effect, animation playback & sound playback finish events.
 - %CrowdAgent emits events also from its node.
 - Event sent after cloning a %Node or %Component is done.
 - b2Contact pointer added to %PhysicsWorld2D collision events.
@@ -316,7 +317,7 @@ V1.6
 - Update to SQLite 3.13.0.
 - Update to stb_image 2.12, stb_image_write 1.02, stb_rect_pack 0.08 & stb_vorbis 1.09.
 - Use Readline library if available for Lua & SQLite.
-- Generic ARM platform support.
+- Generic ARM on Linux platform support.
 - Android NDK r11 & r12 support.
 - Reduce exposure to SDL headers from Urho's headers.
 - Support for Codelite CMake invocation.
@@ -353,6 +354,7 @@ V1.6
 - AssetImporter: support multiple color & UV channels.
 - Fix various missing script bindings & missing export specifiers for classes.
 - Fix various uninitialized variables.
+- Fix hardware shadow support always returning false on OpenGL after the Graphics headers refactor.
 - Fix wrong UV index in drawable OBJ export.
 - Fix backbuffer not getting cleared when just %UI & texture viewports are being rendered.
 - Fix DirExists() on Android.
@@ -1002,6 +1004,30 @@ Related projects:
 - ParticleEditor2D for Urho3D (https://github.com/aster2013/ParticleEditor2D)
 
 - Urho3D libRocket Integration (https://github.com/realrunner/urho3d-librocket)
+
+\page PortingNotes Porting notes
+
+From 1.4 to 1.5:
+
+- Urho preprocessor macros are now prefixed URHO3D_ , for example URHO3D_LOGINFO, URHO3D_HANDLER, URHO3D_DEFINE_APPLICATION_MAIN.
+- Build system - for projects using GCC/Clang compiler toolchain, set the URHO3D_DEPLOYMENT_TARGET build option according to the target audience of the downstream projects. The default value for this build option is 'native' which is great for Urho3D newbie but may potentially cause issue when this build option is not observed and set accordingly for production. The same is true for CMAKE_OSX_DEPLOYMENT_TARGET and IPHONEOS_DEPLOYMENT_TARGET build options when targeting macOS and iOS platforms, however, the latter two build options are not new.
+
+From 1.5 to 1.6:
+
+- The keycode constant KEY_ESC was renamed to KEY_ESCAPE to match SDL's convention.
+- Alphabetic keycode constants are now lowercase to match SDL's convention. It's preferable to always use these constants instead of character literals.
+  For compatibility, passing uppercase letters to e.g. Input::GetKeyDown() still works, but comparing to uppercase literals in key event handling will cause a mismatch and non-functioning controls.
+- Bitmask based vertex declarations are emulated by converting to corresponding VertexElement declarations. This should not cause issues, but it's recommended to migrate to %VertexElement based declarations
+  for better flexibility and control, and to go through any application code that uses the VertexBuffer class to verify correctness.
+- As part of the freeform vertex declaration change, GLSL vertex attributes' semantic indices are now zero-based. The first texcoord would be called iTexCoord or iTexCoord0, and the second iTexCoord1. This matches HLSL semantics
+  that are also zero-based. Instance transform is passed in texcoord semantic indices 4-6 on both GLSL & HLSL.
+- cCameraRot matrix uniform has been removed. %Camera rotation can instead be extracted from the cViewInv uniform.
+- Deferred lighting calculations are now performed in true world space, instead of camera-centered world space.
+- SoundSource autoremove functionality is deprecated and will be removed in the future. The SoundFinished event can be used instead to react to playback finishing and to perform the necessary action, for example to remove the sound component or its owner node.
+- String add operator with char parameter has been removed due to danger of truncating e.g. an int. Replace with adding a string literal (if applicable) or using add-assign or Append() function.
+- Build system - Windows users need to upgrade CMake version to 3.2.3 or higher. CMake version 3.2.3 will be the minimum version required for building Urho3D library on any host systems in the future releases. Mac users need to upgrade CMake version to 3.4.1 or higher when using URHO3D_LUAJIT build option.
+- Build system - the inclusion of Urho3D-CMake-common.cmake module into downstream project's CMakeLists.txt would implicitly instruct CMake to find all the required software packages, including Urho3D library. There is no need now for downstream's CMakeLists.txt to call "find_package (Urho3D)" explicitly, to avoid the Urho3D library from being searched twice. The enhanced FindUrho3D.cmake module now auto-discovers the build options used when building Urho3D library and reapply them to downstream projects. There is no need for users to remember and to supply the same set of build options when performing the initial configuration/generation of the downstream project's build tree.
+- Build system - the Urho3DAll.h header file is now auto-generated for downstream project that needs it. It is not a good practice though to use this "convenience header" as it would slow down the build process unnecessarily.
 
 */
 

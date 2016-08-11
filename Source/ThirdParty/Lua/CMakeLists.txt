@@ -31,7 +31,7 @@ set (AMALG_EXCLUDES .)
 if (READLINE_FOUND)
     add_definitions (-DLUA_USE_READLINE)
     # FIXME: temporary quick fix
-    if (SYSROOT)
+    if (RPI AND CMAKE_CROSSCOMPILING)
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --sysroot=\"${SYSROOT}\"")
     endif ()
     list (APPEND INCLUDE_DIRS ${READLINE_INCLUDE_DIRS})
