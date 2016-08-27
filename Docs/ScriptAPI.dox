@@ -409,6 +409,18 @@ namespace Urho3D
 - %NodeB : Node pointer
 - %Contact : b2Contact pointer
 
+### NodeBeginContact2D
+- %Body : RigidBody2D pointer
+- %OtherNode : Node pointer
+- %OtherBody : RigidBody2D pointer
+- %Contact : b2Contact pointer
+
+### NodeEndContact2D
+- %Body : RigidBody2D pointer
+- %OtherNode : Node pointer
+- %OtherBody : RigidBody2D pointer
+- %Contact : b2Contact pointer
+
 ## %Physics events
 
 ### PhysicsPreStep
@@ -1414,6 +1426,8 @@ namespace Urho3D
 - %Color : Color
 - %Specular %Intensity : float
 - %Brightness %Multiplier : float
+- %Temperature : float
+- %Use %Physical %Values : bool
 - %Range : float
 - %Spot %FOV : float
 - %Spot %Aspect %Ratio : float
@@ -1661,6 +1675,7 @@ namespace Urho3D
 - %Shadow %Distance : float
 - %Animation %LOD %Bias : float
 - %Is %Emitting : bool
+- %Autoremove %Mode : int
 - %Max %Lights : int
 - %View %Mask : int
 - %Light %Mask : int
@@ -1949,7 +1964,7 @@ namespace Urho3D
 - %Attenuation : float
 - %Panning : float
 - %Is %Playing : bool
-- %Autoremove %on %Stop : bool
+- %Autoremove %Mode : int
 - %Play %Position : int
 
 ### SoundSource3D
@@ -1959,7 +1974,7 @@ namespace Urho3D
 - %Frequency : float
 - %Gain : float
 - %Is %Playing : bool
-- %Autoremove %on %Stop : bool
+- %Autoremove %Mode : int
 - %Play %Position : int
 - %Near %Distance : float
 - %Far %Distance : float
@@ -2047,6 +2062,10 @@ namespace Urho3D
 - %Is %Enabled : bool
 - %Height %Map : ResourceRef
 - %Material : ResourceRef
+- %North %Neighbor %NodeID : int
+- %South %Neighbor %NodeID : int
+- %West %Neighbor %NodeID : int
+- %East %Neighbor %NodeID : int
 - %Vertex %Spacing : Vector3
 - %Patch %Size : int
 - %Max %LOD %Levels : int
@@ -3703,6 +3722,7 @@ Properties:
 - FillMode fillMode
 - float fov
 - Frustum frustum // readonly
+- Matrix4 gpuProjection // readonly
 - float halfViewSize // readonly
 - uint id // readonly
 - float lodBias
@@ -3712,7 +3732,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float orthoSize
 - bool orthographic
-- Matrix4 projection // readonly
+- Matrix4 projection
 - Vector2 projectionOffset
 - Plane reflectionPlane
 - int refs // readonly
@@ -6998,9 +7018,11 @@ Properties:
 Methods:
 
 - void Define(const BoundingBox&, const Matrix3x4&)
+- void Define(const Matrix4&)
 - void Define(const Vector3&, const Vector3&, const Matrix3x4&)
 - void Define(float, float, float, float, float, const Matrix3x4&)
 - void DefineOrtho(float, float, float, float, float, const Matrix3x4&)
+- void DefineSplit(const Matrix4&, float, float)
 - float Distance(const Vector3&) const
 - Intersection IsInside(const BoundingBox&)
 - Intersection IsInside(const Sphere&)
@@ -7489,6 +7511,7 @@ Properties:
 - bool castShadows
 - String category // readonly
 - Color color
+- Color colorFromTemperature // readonly
 - float drawDistance
 - Color effectiveColor // readonly
 - float effectiveSpecularIntensity // readonly
@@ -7525,9 +7548,11 @@ Properties:
 - float shadowResolution
 - Texture@ shapeTexture
 - float specularIntensity
+- float temperature
 - bool temporary
 - StringHash type // readonly
 - String typeName // readonly
+- bool usePhysicalValues
 - uint viewMask
 - int weakRefs // readonly
 - BoundingBox worldBoundingBox // readonly
@@ -9423,6 +9448,7 @@ Properties:
 - Variant[] attributeDefaults // readonly
 - AttributeInfo[] attributeInfos // readonly
 - Variant[] attributes
+- AutoRemoveMode autoRemoveMode
 - Billboard@[] billboards // readonly
 - BoundingBox boundingBox // readonly
 - bool castShadows
@@ -11708,7 +11734,7 @@ Properties:
 - Variant[] attributeDefaults // readonly
 - AttributeInfo[] attributeInfos // readonly
 - Variant[] attributes
-- bool autoRemove
+- AutoRemoveMode autoRemoveMode
 - String category // readonly
 - bool enabled
 - bool enabledEffective // readonly
@@ -11783,7 +11809,7 @@ Properties:
 - Variant[] attributeDefaults // readonly
 - AttributeInfo[] attributeInfos // readonly
 - Variant[] attributes
-- bool autoRemove
+- AutoRemoveMode autoRemoveMode
 - String category // readonly
 - bool enabled
 - bool enabledEffective // readonly
@@ -12552,6 +12578,7 @@ Methods:
 - Variant GetAttributeDefault(const String&) const
 - float GetHeight(const Vector3&) const
 - bool GetInterceptNetworkUpdate(const String&) const
+- TerrainPatch@ GetNeighborPatch(int, int) const
 - Vector3 GetNormal(const Vector3&) const
 - TerrainPatch@ GetPatch(int, int) const
 - bool HasSubscribedToEvent(Object@, const String&)
@@ -12578,6 +12605,7 @@ Methods:
 - void SetAttributeAnimationTime(const String&, float)
 - void SetAttributeAnimationWrapMode(const String&, WrapMode)
 - void SetInterceptNetworkUpdate(const String&, bool)
+- void SetNeighbors(Terrain@, Terrain@, Terrain@, Terrain@)
 - IntVector2 WorldToHeightMap(const Vector3&) const
 
 Properties:
@@ -12589,6 +12617,7 @@ Properties:
 - bool castShadows
 - String category // readonly
 - float drawDistance
+- Terrain@ eastNeighbor
 - bool enabled
 - bool enabledEffective // readonly
 - Image@ heightMap
@@ -12599,6 +12628,7 @@ Properties:
 - uint maxLights
 - uint maxLodLevels
 - Node@ node // readonly
+- Terrain@ northNeighbor
 - uint numAttributes // readonly
 - IntVector2 numPatches // readonly
 - IntVector2 numVertices // readonly
@@ -12612,12 +12642,14 @@ Properties:
 - float shadowDistance
 - uint shadowMask
 - bool smoothing
+- Terrain@ southNeighbor
 - Vector3 spacing
 - bool temporary
 - StringHash type // readonly
 - String typeName // readonly
 - uint viewMask
 - int weakRefs // readonly
+- Terrain@ westNeighbor
 - uint zoneMask
 
 <a name="Class_TerrainPatch"></a>
@@ -13681,6 +13713,7 @@ Methods:
 - bool SaveLayout(File@, UIElement@)
 - bool SaveLayout(VectorBuffer&, UIElement@)
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
+- void SetCustomSize(int, int)
 - void SetFocusElement(UIElement@, bool = false)
 - void SetHeight(float)
 - void SetWidth(float)
@@ -13692,6 +13725,7 @@ Properties:
 - String clipBoardText
 - Cursor@ cursor
 - IntVector2 cursorPosition // readonly
+- IntVector2 customSize
 - float defaultToolTipDelay
 - float doubleClickInterval
 - int dragBeginDistance
@@ -14841,6 +14875,13 @@ Properties:
 
 - ABM_LERP
 - ABM_ADDITIVE
+
+
+### AutoRemoveMode
+
+- REMOVE_DISABLED
+- REMOVE_COMPONENT
+- REMOVE_NODE
 
 
 ### BlendMode

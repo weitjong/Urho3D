@@ -1276,6 +1276,8 @@ float fov;
 /* readonly */
 Frustum frustum;
 /* readonly */
+Matrix4 gpuProjection;
+/* readonly */
 float halfViewSize;
 /* readonly */
 uint id;
@@ -1288,7 +1290,6 @@ uint numAttributes;
 ObjectAnimation objectAnimation;
 float orthoSize;
 bool orthographic;
-/* readonly */
 Matrix4 projection;
 Vector2 projectionOffset;
 Plane reflectionPlane;
@@ -5036,9 +5037,11 @@ class Frustum
 {
 // Methods:
 void Define(const BoundingBox&, const Matrix3x4&);
+void Define(const Matrix4&);
 void Define(const Vector3&, const Vector3&, const Matrix3x4&);
 void Define(float, float, float, float, float, const Matrix3x4&);
 void DefineOrtho(float, float, float, float, float, const Matrix3x4&);
+void DefineSplit(const Matrix4&, float, float);
 float Distance(const Vector3&) const;
 Intersection IsInside(const BoundingBox&);
 Intersection IsInside(const Sphere&);
@@ -5634,6 +5637,8 @@ bool castShadows;
 /* readonly */
 String category;
 Color color;
+/* readonly */
+Color colorFromTemperature;
 float drawDistance;
 /* readonly */
 Color effectiveColor;
@@ -5681,11 +5686,13 @@ float shadowNearFarRatio;
 float shadowResolution;
 Texture shapeTexture;
 float specularIntensity;
+float temperature;
 bool temporary;
 /* readonly */
 StringHash type;
 /* readonly */
 String typeName;
+bool usePhysicalValues;
 uint viewMask;
 /* readonly */
 int weakRefs;
@@ -7810,6 +7817,7 @@ Array<Variant> attributeDefaults;
 /* readonly */
 Array<AttributeInfo> attributeInfos;
 Array<Variant> attributes;
+AutoRemoveMode autoRemoveMode;
 /* readonly */
 Array<Billboard> billboards;
 /* readonly */
@@ -10362,7 +10370,7 @@ Array<Variant> attributeDefaults;
 /* readonly */
 Array<AttributeInfo> attributeInfos;
 Array<Variant> attributes;
-bool autoRemove;
+AutoRemoveMode autoRemoveMode;
 /* readonly */
 String category;
 bool enabled;
@@ -10449,7 +10457,7 @@ Array<Variant> attributeDefaults;
 /* readonly */
 Array<AttributeInfo> attributeInfos;
 Array<Variant> attributes;
-bool autoRemove;
+AutoRemoveMode autoRemoveMode;
 /* readonly */
 String category;
 bool enabled;
@@ -11311,6 +11319,7 @@ WrapMode GetAttributeAnimationWrapMode(const String&) const;
 Variant GetAttributeDefault(const String&) const;
 float GetHeight(const Vector3&) const;
 bool GetInterceptNetworkUpdate(const String&) const;
+TerrainPatch GetNeighborPatch(int, int) const;
 Vector3 GetNormal(const Vector3&) const;
 TerrainPatch GetPatch(int, int) const;
 bool HasSubscribedToEvent(Object, const String&);
@@ -11337,6 +11346,7 @@ void SetAttributeAnimationSpeed(const String&, float);
 void SetAttributeAnimationTime(const String&, float);
 void SetAttributeAnimationWrapMode(const String&, WrapMode);
 void SetInterceptNetworkUpdate(const String&, bool);
+void SetNeighbors(Terrain, Terrain, Terrain, Terrain);
 IntVector2 WorldToHeightMap(const Vector3&) const;
 
 // Properties:
@@ -11350,6 +11360,7 @@ bool castShadows;
 /* readonly */
 String category;
 float drawDistance;
+Terrain eastNeighbor;
 bool enabled;
 /* readonly */
 bool enabledEffective;
@@ -11363,6 +11374,7 @@ uint maxLights;
 uint maxLodLevels;
 /* readonly */
 Node node;
+Terrain northNeighbor;
 /* readonly */
 uint numAttributes;
 /* readonly */
@@ -11381,6 +11393,7 @@ int refs;
 float shadowDistance;
 uint shadowMask;
 bool smoothing;
+Terrain southNeighbor;
 Vector3 spacing;
 bool temporary;
 /* readonly */
@@ -11390,6 +11403,7 @@ String typeName;
 uint viewMask;
 /* readonly */
 int weakRefs;
+Terrain westNeighbor;
 uint zoneMask;
 };
 
@@ -12656,6 +12670,7 @@ UIElement LoadLayout(XMLFile, XMLFile);
 bool SaveLayout(File, UIElement);
 bool SaveLayout(VectorBuffer&, UIElement);
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
+void SetCustomSize(int, int);
 void SetFocusElement(UIElement, bool = false);
 void SetHeight(float);
 void SetWidth(float);
@@ -12668,6 +12683,7 @@ String clipBoardText;
 Cursor cursor;
 /* readonly */
 IntVector2 cursorPosition;
+IntVector2 customSize;
 float defaultToolTipDelay;
 float doubleClickInterval;
 int dragBeginDistance;
@@ -13942,6 +13958,13 @@ enum AnimationBlendMode
 {
 ABM_LERP,
 ABM_ADDITIVE,
+};
+
+enum AutoRemoveMode
+{
+REMOVE_DISABLED,
+REMOVE_COMPONENT,
+REMOVE_NODE,
 };
 
 enum BlendMode

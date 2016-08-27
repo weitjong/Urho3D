@@ -120,7 +120,9 @@ static void RegisterCamera(asIScriptEngine* engine)
     engine->RegisterObjectMethod("Camera", "void set_fillMode(FillMode)", asMETHOD(Camera, SetFillMode), asCALL_THISCALL);
     engine->RegisterObjectMethod("Camera", "FillMode get_fillMode() const", asMETHOD(Camera, GetFillMode), asCALL_THISCALL);
     engine->RegisterObjectMethod("Camera", "const Frustum& get_frustum() const", asMETHOD(Camera, GetFrustum), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Camera", "const Matrix4& get_projection() const", asMETHODPR(Camera, GetProjection, () const, const Matrix4&), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Camera", "void set_projection(const Matrix4&in)", asMETHOD(Camera, SetProjection), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Camera", "Matrix4 get_projection() const", asMETHOD(Camera, GetProjection), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Camera", "Matrix4 get_gpuProjection() const", asMETHOD(Camera, GetGPUProjection), asCALL_THISCALL);
     engine->RegisterObjectMethod("Camera", "const Matrix3x4& get_view() const", asMETHOD(Camera, GetView), asCALL_THISCALL);
     engine->RegisterObjectMethod("Camera", "Frustum get_viewSpaceFrustum() const", asMETHOD(Camera, GetViewSpaceFrustum), asCALL_THISCALL);
     engine->RegisterObjectMethod("Camera", "float get_halfViewSize() const", asMETHOD(Camera, GetHalfViewSize), asCALL_THISCALL);
@@ -1202,6 +1204,10 @@ static void RegisterLight(asIScriptEngine* engine)
     engine->RegisterObjectMethod("Light", "bool get_perVertex() const", asMETHOD(Light, GetPerVertex), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "void set_color(const Color&in)", asMETHOD(Light, SetColor), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "const Color& get_color() const", asMETHOD(Light, GetColor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Light", "void set_temperature(float)", asMETHOD(Light, SetTemperature), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Light", "float get_temperature() const", asMETHOD(Light, GetTemperature), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Light", "void set_usePhysicalValues(bool)", asMETHOD(Light, SetUsePhysicalValues), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Light", "bool get_usePhysicalValues() const", asMETHOD(Light, GetUsePhysicalValues), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "void set_specularIntensity(float)", asMETHOD(Light, SetSpecularIntensity), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "float get_specularIntensity() const", asMETHOD(Light, GetSpecularIntensity), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "void set_brightness(float)", asMETHOD(Light, SetBrightness), asCALL_THISCALL);
@@ -1235,6 +1241,7 @@ static void RegisterLight(asIScriptEngine* engine)
     engine->RegisterObjectMethod("Light", "Frustum get_frustum() const", asMETHOD(Light, GetFrustum), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "int get_numShadowSplits() const", asMETHOD(Light, GetNumShadowSplits), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "bool get_negative() const", asMETHOD(Light, IsNegative), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Light", "Color get_colorFromTemperature() const", asMETHOD(Light, GetColorFromTemperature), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "Color get_effectiveColor() const", asMETHOD(Light, GetEffectiveColor), asCALL_THISCALL);
     engine->RegisterObjectMethod("Light", "float get_effectiveSpecularIntensity() const", asMETHOD(Light, GetEffectiveSpecularIntensity), asCALL_THISCALL);
 }
@@ -1605,6 +1612,8 @@ static void RegisterParticleEmitter(asIScriptEngine* engine)
     engine->RegisterObjectMethod("ParticleEmitter", "FaceCameraMode get_faceCameraMode() const", asMETHOD(ParticleEmitter, GetFaceCameraMode), asCALL_THISCALL);
     engine->RegisterObjectMethod("ParticleEmitter", "void set_animationLodBias(float)", asMETHOD(ParticleEmitter, SetAnimationLodBias), asCALL_THISCALL);
     engine->RegisterObjectMethod("ParticleEmitter", "float get_animationLodBias() const", asMETHOD(ParticleEmitter, GetAnimationLodBias), asCALL_THISCALL);
+    engine->RegisterObjectMethod("ParticleEmitter", "void set_autoRemoveMode(AutoRemoveMode)", asMETHOD(ParticleEmitter, SetAutoRemoveMode), asCALL_THISCALL);
+    engine->RegisterObjectMethod("ParticleEmitter", "AutoRemoveMode get_autoRemoveMode() const", asMETHOD(ParticleEmitter, GetAutoRemoveMode), asCALL_THISCALL);
     engine->RegisterObjectMethod("ParticleEmitter", "Billboard@+ get_billboards(uint)", asMETHOD(ParticleEmitter, GetBillboard), asCALL_THISCALL);
     engine->RegisterObjectMethod("ParticleEmitter", "Zone@+ get_zone() const", asMETHOD(ParticleEmitter, GetZone), asCALL_THISCALL);
 
@@ -1721,7 +1730,9 @@ static void RegisterTerrain(asIScriptEngine* engine)
     engine->RegisterObjectMethod("Terrain", "float GetHeight(const Vector3&in) const", asMETHOD(Terrain, GetHeight), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "Vector3 GetNormal(const Vector3&in) const", asMETHOD(Terrain, GetNormal), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "TerrainPatch@+ GetPatch(int, int) const", asMETHODPR(Terrain, GetPatch, (int, int) const, TerrainPatch*), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "TerrainPatch@+ GetNeighborPatch(int, int) const", asMETHODPR(Terrain, GetNeighborPatch, (int, int) const, TerrainPatch*), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "IntVector2 WorldToHeightMap(const Vector3&in) const", asMETHOD(Terrain, WorldToHeightMap), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "void SetNeighbors(Terrain@+, Terrain@+, Terrain@+, Terrain@+)", asMETHOD(Terrain, SetNeighbors), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "void set_material(Material@+)", asMETHOD(Terrain, SetMaterial), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "Material@+ get_material() const", asMETHOD(Terrain, GetMaterial), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "void set_maxLodLevels(uint)", asMETHOD(Terrain, SetMaxLodLevels), asCALL_THISCALL);
@@ -1761,6 +1772,14 @@ static void RegisterTerrain(asIScriptEngine* engine)
     engine->RegisterObjectMethod("Terrain", "uint get_zoneMask() const", asMETHOD(Terrain, GetZoneMask), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "void set_maxLights(uint)", asMETHOD(Terrain, SetMaxLights), asCALL_THISCALL);
     engine->RegisterObjectMethod("Terrain", "uint get_maxLights() const", asMETHOD(Terrain, GetMaxLights), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "void set_northNeighbor(Terrain@+)", asMETHOD(Terrain, SetNorthNeighbor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "Terrain@+ get_northNeighbor() const", asMETHOD(Terrain, GetNorthNeighbor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "void set_southNeighbor(Terrain@+)", asMETHOD(Terrain, SetSouthNeighbor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "Terrain@+ get_southNeighbor() const", asMETHOD(Terrain, GetSouthNeighbor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "void set_westNeighbor(Terrain@+)", asMETHOD(Terrain, SetEastNeighbor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "Terrain@+ get_westNeighbor() const", asMETHOD(Terrain, GetEastNeighbor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "void set_eastNeighbor(Terrain@+)", asMETHOD(Terrain, SetWestNeighbor), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Terrain", "Terrain@+ get_eastNeighbor() const", asMETHOD(Terrain, GetWestNeighbor), asCALL_THISCALL);
 }
 
 

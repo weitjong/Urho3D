@@ -121,6 +121,7 @@ Urho3D development, contributions and bugfixes by:
 - MonkeyFirst
 - Newb I the Newbd
 - OvermindDL1
+- Scellow
 - Skrylar
 - TheComet93
 - Y-way
@@ -204,7 +205,11 @@ Jack and mushroom models from the realXtend project. (https://www.realxtend.org)
 Ninja model and terrain, water, smoke, flare and status bar textures from OGRE.<br>
 BlueHighway font from Larabie Fonts.<br>
 Anonymous Pro font by Mark Simonson.<br>
-NinjaSnowWar sounds by Veli-Pekka T&auml;til&auml;.
+NinjaSnowWar sounds by Veli-Pekka T&auml;til&auml;.<br>
+PBR textures from Substance Share. (https://share.allegorithmic.com)<br>
+IBL textures from HDRLab's sIBL Archive.<br>
+Dieselpunk Moto model by allexandr007.<br>
+Mutant model from Mixamo.<br>
 
 
 \page License License
@@ -1028,6 +1033,11 @@ From 1.5 to 1.6:
 - Build system - Windows users need to upgrade CMake version to 3.2.3 or higher. CMake version 3.2.3 will be the minimum version required for building Urho3D library on any host systems in the future releases. Mac users need to upgrade CMake version to 3.4.1 or higher when using URHO3D_LUAJIT build option.
 - Build system - the inclusion of Urho3D-CMake-common.cmake module into downstream project's CMakeLists.txt would implicitly instruct CMake to find all the required software packages, including Urho3D library. There is no need now for downstream's CMakeLists.txt to call "find_package (Urho3D)" explicitly, to avoid the Urho3D library from being searched twice. The enhanced FindUrho3D.cmake module now auto-discovers the build options used when building Urho3D library and reapply them to downstream projects. There is no need for users to remember and to supply the same set of build options when performing the initial configuration/generation of the downstream project's build tree.
 - Build system - the Urho3DAll.h header file is now auto-generated for downstream project that needs it. It is not a good practice though to use this "convenience header" as it would slow down the build process unnecessarily.
+
+From 1.6 to master:
+
+- SoundSource autoremove boolean was replaced with AutoRemoveMode enum, which allows removing either the component or owner node. Also used by ParticleEmitter.
+- Getting camera projection matrix has changed. Use GetProjection() to get the API-independent matrix, and GetGPUProjection() to get the matrix converted to be usable as a shader parameter. On D3D these are the same.
 
 */
 
