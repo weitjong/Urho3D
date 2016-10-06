@@ -116,6 +116,20 @@ namespace Urho3D
 - %Scene : Scene pointer
 - %Camera : Camera pointer
 
+### ViewBuffersReady
+- %View : View pointer
+- %Texture : Texture pointer
+- %Surface : RenderSurface pointer
+- %Scene : Scene pointer
+- %Camera : Camera pointer
+
+### ViewGlobalShaderParameters
+- %View : View pointer
+- %Texture : Texture pointer
+- %Surface : RenderSurface pointer
+- %Scene : Scene pointer
+- %Camera : Camera pointer
+
 ### EndViewRender
 - %View : View pointer
 - %Texture : Texture pointer
@@ -686,6 +700,8 @@ namespace Urho3D
 - %Element : UIElement pointer
 - %Width : int
 - %Height : int
+- %DX : int
+- %DY : int
 
 ### Positioned
 - %Element : UIElement pointer
@@ -914,6 +930,7 @@ namespace Urho3D
 - %Can %Be %Occluded : bool
 - %Cast %Shadows : bool
 - %Face %Camera %Mode : int
+- %Min %Angle : float
 - %Draw %Distance : float
 - %Shadow %Distance : float
 - %Animation %LOD %Bias : float
@@ -932,6 +949,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -974,6 +997,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1040,6 +1069,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1284,6 +1319,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1336,11 +1377,15 @@ namespace Urho3D
 - %Shadow %Mask : int
 - %Zone %Mask : int
 
+### DebugRenderer
+- %Line %Antialias : bool
+
 ### DecalSet
 - %Is %Enabled : bool
 - %Material : ResourceRef
 - %Max %Vertices : int
 - %Max %Indices : int
+- %Optimize %Buffer %Size : bool
 - %Can %Be %Occluded : bool
 - %Draw %Distance : float
 - %Max %Lights : int
@@ -1357,6 +1402,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1454,6 +1505,7 @@ namespace Urho3D
 - %Depth %Slope %Bias : float
 - %Normal %Offset : float
 - %Near/Farclip %Ratio : float
+- %Max %Extrusion : float
 - %View %Mask : int
 - %Light %Mask : int
 
@@ -1465,6 +1517,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1513,6 +1571,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1567,6 +1631,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1803,6 +1873,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1854,6 +1930,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -1914,6 +1996,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -2091,6 +2179,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -2144,6 +2238,7 @@ namespace Urho3D
 - %Can %Be %Occluded : bool
 - %Fixed %Screen %Size : bool
 - %Face %Camera %Mode : int
+- %Min %Angle : float
 - %Draw %Distance : float
 - %Width : int
 - %Horiz %Alignment : int
@@ -2173,6 +2268,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -2209,6 +2310,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -2244,6 +2351,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -2295,6 +2408,12 @@ namespace Urho3D
 - %Max %Size : IntVector2
 - %Horiz %Alignment : int
 - %Vert %Alignment : int
+- %Min %Anchor : Vector2
+- %Max %Anchor : Vector2
+- %Min %Offset : IntVector2
+- %Max %Offset : IntVector2
+- %Pivot : Vector2
+- %Enable %Anchor : bool
 - %Clip %Border : IntRect
 - %Priority : int
 - %Opacity : float
@@ -3221,6 +3340,7 @@ Properties:
 - float lodBias
 - Material@ material
 - uint maxLights
+- float minAngle
 - Node@ node // readonly
 - uint numAttributes // readonly
 - uint numBillboards
@@ -3338,9 +3458,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -3375,6 +3498,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -3396,10 +3520,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -3409,6 +3537,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -3555,9 +3684,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetPressedChildOffset(int, int)
 - void SetPressedOffset(int, int)
@@ -3595,6 +3727,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -3616,10 +3749,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -3629,6 +3766,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - bool pressed // readonly
 - IntVector2 pressedChildOffset
@@ -3843,9 +3981,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -3882,6 +4023,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -3903,10 +4045,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -3916,6 +4062,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -5796,9 +5943,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetShape(CursorShape)
 - void SetShape(const String&)
@@ -5835,6 +5985,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -5856,10 +6007,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -5869,6 +6024,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -6147,6 +6303,7 @@ Properties:
 - bool enabled
 - bool enabledEffective // readonly
 - uint id // readonly
+- bool lineAntiAlias
 - Node@ node // readonly
 - uint numAttributes // readonly
 - ObjectAnimation@ objectAnimation
@@ -6228,6 +6385,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - bool occludee
 - bool occluder
+- bool optimizeBufferSize
 - int refs // readonly
 - float shadowDistance
 - uint shadowMask
@@ -6554,9 +6712,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetPressedChildOffset(int, int)
 - void SetPressedOffset(int, int)
@@ -6597,6 +6758,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -6620,10 +6782,14 @@ Properties:
 - LayoutMode layoutMode
 - int layoutSpacing
 - ListView@ listView // readonly
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -6634,6 +6800,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - UIElement@ placeholder // readonly
 - String placeholderText
 - IntVector2 position
@@ -7120,6 +7287,7 @@ Properties:
 - bool sRGB
 - bool sRGBSupport // readonly
 - bool sRGBWriteSupport // readonly
+- String shaderCacheDir
 - bool tripleBuffer // readonly
 - StringHash type // readonly
 - String typeName // readonly
@@ -7280,6 +7448,7 @@ Properties:
 Methods:
 
 - int AddScreenJoystick(XMLFile@ = null, XMLFile@ = null)
+- void CenterMousePosition()
 - int GetKeyFromName(const String&) const
 - int GetKeyFromScancode(int) const
 - String GetKeyName(int) const
@@ -7325,7 +7494,7 @@ Properties:
 - int mouseMoveWheel // readonly
 - int mouseMoveX // readonly
 - int mouseMoveY // readonly
-- IntVector2 mousePosition // readonly
+- IntVector2 mousePosition
 - bool mouseVisible
 - uint numJoysticks // readonly
 - uint numTouches // readonly
@@ -7438,8 +7607,11 @@ Properties:
 - bool isNumber // readonly
 - bool isObject // readonly
 - bool isString // readonly
+- JSONNumberType numberType // readonly
+- String numberTypeName // readonly
 - uint size // readonly
 - JSONValueType valueType // readonly
+- String valueTypeName // readonly
 
 <a name="Class_JoystickState"></a>
 
@@ -7544,6 +7716,7 @@ Properties:
 - FocusParameters shadowFocus
 - float shadowIntensity
 - uint shadowMask
+- float shadowMaxExtrusion
 - float shadowNearFarRatio
 - float shadowResolution
 - Texture@ shapeTexture
@@ -7639,9 +7812,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -7681,6 +7857,7 @@ Properties:
 - uint echoCharacter
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -7702,11 +7879,15 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
 - uint maxLength
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -7716,6 +7897,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -7838,9 +8020,12 @@ Methods:
 - void SetFixedWidth(int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetScrollBarsVisible(bool, bool)
 - void SetSelections(uint[]@)
@@ -7883,6 +8068,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -7905,10 +8091,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - bool multiselect
@@ -7921,6 +8111,7 @@ Properties:
 - float opacity
 - float pageStep
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -8046,14 +8237,17 @@ Methods:
 
 Properties:
 
+- bool alphaToCoverage
 - String category // readonly
 - CullMode cullMode
 - BiasParameters depthBias
 - FillMode fillMode
+- bool lineAntiAlias
 - uint memoryUse // readonly
 - String name
 - uint numTechniques
-- bool occlusion // readonly
+- bool occlusion
+- String pixelShaderDefines
 - int refs // readonly
 - uint8 renderOrder
 - Scene@ scene
@@ -8066,6 +8260,7 @@ Properties:
 - StringHash type // readonly
 - String typeName // readonly
 - uint useTimer // readonly
+- String vertexShaderDefines
 - int weakRefs // readonly
 
 <a name="Class_Matrix2"></a>
@@ -8275,9 +8470,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPopupOffset(int, int)
 - void SetPosition(int, int)
 - void SetPressedChildOffset(int, int)
@@ -8318,6 +8516,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -8339,10 +8538,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -8352,6 +8555,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - UIElement@ popup
 - IntVector2 popupOffset
 - IntVector2 position
@@ -9574,7 +9778,7 @@ Properties:
 
 Properties:
 
-- bool alphaMask
+- bool alphaToCoverage
 - BlendMode blendMode
 - CullMode cullMode
 - CompareMode depthTestMode
@@ -9582,9 +9786,11 @@ Properties:
 - bool desktop
 - PassLightingMode lightingMode
 - String pixelShader
+- String pixelShaderDefineExcludes
 - String pixelShaderDefines
 - int refs // readonly
 - String vertexShader
+- String vertexShaderDefineExcludes
 - String vertexShaderDefines
 - int weakRefs // readonly
 
@@ -10028,6 +10234,7 @@ Properties:
 - RenderSurface@ linkedRenderTarget
 - uint numViewports
 - Texture@ parentTexture // readonly
+- bool resolveDirty // readonly
 - RenderSurfaceUpdateMode updateMode
 - TextureUsage usage // readonly
 - Viewport@[] viewports
@@ -10039,10 +10246,12 @@ Properties:
 
 Properties:
 
+- bool autoResolve
 - bool cubemap
 - bool enabled
 - bool filtered
 - uint format
+- int multiSample
 - String name
 - bool persistent
 - bool sRGB
@@ -10108,6 +10317,7 @@ Properties:
 - StringHash type // readonly
 - String typeName // readonly
 - Viewport@[] viewports
+- int vsmMultiSample
 - Vector2 vsmShadowParameters
 - int weakRefs // readonly
 
@@ -10888,9 +11098,12 @@ Methods:
 - void SetFixedWidth(int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -10927,6 +11140,7 @@ Properties:
 - bool editable
 - float effectiveScrollStep // readonly
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -10946,10 +11160,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -10960,6 +11178,7 @@ Properties:
 - float opacity
 - Orientation orientation
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - float range
@@ -11066,9 +11285,12 @@ Methods:
 - void SetFixedWidth(int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetScrollBarsVisible(bool, bool)
 - void SetSize(int, int)
@@ -11106,6 +11328,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -11125,10 +11348,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -11139,6 +11366,7 @@ Properties:
 - float opacity
 - float pageStep
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -11426,9 +11654,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -11463,6 +11694,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -11485,10 +11717,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -11499,6 +11735,7 @@ Properties:
 - float opacity
 - Orientation orientation
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - float range
@@ -12036,9 +12273,12 @@ Methods:
 - void SetHotSpot(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(float, float)
 - void SetScale(float)
 - void SetScale(float, float)
@@ -12074,6 +12314,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -12094,10 +12335,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -12107,6 +12352,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - Vector2 position
 - int priority
 - int refs // readonly
@@ -12808,9 +13054,12 @@ Methods:
 - bool SetFont(const String&, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSelection(uint, uint = M_MAX_UNSIGNED)
 - void SetSize(int, int)
@@ -12851,6 +13100,7 @@ Properties:
 - IntVector2 effectShadowOffset
 - int effectStrokeThickness
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -12872,10 +13122,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -12887,6 +13141,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -13042,6 +13297,8 @@ Methods:
 Properties:
 
 - TextureAddressMode[] addressMode
+- uint anisotropy
+- bool autoResolve // readonly
 - Texture@ backupTexture
 - Color borderColor
 - String category // readonly
@@ -13056,8 +13313,10 @@ Properties:
 - uint levels // readonly
 - uint memoryUse // readonly
 - int[] mipsToSkip
+- int multiSample // readonly
 - String name
 - int refs // readonly
+- bool resolveDirty // readonly
 - bool sRGB
 - StringHash type // readonly
 - String typeName // readonly
@@ -13083,11 +13342,13 @@ Methods:
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
 - bool SetData(Image@, bool = false)
 - void SetNumLevels(uint)
-- bool SetSize(int, int, uint, TextureUsage = TEXTURE_STATIC)
+- bool SetSize(int, int, uint, TextureUsage = TEXTURE_STATIC, int = 1, bool = true)
 
 Properties:
 
 - TextureAddressMode[] addressMode
+- uint anisotropy
+- bool autoResolve // readonly
 - Texture@ backupTexture
 - Color borderColor
 - String category // readonly
@@ -13102,9 +13363,11 @@ Properties:
 - uint levels // readonly
 - uint memoryUse // readonly
 - int[] mipsToSkip
+- int multiSample // readonly
 - String name
 - int refs // readonly
 - RenderSurface@ renderSurface // readonly
+- bool resolveDirty // readonly
 - bool sRGB
 - StringHash type // readonly
 - String typeName // readonly
@@ -13134,6 +13397,8 @@ Methods:
 Properties:
 
 - TextureAddressMode[] addressMode
+- uint anisotropy
+- bool autoResolve // readonly
 - Texture@ backupTexture
 - Color borderColor
 - String category // readonly
@@ -13149,9 +13414,11 @@ Properties:
 - uint levels // readonly
 - uint memoryUse // readonly
 - int[] mipsToSkip
+- int multiSample // readonly
 - String name
 - int refs // readonly
 - RenderSurface@ renderSurface // readonly
+- bool resolveDirty // readonly
 - bool sRGB
 - StringHash type // readonly
 - String typeName // readonly
@@ -13181,6 +13448,8 @@ Methods:
 Properties:
 
 - TextureAddressMode[] addressMode
+- uint anisotropy
+- bool autoResolve // readonly
 - Texture@ backupTexture
 - Color borderColor
 - String category // readonly
@@ -13195,8 +13464,10 @@ Properties:
 - uint levels // readonly
 - uint memoryUse // readonly
 - int[] mipsToSkip
+- int multiSample // readonly
 - String name
 - int refs // readonly
+- bool resolveDirty // readonly
 - bool sRGB
 - StringHash type // readonly
 - String typeName // readonly
@@ -13222,11 +13493,13 @@ Methods:
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
 - bool SetData(CubeMapFace, Image@, bool = false)
 - void SetNumLevels(uint)
-- bool SetSize(int, uint, TextureUsage = TEXTURE_STATIC)
+- bool SetSize(int, uint, TextureUsage = TEXTURE_STATIC, int = 1)
 
 Properties:
 
 - TextureAddressMode[] addressMode
+- uint anisotropy
+- bool autoResolve // readonly
 - Texture@ backupTexture
 - Color borderColor
 - String category // readonly
@@ -13241,9 +13514,11 @@ Properties:
 - uint levels // readonly
 - uint memoryUse // readonly
 - int[] mipsToSkip
+- int multiSample // readonly
 - String name
 - int refs // readonly
 - RenderSurface@[] renderSurfaces // readonly
+- bool resolveDirty // readonly
 - bool sRGB
 - StringHash type // readonly
 - String typeName // readonly
@@ -13588,9 +13863,12 @@ Methods:
 - void SetFixedWidth(int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -13624,6 +13902,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -13642,10 +13921,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -13655,6 +13938,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -13825,9 +14109,12 @@ Methods:
 - void SetFixedWidth(int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -13860,6 +14147,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -13878,10 +14166,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - String name
@@ -13891,6 +14183,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -14292,9 +14585,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -14333,6 +14629,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -14357,10 +14654,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - bool modal
@@ -14376,6 +14677,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -14528,9 +14830,12 @@ Methods:
 - void SetHoverOffset(int, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
+- void SetMaxAnchor(float, float)
 - void SetMaxSize(int, int)
+- void SetMinAnchor(float, float)
 - void SetMinSize(int, int)
 - void SetParent(UIElement@, uint = M_MAX_UNSIGNED)
+- void SetPivot(float, float)
 - void SetPosition(int, int)
 - void SetSize(int, int)
 - bool SetStyle(const String&, XMLFile@ = null)
@@ -14565,6 +14870,7 @@ Properties:
 - uint dragDropMode
 - bool editable
 - bool elementEventSender
+- bool enableAnchor
 - bool enabled
 - bool enabledSelf // readonly
 - bool fixedHeight // readonly
@@ -14588,10 +14894,14 @@ Properties:
 - Vector2 layoutFlexScale
 - LayoutMode layoutMode
 - int layoutSpacing
+- Vector2 maxAnchor
 - int maxHeight
+- IntVector2 maxOffset
 - IntVector2 maxSize
 - int maxWidth
+- Vector2 minAnchor
 - int minHeight
+- IntVector2 minOffset
 - IntVector2 minSize
 - int minWidth
 - bool modal
@@ -14607,6 +14917,7 @@ Properties:
 - ObjectAnimation@ objectAnimation
 - float opacity
 - UIElement@ parent
+- Vector2 pivot
 - IntVector2 position
 - int priority
 - int refs // readonly
@@ -15047,6 +15358,7 @@ Properties:
 - FC_ROTATE_Y
 - FC_LOOKAT_XYZ
 - FC_LOOKAT_Y
+- FC_LOOKAT_MIXED
 - FC_DIRECTION
 
 
@@ -15084,6 +15396,7 @@ Properties:
 - HA_LEFT
 - HA_CENTER
 - HA_RIGHT
+- HA_CUSTOM
 
 
 ### HttpRequestState
@@ -15114,6 +15427,14 @@ Properties:
 - OUTSIDE
 - INTERSECTS
 - INSIDE
+
+
+### JSONNumberType
+
+- JSONNT_NAN
+- JSONNT_INT
+- JSONNT_UINT
+- JSONNT_FLOAT_DOUBLE
 
 
 ### JSONValueType
@@ -15167,6 +15488,7 @@ Properties:
 - NAVIGATIONPUSHINESS_LOW
 - NAVIGATIONPUSHINESS_MEDIUM
 - NAVIGATIONPUSHINESS_HIGH
+- NAVIGATIONPUSHINESS_NONE
 
 
 ### NavigationQuality
@@ -15435,6 +15757,7 @@ Properties:
 - VA_TOP
 - VA_CENTER
 - VA_BOTTOM
+- VA_CUSTOM
 
 
 ### WrapMode
@@ -15589,6 +15912,7 @@ Properties:
 - uint AM_COMPONENTID
 - uint AM_DEFAULT
 - uint AM_FILE
+- uint AM_FILEREADONLY
 - uint AM_LATESTDATA
 - uint AM_NET
 - uint AM_NODEID

@@ -72,7 +72,8 @@ Camera::Camera(Context* context) :
     autoAspectRatio_(true),
     flipVertical_(false),
     useReflection_(false),
-    useClipping_(false)
+    useClipping_(false),
+    customProjection_(false)
 {
     reflectionMatrix_ = reflectionPlane_.ReflectionMatrix();
 }
@@ -261,6 +262,7 @@ void Camera::SetProjection(const Matrix4& projection)
     projectionDirty_ = false;
     autoAspectRatio_ = false;
     frustumDirty_ = true;
+    customProjection_ = true;
     // Called due to autoAspectRatio changing state, the projection itself is not serialized
     MarkNetworkUpdate();
 }
@@ -283,13 +285,24 @@ float Camera::GetFarClip() const
 
 const Frustum& Camera::GetFrustum() const
 {
+    // Use projection_ instead of GetProjection() so that Y-flip has no effect. Update first if necessary
+    if (projectionDirty_)
+        UpdateProjection();
+
     if (frustumDirty_)
     {
-        // Use projection_ instead of GetProjection() so that Y-flip has no effect. Update first if necessary
-        if (projectionDirty_)
-            UpdateProjection();
+        if (customProjection_)
+            frustum_.Define(projection_ * GetView());
+        else
+        {
+            // If not using a custom projection, prefer calculating frustum from projection parameters instead of matrix
+            // for better accuracy
+            if (!orthographic_)
+                frustum_.Define(fov_, aspectRatio_, zoom_, GetNearClip(), GetFarClip(), GetEffectiveWorldTransform());
+            else
+                frustum_.DefineOrtho(orthoSize_, aspectRatio_, zoom_, GetNearClip(), GetFarClip(), GetEffectiveWorldTransform());
+        }
 
-        frustum_.Define(projection_ * GetView());
         frustumDirty_ = false;
     }
 
@@ -307,10 +320,21 @@ Frustum Camera::GetSplitFrustum(float nearClip, float farClip) const
         farClip = nearClip;
 
     Frustum ret;
-    // DefineSplit() needs to project the near & far distances, so can not use a combined view-projection matrix.
-    // Transform to world space afterward instead
-    ret.DefineSplit(projection_, nearClip, farClip);
-    ret.Transform(GetEffectiveWorldTransform());
+
+    if (customProjection_)
+    {
+        // DefineSplit() needs to project the near & far distances, so can not use a combined view-projection matrix.
+        // Transform to world space afterward instead
+        ret.DefineSplit(projection_, nearClip, farClip);
+        ret.Transform(GetEffectiveWorldTransform());
+    }
+    else
+    {
+        if (!orthographic_)
+            ret.Define(fov_, aspectRatio_, zoom_, nearClip, farClip, GetEffectiveWorldTransform());
+        else
+            ret.DefineOrtho(orthoSize_, aspectRatio_, zoom_, nearClip, farClip, GetEffectiveWorldTransform());
+    }
 
     return ret;
 }
@@ -321,7 +345,17 @@ Frustum Camera::GetViewSpaceFrustum() const
         UpdateProjection();
 
     Frustum ret;
-    ret.Define(projection_);
+
+    if (customProjection_)
+        ret.Define(projection_);
+    else
+    {
+        if (!orthographic_)
+            ret.Define(fov_, aspectRatio_, zoom_, GetNearClip(), GetFarClip());
+        else
+            ret.DefineOrtho(orthoSize_, aspectRatio_, zoom_, GetNearClip(), GetFarClip());
+    }
+
     return ret;
 }
 
@@ -334,9 +368,19 @@ Frustum Camera::GetViewSpaceSplitFrustum(float nearClip, float farClip) const
     farClip = Min(farClip, projFarClip_);
     if (farClip < nearClip)
         farClip = nearClip;
-    
+
     Frustum ret;
-    ret.DefineSplit(projection_, nearClip, farClip);
+
+    if (customProjection_)
+        ret.DefineSplit(projection_, nearClip, farClip);
+    else
+    {
+        if (!orthographic_)
+            ret.Define(fov_, aspectRatio_, zoom_, nearClip, farClip);
+        else
+            ret.DefineOrtho(orthoSize_, aspectRatio_, zoom_, nearClip, farClip);
+    }
+
     return ret;
 }
 
@@ -410,7 +454,7 @@ Matrix4 Camera::GetGPUProjection() const
 #else
     // See formulation for depth range conversion at http://www.ogre3d.org/forums/viewtopic.php?f=4&t=13357
     Matrix4 ret = GetProjection();
-    
+
     ret.m20_ = 2.0f * ret.m20_ - ret.m30_;
     ret.m21_ = 2.0f * ret.m21_ - ret.m31_;
     ret.m22_ = 2.0f * ret.m22_ - ret.m32_;
@@ -422,13 +466,9 @@ Matrix4 Camera::GetGPUProjection() const
 
 void Camera::GetFrustumSize(Vector3& near, Vector3& far) const
 {
-    // Use projection_ instead of GetProjection() so that Y-flip has no effect. Update first if necessary
-    if (projectionDirty_)
-        UpdateProjection();
-    Matrix4 projInverse = projection_.Inverse();
-
-    near = projInverse * Vector3(1.0f, 1.0f, 0.0f);
-    far = projInverse * Vector3(1.0f, 1.0f, 1.0f);
+    Frustum viewSpaceFrustum = GetViewSpaceFrustum();
+    near = viewSpaceFrustum.vertices_[0];
+    far = viewSpaceFrustum.vertices_[4];
 
     /// \todo Necessary? Explain this
     if (flipVertical_)
@@ -480,16 +520,13 @@ float Camera::GetLodDistance(float distance, float scale, float bias) const
         return orthoSize_ / d;
 }
 
-Quaternion Camera::GetFaceCameraRotation(const Vector3& position, const Quaternion& rotation, FaceCameraMode mode)
+Quaternion Camera::GetFaceCameraRotation(const Vector3& position, const Quaternion& rotation, FaceCameraMode mode, float minAngle)
 {
     if (!node_)
         return rotation;
 
     switch (mode)
     {
-    default:
-        return rotation;
-
     case FC_ROTATE_XYZ:
         return node_->GetWorldRotation();
 
@@ -508,19 +545,31 @@ Quaternion Camera::GetFaceCameraRotation(const Vector3& position, const Quaterni
         }
 
     case FC_LOOKAT_Y:
+    case FC_LOOKAT_MIXED:
         {
-            // Make the Y-only lookat happen on an XZ plane to make sure there are no unwanted transitions
-            // or singularities
-            Vector3 lookAtVec(position - node_->GetWorldPosition());
-            lookAtVec.y_ = 0.0f;
+            // Mixed mode needs true look-at vector
+            const Vector3 lookAtVec(position - node_->GetWorldPosition());
+            // While Y-only lookat happens on an XZ plane to make sure there are no unwanted transitions or singularities
+            const Vector3 lookAtVecXZ(lookAtVec.x_, 0.0f, lookAtVec.z_);
 
             Quaternion lookAt;
-            lookAt.FromLookRotation(lookAtVec);
+            lookAt.FromLookRotation(lookAtVecXZ);
 
             Vector3 euler = rotation.EulerAngles();
+            if (mode == FC_LOOKAT_MIXED)
+            {
+                const float angle = lookAtVec.Angle(rotation * Vector3::UP);
+                if (angle > 180 - minAngle)
+                    euler.x_ += minAngle - (180 - angle);
+                else if (angle < minAngle)
+                    euler.x_ -= minAngle - angle;
+            }
             euler.y_ = lookAt.EulerAngles().y_;
             return Quaternion(euler.x_, euler.y_, euler.z_);
         }
+
+    default:
+        return rotation;
     }
 }
 
@@ -640,6 +689,7 @@ void Camera::UpdateProjection() const
     }
 
     projectionDirty_ = false;
+    customProjection_ = false;
 }
 
 }

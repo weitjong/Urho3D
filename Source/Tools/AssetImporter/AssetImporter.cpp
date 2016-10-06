@@ -246,6 +246,7 @@ String SanitateAssetName(const String& name);
 
 unsigned GetPivotlessBoneIndex(OutModel& model, const String& boneName);
 void ExtrapolatePivotlessAnimation(OutModel* model);
+void CollectSceneNodesAsBones(OutModel &model, aiNode* rootNode);
 
 int main(int argc, char** argv)
 {
@@ -508,7 +509,7 @@ void Run(const Vector<String>& arguments)
 
         PrintLine("Reading file " + inFile);
 
-        if (suppressFbxPivotNodes_ && !inFile.EndsWith(".fbx", false))
+        if (!inFile.EndsWith(".fbx", false))
             suppressFbxPivotNodes_ = false;
 
         // Only do this for the "model" command. "anim" command extrapolates animation from the original bone definition
@@ -527,9 +528,13 @@ void Run(const Vector<String>& arguments)
             aiSetImportPropertyInteger(aiprops, AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, 1);//default = true;
 
             scene_ = aiImportFileExWithProperties(GetNativePath(inFile).CString(), flags, NULL, aiprops);
+
+            // prevent processing animation suppression, both cannot work simultaneously
+            suppressFbxPivotNodes_ = false;
         }
         else
             scene_ = aiImportFile(GetNativePath(inFile).CString(), flags);
+
         if (!scene_)
             ErrorExit("Could not open or parse input file " + inFile + ": " + String(aiGetErrorString()));
 
@@ -679,6 +684,12 @@ void ExportAnimation(const String& outName, bool animationOnly)
     //    BuildAndSaveModel(model);
     if (!noAnimations_)
     {
+        // Most fbx animation files contain only a skeleton and no skinned mesh.
+        // Assume the scene node contains the model's bone definition and, 
+        // transfer the info to the model.
+        if (suppressFbxPivotNodes_ && model.bones_.Size() == 0)
+            CollectSceneNodesAsBones(model, rootNode_);
+
         CollectAnimations(&model);
         BuildAndSaveAnimations(&model);
 
@@ -1321,6 +1332,13 @@ void BuildAndSaveAnimations(OutModel* model)
                         continue;
 
                     boneIndex = GetPivotlessBoneIndex(*model, channelName);
+                    if (boneIndex == M_MAX_UNSIGNED)
+                    {
+                        PrintLine("Warning: skipping animation track " + channelName + " not found in model skeleton");
+                        outAnim->RemoveTrack(channelName);
+                        continue;
+                    }
+
                     boneNode = model->pivotlessBones_[boneIndex];
                 }
                 isRootBone = boneIndex == 0;
@@ -2636,32 +2654,6 @@ void FillChainTransforms(OutModel &model, aiMatrix4x4 *chain, const String& main
     }
 }
 
-int InitAnimatedChainTransformIndices(aiAnimation* anim, const String& mainBoneName, int *channelIndices)
-{
-    int numTransforms = 0;
-
-    for (unsigned j = 0; j < TransformationComp_MAXIMUM; ++j)
-    {
-        String transfBoneName = mainBoneName + "_$AssimpFbx$_" + String(transformSuffix[j]);
-        channelIndices[j] = -1;
-
-        for (unsigned k = 0; k < anim->mNumChannels; ++k)
-        {
-            aiNodeAnim* channel = anim->mChannels[k];
-            String channelName = FromAIString(channel->mNodeName);
-
-            if (channelName == transfBoneName)
-            {
-                ++numTransforms;
-                channelIndices[j] = k;
-                break;
-            }
-        }
-    }
-
-    return numTransforms;
-}
-
 void ExpandAnimatedChannelKeys(aiAnimation* anim, unsigned mainChannel, int *channelIndices)
 {
     aiNodeAnim* channel = anim->mChannels[mainChannel];
@@ -2730,6 +2722,34 @@ void ExpandAnimatedChannelKeys(aiAnimation* anim, unsigned mainChannel, int *cha
     }
 }
 
+void InitAnimatedChainTransformIndices(aiAnimation* anim, unsigned mainChannel, const String& mainBoneName, int *channelIndices)
+{
+    int numTransforms = 0;
+
+    for (unsigned j = 0; j < TransformationComp_MAXIMUM; ++j)
+    {
+        String transfBoneName = mainBoneName + "_$AssimpFbx$_" + String(transformSuffix[j]);
+        channelIndices[j] = -1;
+
+        for (unsigned k = 0; k < anim->mNumChannels; ++k)
+        {
+            aiNodeAnim* channel = anim->mChannels[k];
+            String channelName = FromAIString(channel->mNodeName);
+
+            if (channelName == transfBoneName)
+            {
+                ++numTransforms;
+                channelIndices[j] = k;
+                break;
+            }
+        }
+    }
+
+    // resize animated channel key size
+    if (numTransforms > 1)
+        ExpandAnimatedChannelKeys(anim, mainChannel, channelIndices);
+}
+
 void CreatePivotlessFbxBoneStruct(OutModel &model)
 {
     // Init
@@ -2794,19 +2814,18 @@ void ExtrapolatePivotlessAnimation(OutModel* model)
                         continue;
 
                     mainBoneCompleteList.Push(mainBoneName);
-
-                    // Init chain and chain transfer indeces
                     unsigned boneIdx = GetBoneIndex(*model, mainBoneName);
+
+                    // This condition exists if a geometry, not a bone, has a key animation
+                    if (boneIdx == M_MAX_UNSIGNED)
+                        continue;
+
+                    // Init chain indices and fill transforms
                     aiMatrix4x4 mainboneTransform = model->bones_[boneIdx]->mTransformation;
                     aiMatrix4x4 chain[TransformationComp_MAXIMUM];
                     int channelIndices[TransformationComp_MAXIMUM];
-                    int numTransfIndices = InitAnimatedChainTransformIndices(anim, mainBoneName, &channelIndices[0]);
 
-                    // Expand key arrays
-                    if (numTransfIndices > 1)
-                        ExpandAnimatedChannelKeys(anim, j, &channelIndices[0]);
-
-                    // Fill chain transforms
+                    InitAnimatedChainTransformIndices(anim, j, mainBoneName, &channelIndices[0]);
                     std::fill_n(chain, static_cast<unsigned int>(TransformationComp_MAXIMUM), aiMatrix4x4());
                     FillChainTransforms(*model, &chain[0], mainBoneName);
 
@@ -2827,26 +2846,25 @@ void ExtrapolatePivotlessAnimation(OutModel* model)
                             // It's either the chain transform or animation channel transform
                             if (channelIndices[l] != -1)
                             {
-                                aiMatrix4x4 animtform;
-                                aiMatrix4x4 transMat, scaleMat, rotMat;
+                                aiMatrix4x4 animtform, tempMat;
                                 aiNodeAnim* animchannel = anim->mChannels[channelIndices[l]];
 
                                 if (k < animchannel->mNumPositionKeys)
                                 {
-                                    aiMatrix4x4::Translation(animchannel->mPositionKeys[k].mValue, transMat);
-                                    animtform = animtform * transMat;
+                                    aiMatrix4x4::Translation(animchannel->mPositionKeys[k].mValue, tempMat);
+                                    animtform = animtform * tempMat;
                                     frameTime = Max(animchannel->mPositionKeys[k].mTime, frameTime);
                                 }
                                 if (k < animchannel->mNumRotationKeys)
                                 {
-                                    rotMat = aiMatrix4x4(animchannel->mRotationKeys[k].mValue.GetMatrix());
-                                    animtform = animtform * rotMat;
+                                    tempMat = aiMatrix4x4(animchannel->mRotationKeys[k].mValue.GetMatrix());
+                                    animtform = animtform * tempMat;
                                     frameTime = Max(animchannel->mRotationKeys[k].mTime, frameTime);
                                 }
                                 if (k < animchannel->mNumScalingKeys)
                                 {
-                                    aiMatrix4x4::Scaling(animchannel->mScalingKeys[k].mValue, scaleMat);
-                                    animtform = animtform * scaleMat;
+                                    aiMatrix4x4::Scaling(animchannel->mScalingKeys[k].mValue, tempMat);
+                                    animtform = animtform * tempMat;
                                     frameTime = Max(animchannel->mScalingKeys[k].mTime, frameTime);
                                 }
 
@@ -2883,6 +2901,19 @@ void ExtrapolatePivotlessAnimation(OutModel* model)
                 }
             }
         }
+    }
+}
+
+void CollectSceneNodesAsBones(OutModel &model, aiNode* rootNode)
+{
+    if (!rootNode)
+        return;
+
+    model.bones_.Push(rootNode);
+
+    for (unsigned i = 0; i < rootNode->mNumChildren; ++i)
+    {
+        CollectSceneNodesAsBones(model, rootNode->mChildren[i]);
     }
 }
 

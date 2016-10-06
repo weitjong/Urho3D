@@ -63,12 +63,9 @@ if (IOS)
         set (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET ${IPHONEOS_DEPLOYMENT_TARGET})
     endif ()
     set (CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES)
-    if (DEFINED ENV{TRAVIS})
-        # TODO: recheck this again and remove this workaround later
-        # Ensure the CMAKE_OSX_DEPLOYMENT_TARGET is set to empty, something is wrong with Travis-CI OSX CI environment at the moment
-        set (CMAKE_OSX_DEPLOYMENT_TARGET)
-        unset (CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
-    endif ()
+    # Workaround what appears to be a bug in CMake/Xcode generator, ensure the CMAKE_OSX_DEPLOYMENT_TARGET is set to empty for iOS build
+    set (CMAKE_OSX_DEPLOYMENT_TARGET)
+    unset (CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
 elseif (XCODE)
     set (CMAKE_OSX_SYSROOT macosx)    # Set Base SDK to "Latest OS X"
     if (NOT CMAKE_OSX_DEPLOYMENT_TARGET)
@@ -1771,7 +1768,7 @@ macro (install_header_files)
             endif ()
             if (INSTALL_SOURCE MATCHES /$)
                 # Source is a directory
-                if (ARG_USE_FILE_SYMLINK OR ARG_ACCUMULATE)
+                if (ARG_USE_FILE_SYMLINK OR ARG_ACCUMULATE OR BASH_ON_WINDOWS)
                     # Use file symlink for each individual files in the source directory
                     if (IS_SYMLINK ${ARG_DESTINATION} AND NOT CMAKE_HOST_WIN32)
                         execute_process (COMMAND ${CMAKE_COMMAND} -E remove ${ARG_DESTINATION})
