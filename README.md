@@ -31,6 +31,7 @@ Urho3D development, contributions and bugfixes by:
 - Alex Fuller
 - Henrik Heino
 - Mika Heinonen
+- Victor Holt
 - Jukka Jylänki
 - Graham King
 - Jason Kinzer
@@ -67,12 +68,14 @@ Urho3D development, contributions and bugfixes by:
 - AGreatFish
 - BlueMagnificent
 - Enhex
+- Fastran
 - Firegorilla
 - Gordon-F
 - Lumak
 - Magic.Lixin
 - Mike3D
 - MonkeyFirst
+- Ner'zhul
 - Newb I the Newbd
 - OvermindDL1
 - Scellow
