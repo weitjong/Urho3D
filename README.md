@@ -9,7 +9,7 @@
 Main website: [https://urho3d.github.io/](https://urho3d.github.io/)
 
 ##License
-Licensed under the MIT license, see [License.txt](https://github.com/urho3d/Urho3D/blob/master/License.txt) for details.
+Licensed under the MIT license, see [LICENSE](https://github.com/urho3d/Urho3D/blob/master/LICENSE) for details.
 
 ##Credits
 Urho3D development, contributions and bugfixes by:
@@ -19,6 +19,7 @@ Urho3D development, contributions and bugfixes by:
 - Vivienne Anthony
 - Colin Barrett
 - Erik Beran
+- Gauthier Billot
 - Loic Blot
 - Danny Boisvert
 - Sergey Bosko
@@ -32,6 +33,7 @@ Urho3D development, contributions and bugfixes by:
 - Henrik Heino
 - Mika Heinonen
 - Victor Holt
+- Johnathan Jenkins
 - Jukka Jylänki
 - Graham King
 - Jason Kinzer
@@ -58,6 +60,7 @@ Urho3D development, contributions and bugfixes by:
 - Nick Royer
 - Miika Santala
 - Anatoly Sennov
+- Matan Shukry
 - Bengt Soderstrom
 - Hualin Song
 - James Thomas
@@ -157,7 +160,7 @@ Urho3D uses the following third-party libraries:
 - pugixml 1.7 (http://pugixml.org)
 - rapidjson 0.11 (https://code.google.com/p/rapidjson)
 - Recast/Detour (https://github.com/memononen/recastnavigation)
-- SDL 2.0.4 (https://www.libsdl.org)
+- SDL 2.0.5 (https://www.libsdl.org)
 - SQLite 3.13.0 (https://www.sqlite.org)
 - StanHull (https://codesuppository.blogspot.com/2006/03/john-ratcliffs-code-suppository-blog.html)
 - stb_image 2.12 (https://nothings.org)
