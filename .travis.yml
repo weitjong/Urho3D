@@ -142,15 +142,11 @@ cache:
   - C:\tools\mingw64
 environment:
   GIT_NAME:
-    secure: onlJNy/nGFT1GXNdusL4jokojSPZ732EFaXwdhPnpM0=
+    secure: rUVYYb1+C4EI2xAlvF4pEA==
   GIT_EMAIL:
-    secure: RdTdiZIl3fnggJFH8JhmqT2TAg/23ENX/4sFCrJfQ3s=
+    secure: ls0sOtf/IGC0qWsktlmJxEJT+MTUPF2lGg6zq0FBES0=
   GH_TOKEN:
-    secure: VP9a1Mu28nO7cN+RVyccA9bNvIG92pGQ0zgFjTIds62In6BdiIxj3FgIb8G3XR0K
-  SF_KEY:
-    secure: JgsjFoVAP5yjNxyS/+S+4byhtnTKCWfI3bkCmHws3P1MwSaUS5+0C6WV1pHIJTVW00Qvo3+JsgVqMYUJ7fo2m/bXvUPNCoSa4BifXZlS6bE=
-  SF_API:
-    secure: cc1q9CXo5BwIYqtgigHpkCGG90zEVM45xx/YzXTOjVp512oQNUzTJq0AmxEYXP78
+    secure: 63jjOMszmVn8ye8RXg271i8q1/fQXVgZpU/4JwkAaofj1jM4x8tn7GEOlD+yqx7u
 # Using neither-in-nor-out-of-source (Urho3D-legacy) build tree when on AppVeyor; using out-of-source (and in-the-source) build tree when on Travis-CI for test coverage
   build_tree: mingw-Build
   config: Release
