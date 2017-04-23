@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,10 +42,12 @@ static const String EP_LOG_NAME = "LogName";
 static const String EP_LOG_QUIET = "LogQuiet";
 static const String EP_LOW_QUALITY_SHADOWS = "LowQualityShadows";
 static const String EP_MATERIAL_QUALITY = "MaterialQuality";
+static const String EP_MONITOR = "Monitor";
 static const String EP_MULTI_SAMPLE = "MultiSample";
 static const String EP_ORIENTATIONS = "Orientations";
 static const String EP_PACKAGE_CACHE_DIR = "PackageCacheDir";
 static const String EP_RENDER_PATH = "RenderPath";
+static const String EP_REFRESH_RATE = "RefreshRate";
 static const String EP_RESOURCE_PACKAGES = "ResourcePackages";
 static const String EP_RESOURCE_PATHS = "ResourcePaths";
 static const String EP_RESOURCE_PREFIX_PATHS = "ResourcePrefixPaths";

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,10 +47,10 @@ Sample::Sample(Context* context) :
     yaw_(0.0f),
     pitch_(0.0f),
     touchEnabled_(false),
+    useMouseMode_(MM_ABSOLUTE),
     screenJoystickIndex_(M_MAX_UNSIGNED),
     screenJoystickSettingsIndex_(M_MAX_UNSIGNED),
-    paused_(false),
-    useMouseMode_(MM_ABSOLUTE)
+    paused_(false)
 {
 }
 
