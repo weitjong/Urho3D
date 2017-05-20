@@ -20,6 +20,7 @@ Urho3D development, contributions and bugfixes by:
 - Lasse Öörni
 - Wei Tjong Yao
 - Aster Jian
+- Ricardo Abreu
 - Vivienne Anthony
 - Colin Barrett
 - Erik Beran
@@ -52,6 +53,7 @@ Urho3D development, contributions and bugfixes by:
 - Artem Kulyk
 - Rokas Kupstys
 - Ali Kämäräinen
+- Sergey Lapin
 - Pete Leigh
 - Arnis Lielturks
 - Frode 'Modanung' Lindeijer
@@ -115,8 +117,10 @@ Urho3D development, contributions and bugfixes by:
 - fredakilla
 - gleblebedev
 - hdunderscore
+- lhinuz
 - lvshiling
 - marynate
+- meshonline
 - mightyCelu
 - neat3d
 - nemerle
@@ -177,7 +181,7 @@ Urho3D uses the following third-party libraries:
 - nanodbc 2.12.4 (https://lexicalunit.github.io/nanodbc)
 - Open Asset Import Library 3.2 (http://assimp.sourceforge.net)
 - pugixml 1.7 (http://pugixml.org)
-- rapidjson 0.11 (https://code.google.com/p/rapidjson)
+- rapidjson 1.1.0 (https://github.com/miloyip/rapidjson)
 - Recast/Detour (https://github.com/memononen/recastnavigation)
 - SDL 2.0.5 (https://www.libsdl.org)
 - SQLite 3.18.0 (https://www.sqlite.org)

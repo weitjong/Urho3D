@@ -762,6 +762,7 @@ template <class T> void RegisterNode(asIScriptEngine* engine, const char* classN
     engine->RegisterObjectMethod(className, "Vector3 get_worldRight()", asMETHOD(T, GetWorldRight), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void set_worldScale(const Vector3&in)", asMETHODPR(T, SetWorldScale, (const Vector3&), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "Vector3 get_worldScale()", asMETHOD(T, GetWorldScale), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "Vector3 get_signedWorldScale()", asMETHOD(T, GetSignedWorldScale), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void set_worldScale2D(const Vector2&in)", asMETHODPR(T, SetWorldScale2D, (const Vector2&), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "Vector2 get_worldScale2D()", asMETHOD(T, GetWorldScale2D), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "Matrix3x4 get_transform() const", asMETHOD(T, GetTransform), asCALL_THISCALL);
@@ -833,6 +834,33 @@ template <class T> void RegisterResource(asIScriptEngine* engine, const char* cl
     engine->RegisterObjectMethod(className, "uint get_useTimer()" ,asMETHODPR(T, GetUseTimer, (), unsigned), asCALL_THISCALL);
 }
 
+static void ResourceAddMetadata(const String& name, const Variant& value, ResourceWithMetadata* ptr)
+{
+    ptr->AddMetadata(name, value);
+}
+
+static const Variant& ResourceGetMetadata(const String& name, ResourceWithMetadata* ptr)
+{
+    return ptr->GetMetadata(name);
+}
+
+static bool ResourceHasMetadata(ResourceWithMetadata* ptr)
+{
+    return ptr->HasMetadata();
+}
+
+/// Template function for registering a class derived from ResourceWithMetadata.
+template <class T> void RegisterResourceWithMetadata(asIScriptEngine* engine, const char* className)
+{
+    RegisterResource<T>(engine, className);
+    engine->RegisterObjectMethod(className, "void AddMetadata(const String&in, const Variant&in)", asFUNCTION(ResourceAddMetadata), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(className, "void RemoveMetadata(const String&in)", asMETHODPR(T, RemoveMetadata, (const String&), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "void RemoveAllMetadata()", asMETHOD(T, RemoveAllMetadata), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "void set_metadata(const String&in, const Variant&in)", asFUNCTION(ResourceAddMetadata), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(className, "const Variant& get_metadata(const String&in) const", asFUNCTION(ResourceGetMetadata), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(className, "bool get_hasMetadata() const", asFUNCTION(ResourceHasMetadata), asCALL_CDECL_OBJLAST);
+}
+
 /// Template function for registering a class derived from Drawable.
 template <class T> void RegisterDrawable(asIScriptEngine* engine, const char* className)
 {
@@ -876,6 +904,7 @@ template <class T> void RegisterSoundSource(asIScriptEngine* engine, const char*
     engine->RegisterObjectMethod(className, "void Play(Sound@+, float, float)", asMETHODPR(T, Play, (Sound*, float, float), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void Play(Sound@+, float, float, float)", asMETHODPR(T, Play, (Sound*, float, float, float), void), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void Stop()", asMETHOD(T, Stop), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "void Seek(float)", asMETHOD(SoundSource, Seek), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void set_soundType(const String&in)", asMETHOD(T, SetSoundType), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "String get_soundType() const", asMETHOD(T, GetSoundType), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void set_frequency(float)", asMETHOD(T, SetFrequency), asCALL_THISCALL);
@@ -895,7 +924,7 @@ template <class T> void RegisterSoundSource(asIScriptEngine* engine, const char*
 /// Template function for registering a class derived from Texture.
 template <class T> void RegisterTexture(asIScriptEngine* engine, const char* className)
 {
-    RegisterResource<T>(engine, className);
+    RegisterResourceWithMetadata<T>(engine, className);
     RegisterSubclass<Texture, T>(engine, "Texture", className);
     engine->RegisterObjectMethod(className, "void SetNumLevels(uint)", asMETHOD(T, SetNumLevels), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void ClearDataLost()", asMETHODPR(T, ClearDataLost, (), void), asCALL_THISCALL);

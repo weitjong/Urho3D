@@ -1938,6 +1938,11 @@ namespace Urho3D
 - %Value : float
 - %Show %Percent %Text : bool
 
+### RaycastVehicle
+- %Wheel %data : VariantVector
+- %Maximum %side %slip %threshold : float
+- %RPM %for %wheel %motors %in %air (0=calculate) : float
+
 ### RibbonTrail
 - %Is %Enabled : bool
 - %Max %Lights : int
@@ -2778,6 +2783,7 @@ namespace Urho3D
 <a href="#Class_Quaternion"><b>Quaternion</b></a>
 <a href="#Class_Ray"><b>Ray</b></a>
 <a href="#Class_RayQueryResult"><b>RayQueryResult</b></a>
+<a href="#Class_RaycastVehicle"><b>RaycastVehicle</b></a>
 <a href="#Class_Rect"><b>Rect</b></a>
 <a href="#Class_RefCounted"><b>RefCounted</b></a>
 <a href="#Class_RenderPath"><b>RenderPath</b></a>
@@ -3119,6 +3125,7 @@ Properties:
 
 Methods:
 
+- void AddMetadata(const String&, const Variant&)
 - void AddTrigger(const AnimationTriggerPoint&)
 - void AddTrigger(float, bool, const Variant&)
 - Animation@ Clone(const String& = String ( )) const
@@ -3129,8 +3136,10 @@ Methods:
 - bool Load(File@)
 - bool Load(VectorBuffer&)
 - bool Load(const String&)
+- void RemoveAllMetadata()
 - bool RemoveAllTracks()
 - void RemoveAllTriggers()
+- void RemoveMetadata(const String&)
 - bool RemoveTrack(const String&)
 - void RemoveTrigger(uint)
 - bool Save(File@) const
@@ -3142,8 +3151,10 @@ Properties:
 
 - String animationName
 - String category // readonly
+- bool hasMetadata // readonly
 - float length
 - uint memoryUse // readonly
+- Variant[] metadata
 - String name
 - uint numTracks // readonly
 - uint numTriggers
@@ -8035,12 +8046,16 @@ Methods:
 - float GetFloat() const
 - int GetInt() const
 - uint GetUInt() const
+- Variant GetVariant() const
+- VariantMap GetVariantMap() const
 - void Insert(uint, const JSONValue&)
 - const JSONValue& Get(const String&) const
 - void Pop()
 - void Push(const JSONValue&)
 - void Resize(uint)
 - void Set(const String&, const JSONValue&)
+- void SetVariant(const Variant&)
+- void SetVariantMap(const VariantMap&)
 - const String& GetString() const
 
 Properties:
@@ -8051,11 +8066,13 @@ Properties:
 - bool isNumber // readonly
 - bool isObject // readonly
 - bool isString // readonly
+- String[]@ keys // readonly
 - JSONNumberType numberType // readonly
 - String numberTypeName // readonly
 - uint size // readonly
 - JSONValueType valueType // readonly
 - String valueTypeName // readonly
+- JSONValue[]@ values // readonly
 
 <a name="Class_JoystickState"></a>
 
@@ -9658,6 +9675,7 @@ Properties:
 - Vector2 scale2D
 - Scene@ scene // readonly
 - ScriptObject@ scriptObject // readonly
+- Vector3 signedWorldScale // readonly
 - String[]@ tags // readonly
 - bool temporary
 - Matrix3x4 transform // readonly
@@ -10553,6 +10571,8 @@ Methods:
 
 Properties:
 
+- float angle // readonly
+- Vector3 axis // readonly
 - Vector3 eulerAngles // readonly
 - float pitch // readonly
 - float roll // readonly
@@ -10598,6 +10618,112 @@ Properties:
 - Vector3 position
 - uint subObject
 - Vector2 textureUV
+
+<a name="Class_RaycastVehicle"></a>
+
+### RaycastVehicle
+
+Methods:
+
+- void AddWheel(Node@, Vector3, Vector3, float, float, bool)
+- void ApplyAttributes()
+- void DrawDebugGeometry(DebugRenderer@, bool)
+- Variant GetAttribute(const String&) const
+- ValueAnimation@ GetAttributeAnimation(const String&) const
+- float GetAttributeAnimationSpeed(const String&) const
+- float GetAttributeAnimationTime(const String&) const
+- WrapMode GetAttributeAnimationWrapMode(const String&) const
+- Variant GetAttributeDefault(const String&) const
+- float GetBrake(int)
+- Vector3 GetContactNormal(int)
+- Vector3 GetContactPosition(int)
+- float GetEngineForce(int)
+- bool GetInterceptNetworkUpdate(const String&) const
+- float GetMaxSuspensionTravel(int)
+- float GetSteeringValue(int)
+- Vector3 GetWheelAxle(int)
+- Vector3 GetWheelConnectionPoint(int)
+- float GetWheelDampingCompression(int)
+- float GetWheelDampingRelaxation(int)
+- Vector3 GetWheelDirection(int)
+- float GetWheelFrictionSlip(int)
+- Node@ GetWheelNode(int)
+- Vector3 GetWheelPosition(int)
+- float GetWheelRadius(int)
+- float GetWheelRestLength(int)
+- float GetWheelRollInfluence(int)
+- Vector3 GetWheelRotation(int)
+- float GetWheelSideSlipSpeed(int)
+- float GetWheelSkidInfo(int)
+- float GetWheelSkidInfoCumulative(int)
+- float GetWheelSuspensionStiffness(int)
+- bool HasSubscribedToEvent(Object@, const String&)
+- bool HasSubscribedToEvent(const String&)
+- void Init()
+- bool IsFrontWheel(int)
+- bool Load(File@, bool = false)
+- bool Load(VectorBuffer&, bool = false)
+- bool LoadJSON(const JSONValue&, bool = false)
+- bool LoadXML(const XMLElement&, bool = false)
+- void MarkNetworkUpdate() const
+- void Remove()
+- void RemoveAttributeAnimation(const String&)
+- void RemoveInstanceDefault()
+- void RemoveObjectAnimation()
+- void ResetSuspension()
+- void ResetToDefault()
+- void ResetWheels()
+- bool Save(File@) const
+- bool Save(VectorBuffer&) const
+- bool SaveJSON(JSONValue&) const
+- bool SaveXML(XMLElement&) const
+- void SendEvent(const String&, VariantMap& = VariantMap ( ))
+- void SetAnimationTime(float)
+- bool SetAttribute(const String&, const Variant&)
+- void SetAttributeAnimation(const String&, ValueAnimation@, WrapMode = WM_LOOP, float = 1.0f)
+- void SetAttributeAnimationSpeed(const String&, float)
+- void SetAttributeAnimationTime(const String&, float)
+- void SetAttributeAnimationWrapMode(const String&, WrapMode)
+- void SetBrake(int, float)
+- void SetEngineForce(int, float)
+- void SetInterceptNetworkUpdate(const String&, bool)
+- void SetMaxSuspensionTravel(int, float)
+- void SetSteeringValue(int, float)
+- void SetWheelAxle(int, Vector3)
+- void SetWheelDampingCompression(int, float)
+- void SetWheelDampingRelaxation(int, float)
+- void SetWheelDirection(int, Vector3)
+- void SetWheelFrictionSlip(int, float)
+- void SetWheelRadius(int, float)
+- void SetWheelRestLength(int, float)
+- void SetWheelRollInfluence(int, float)
+- void SetWheelSkidInfo(int, float)
+- void SetWheelSkidInfoCumulative(int, float)
+- void SetWheelSuspensionStiffness(int, float)
+- void UpdateWheelTransform(int, bool)
+- bool WheelIsGrounded(int)
+
+Properties:
+
+- bool animationEnabled
+- Variant[] attributeDefaults // readonly
+- AttributeInfo[] attributeInfos // readonly
+- Variant[] attributes
+- String category // readonly
+- bool enabled
+- bool enabledEffective // readonly
+- uint id // readonly
+- float inAirRPM
+- float maxSideSlipSpeed
+- Node@ node // readonly
+- uint numAttributes // readonly
+- int numWheels // readonly
+- ObjectAnimation@ objectAnimation
+- int refs // readonly
+- bool temporary
+- StringHash type // readonly
+- String typeName // readonly
+- int weakRefs // readonly
 
 <a name="Class_Rect"></a>
 
@@ -11366,6 +11492,7 @@ Properties:
 - Vector3 scale
 - Vector2 scale2D
 - ScriptObject@ scriptObject // readonly
+- Vector3 signedWorldScale // readonly
 - float smoothingConstant
 - float snapThreshold
 - String[]@ tags // readonly
@@ -12331,11 +12458,14 @@ Properties:
 
 Methods:
 
+- void AddMetadata(const String&, const Variant&)
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - bool Load(File@)
 - bool Load(VectorBuffer&)
 - bool Load(const String&)
+- void RemoveAllMetadata()
+- void RemoveMetadata(const String&)
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
 - bool Save(const String&) const
@@ -12346,9 +12476,11 @@ Properties:
 - String category // readonly
 - bool compressed // readonly
 - float frequency // readonly
+- bool hasMetadata // readonly
 - float length // readonly
 - bool looped
 - uint memoryUse // readonly
+- Variant[] metadata
 - String name
 - int refs // readonly
 - uint sampleSize // readonly
@@ -12453,6 +12585,7 @@ Methods:
 - bool Save(VectorBuffer&) const
 - bool SaveJSON(JSONValue&) const
 - bool SaveXML(XMLElement&) const
+- void Seek(float)
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
 - void SetAnimationTime(float)
 - bool SetAttribute(const String&, const Variant&)
@@ -12526,6 +12659,7 @@ Methods:
 - bool Save(VectorBuffer&) const
 - bool SaveJSON(JSONValue&) const
 - bool SaveXML(XMLElement&) const
+- void Seek(float)
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
 - void SetAngleAttenuation(float, float)
 - void SetAnimationTime(float)
@@ -13797,12 +13931,15 @@ Properties:
 
 Methods:
 
+- void AddMetadata(const String&, const Variant&)
 - void ClearDataLost()
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - bool Load(File@)
 - bool Load(VectorBuffer&)
 - bool Load(const String&)
+- void RemoveAllMetadata()
+- void RemoveMetadata(const String&)
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
 - bool Save(const String&) const
@@ -13822,12 +13959,14 @@ Properties:
 - bool dataLost // readonly
 - TextureFilterMode filterMode
 - uint format // readonly
+- bool hasMetadata // readonly
 - int height // readonly
 - int[] levelHeight // readonly
 - int[] levelWidth // readonly
 - uint levels // readonly
 - bool levelsDirty // readonly
 - uint memoryUse // readonly
+- Variant[] metadata
 - int[] mipsToSkip
 - int multiSample // readonly
 - String name
@@ -13847,6 +13986,7 @@ Properties:
 
 Methods:
 
+- void AddMetadata(const String&, const Variant&)
 - void ClearDataLost()
 - Image@ GetImage() const
 - bool HasSubscribedToEvent(Object@, const String&)
@@ -13854,6 +13994,8 @@ Methods:
 - bool Load(File@)
 - bool Load(VectorBuffer&)
 - bool Load(const String&)
+- void RemoveAllMetadata()
+- void RemoveMetadata(const String&)
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
 - bool Save(const String&) const
@@ -13875,12 +14017,14 @@ Properties:
 - bool dataLost // readonly
 - TextureFilterMode filterMode
 - uint format // readonly
+- bool hasMetadata // readonly
 - int height // readonly
 - int[] levelHeight // readonly
 - int[] levelWidth // readonly
 - uint levels // readonly
 - bool levelsDirty // readonly
 - uint memoryUse // readonly
+- Variant[] metadata
 - int[] mipsToSkip
 - int multiSample // readonly
 - String name
@@ -13901,12 +14045,15 @@ Properties:
 
 Methods:
 
+- void AddMetadata(const String&, const Variant&)
 - void ClearDataLost()
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - bool Load(File@)
 - bool Load(VectorBuffer&)
 - bool Load(const String&)
+- void RemoveAllMetadata()
+- void RemoveMetadata(const String&)
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
 - bool Save(const String&) const
@@ -13928,6 +14075,7 @@ Properties:
 - bool dataLost // readonly
 - TextureFilterMode filterMode
 - uint format // readonly
+- bool hasMetadata // readonly
 - int height // readonly
 - uint layers
 - int[] levelHeight // readonly
@@ -13935,6 +14083,7 @@ Properties:
 - uint levels // readonly
 - bool levelsDirty // readonly
 - uint memoryUse // readonly
+- Variant[] metadata
 - int[] mipsToSkip
 - int multiSample // readonly
 - String name
@@ -13955,12 +14104,15 @@ Properties:
 
 Methods:
 
+- void AddMetadata(const String&, const Variant&)
 - void ClearDataLost()
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - bool Load(File@)
 - bool Load(VectorBuffer&)
 - bool Load(const String&)
+- void RemoveAllMetadata()
+- void RemoveMetadata(const String&)
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
 - bool Save(const String&) const
@@ -13982,12 +14134,14 @@ Properties:
 - bool dataLost // readonly
 - TextureFilterMode filterMode
 - uint format // readonly
+- bool hasMetadata // readonly
 - int height // readonly
 - int[] levelHeight // readonly
 - int[] levelWidth // readonly
 - uint levels // readonly
 - bool levelsDirty // readonly
 - uint memoryUse // readonly
+- Variant[] metadata
 - int[] mipsToSkip
 - int multiSample // readonly
 - String name
@@ -14007,6 +14161,7 @@ Properties:
 
 Methods:
 
+- void AddMetadata(const String&, const Variant&)
 - void ClearDataLost()
 - Image@ GetImage(CubeMapFace) const
 - bool HasSubscribedToEvent(Object@, const String&)
@@ -14014,6 +14169,8 @@ Methods:
 - bool Load(File@)
 - bool Load(VectorBuffer&)
 - bool Load(const String&)
+- void RemoveAllMetadata()
+- void RemoveMetadata(const String&)
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
 - bool Save(const String&) const
@@ -14035,12 +14192,14 @@ Properties:
 - bool dataLost // readonly
 - TextureFilterMode filterMode
 - uint format // readonly
+- bool hasMetadata // readonly
 - int height // readonly
 - int[] levelHeight // readonly
 - int[] levelWidth // readonly
 - uint levels // readonly
 - bool levelsDirty // readonly
 - uint memoryUse // readonly
+- Variant[] metadata
 - int[] mipsToSkip
 - int multiSample // readonly
 - String name
@@ -16385,14 +16544,17 @@ Properties:
 - uint GetFloat32Format()
 - uint GetFormat(const String&)
 - Variant GetGlobalVar(const String&)
+- String GetHostName()
 - String GetInternalPath(const String&)
 - uint GetLinearDepthFormat()
+- String GetLoginName()
 - uint GetLuminanceAlphaFormat()
 - uint GetLuminanceFormat()
 - uint GetMaxBones()
 - String GetMiniDumpDir()
 - uint GetNumLogicalCPUs()
 - uint GetNumPhysicalCPUs()
+- String GetOSVersion()
 - AttributeInfo[]@ GetObjectAttributeInfos(const String&)
 - String[]@ GetObjectCategories()
 - String[]@ GetObjectsByCategory(const String&)
@@ -16410,6 +16572,7 @@ Properties:
 - uint GetRandomSeed()
 - uint GetReadableDepthFormat()
 - String GetTextureUnitName(TextureUnit)
+- uint64 GetTotalMemory()
 - VariantType GetVariantTypeFromName(const String&)
 - String GetVariantTypeName(VariantType)
 - bool HasSubscribedToEvent(Object@, const String&)
@@ -16437,7 +16600,9 @@ Properties:
 - void Print(const Variant&, bool = false)
 - void Print(float, bool = false)
 - void Print(int, bool = false)
+- void Print(int64, bool = false)
 - void Print(uint, bool = false)
+- void Print(uint64, bool = false)
 - void PrintCallStack(bool = false)
 - float Random()
 - float Random(float)
