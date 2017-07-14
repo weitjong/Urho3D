@@ -27,8 +27,8 @@ compiler: gcc
 cache:
   ccache: true
   directories:
-    - $HOME/cmake-3.8.1-Linux-x86_64/bin
-    - $HOME/cmake-3.8.1-Linux-x86_64/share
+    - $HOME/cmake-3.8.2-Linux-x86_64/bin
+    - $HOME/cmake-3.8.2-Linux-x86_64/share
 dist: trusty
 sudo: false
 addons: {apt: {packages: &default_packages [doxygen, graphviz]}}
@@ -92,8 +92,8 @@ matrix:
 before_script:
   - rake ci_timer
   # Upgrade CMake using tarball from its vendor and cache the installation
-  - if [[ ! -f $HOME/cmake-3.8.1-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
-  - export PATH=$HOME/cmake-3.8.1-Linux-x86_64/bin:$PATH
+  - if [[ ! -f $HOME/cmake-3.8.2-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
+  - export PATH=$HOME/cmake-3.8.2-Linux-x86_64/bin:$PATH
   # Rely on git directly to detect the commit message and the release tag instead of using the corresponding Travis's environment variable because we may be querying for different commit SHA
   - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT); fi
   # export TAG=$(git describe --exact-match $TRAVIS_COMMIT 2>/dev/null); if [[ $TAG =~ [[:digit:]]+\.[[:digit:]]+ ]]; then export RELEASE_TAG=$TAG; fi
@@ -190,8 +190,8 @@ compiler: gcc
 cache:
   ccache: true
   directories:
-    - $HOME/cmake-3.8.1-Linux-x86_64/bin
-    - $HOME/cmake-3.8.1-Linux-x86_64/share
+    - $HOME/cmake-3.8.2-Linux-x86_64/bin
+    - $HOME/cmake-3.8.2-Linux-x86_64/share
 dist: trusty
 sudo: false
 addons:
@@ -215,8 +215,8 @@ env:
     - CCACHE_COMPRESS=1
     - CCACHE_MAXSIZE=100M
 before_script:
-  - if [[ ! -f $HOME/cmake-3.8.1-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
-  - export PATH=$HOME/cmake-3.8.1-Linux-x86_64/bin:$PATH
+  - if [[ ! -f $HOME/cmake-3.8.2-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
+  - export PATH=$HOME/cmake-3.8.2-Linux-x86_64/bin:$PATH
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
   - rake ci_setup_cache
@@ -231,8 +231,8 @@ compiler: gcc
 cache:
   ccache: true
   directories:
-    - $HOME/cmake-3.8.1-Linux-x86_64/bin
-    - $HOME/cmake-3.8.1-Linux-x86_64/share
+    - $HOME/cmake-3.8.2-Linux-x86_64/bin
+    - $HOME/cmake-3.8.2-Linux-x86_64/share
 addons: {apt: {packages: libpulse-dev}}
 env:
   global:
@@ -243,8 +243,8 @@ env:
     - CCACHE_COMPRESS=1
     - CCACHE_MAXSIZE=100M
 before_script:
-  - if [[ ! -f $HOME/cmake-3.8.1-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
-  - export PATH=$HOME/cmake-3.8.1-Linux-x86_64/bin:$PATH
+  - if [[ ! -f $HOME/cmake-3.8.2-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
+  - export PATH=$HOME/cmake-3.8.2-Linux-x86_64/bin:$PATH
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
   - git clone --depth 1 https://github.com/urho3d/fastcomp-clang.git && export LLVM_CLANG_ROOT=$(pwd)/fastcomp-clang
@@ -259,8 +259,8 @@ language: android
 cache:
   directories:
     - $HOME/.ccache
-    - $HOME/cmake-3.8.1-Linux-x86_64/bin
-    - $HOME/cmake-3.8.1-Linux-x86_64/share
+    - $HOME/cmake-3.8.2-Linux-x86_64/bin
+    - $HOME/cmake-3.8.2-Linux-x86_64/share
 dist: trusty
 sudo: false
 addons: {apt: {packages: &default_packages [doxygen, graphviz, g++-multilib]}}
@@ -292,8 +292,8 @@ before_script:
   # Temporarily disable the test to build the APK as Travis-CI Trusty beta VM has not yet setup the environment for Android properly
   - export NO_SDK_SYSIMG=1; unset AVD INSTALL
   - rake ci_timer
-  - if [[ ! -f $HOME/cmake-3.8.1-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
-  - export PATH=$HOME/cmake-3.8.1-Linux-x86_64/bin:$PATH
+  - if [[ ! -f $HOME/cmake-3.8.2-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
+  - export PATH=$HOME/cmake-3.8.2-Linux-x86_64/bin:$PATH
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n1 $TRAVIS_COMMIT)
   # export TAG=$(git describe --exact-match $TRAVIS_COMMIT 2>/dev/null); if [[ $TAG =~ [[:digit:]]+\.[[:digit:]]+ ]]; then export RELEASE_TAG=$TAG; fi
@@ -314,8 +314,8 @@ compiler: gcc
 cache:
   ccache: true
   directories:
-    - $HOME/cmake-3.8.1-Linux-x86_64/bin
-    - $HOME/cmake-3.8.1-Linux-x86_64/share
+    - $HOME/cmake-3.8.2-Linux-x86_64/bin
+    - $HOME/cmake-3.8.2-Linux-x86_64/share
 dist: trusty
 sudo: false
 addons: {apt: {packages: [doxygen, graphviz, g++-multilib, rpm]}}
@@ -340,8 +340,8 @@ matrix:
   fast_finish: true
 before_script:
   - rake ci_timer
-  - if [[ ! -f $HOME/cmake-3.8.1-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
-  - export PATH=$HOME/cmake-3.8.1-Linux-x86_64/bin:$PATH
+  - if [[ ! -f $HOME/cmake-3.8.2-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
+  - export PATH=$HOME/cmake-3.8.2-Linux-x86_64/bin:$PATH
   - git clone --depth 1 https://github.com/raspberrypi/tools.git rpi-tools && export RPI_PREFIX=$(pwd)/rpi-tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf && git clone --depth 1 https://github.com/urho3d/rpi-sysroot.git && export RPI_SYSROOT=$(pwd)/rpi-sysroot && for compiler in $RPI_PREFIX-{gcc,g++}; do touch -d "2017-01-01 00:00:00 +0800" $compiler; done
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
@@ -360,8 +360,8 @@ compiler: gcc
 cache:
   ccache: true
   directories:
-    - $HOME/cmake-3.8.1-Linux-x86_64/bin
-    - $HOME/cmake-3.8.1-Linux-x86_64/share
+    - $HOME/cmake-3.8.2-Linux-x86_64/bin
+    - $HOME/cmake-3.8.2-Linux-x86_64/share
 dist: trusty
 sudo: false
 addons: {apt: {packages: [doxygen, graphviz, g++-multilib, rpm]}}
@@ -385,10 +385,10 @@ matrix:
   fast_finish: true
 before_script:
   - rake ci_timer
-  - if [[ ! -f $HOME/cmake-3.8.1-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
-  - export PATH=$HOME/cmake-3.8.1-Linux-x86_64/bin:$PATH
-  - if [[ $SYSROOT =~ arm64 ]]; then wget https://releases.linaro.org/components/toolchain/binaries/latest-5/aarch64-linux-gnu/gcc-linaro-5.4.1-2017.01-x86_64_aarch64-linux-gnu.tar.xz -O arm-tools.tar.xz && tar xf arm-tools.tar.xz && rm arm-tools.tar.xz && mv gcc-linaro* gcc-linaro && export ARM_PREFIX=$(pwd)/gcc-linaro/bin/aarch64-linux-gnu; fi
-  - if [[ $SYSROOT =~ armhf ]]; then wget https://releases.linaro.org/components/toolchain/binaries/latest-5/arm-linux-gnueabihf/gcc-linaro-5.4.1-2017.01-x86_64_arm-linux-gnueabihf.tar.xz -O arm-tools.tar.xz && tar xf arm-tools.tar.xz && rm arm-tools.tar.xz && mv gcc-linaro* gcc-linaro && export ARM_PREFIX=$(pwd)/gcc-linaro/bin/arm-linux-gnueabihf; fi
+  - if [[ ! -f $HOME/cmake-3.8.2-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
+  - export PATH=$HOME/cmake-3.8.2-Linux-x86_64/bin:$PATH
+  - if [[ $SYSROOT =~ arm64 ]]; then export triplet=aarch64-linux-gnu; else export triplet=arm-linux-gnueabihf; fi
+  - wget https://releases.linaro.org/components/toolchain/binaries/latest-5/$triplet/gcc-linaro-5.4.1-2017.05-x86_64_$triplet.tar.xz -O arm-tools.tar.xz && tar xf arm-tools.tar.xz && rm arm-tools.tar.xz && mv gcc-linaro* gcc-linaro && export ARM_PREFIX=$(pwd)/gcc-linaro/bin/$triplet
   - for compiler in $ARM_PREFIX-{gcc,g++}; do touch -d "2017-01-01 00:00:00 +0800" $compiler; done
   - git clone --depth 1 https://github.com/urho3d/$SYSROOT.git && export ARM_SYSROOT=$(pwd)/$SYSROOT
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
@@ -408,8 +408,8 @@ compiler: gcc
 cache:
   ccache: true
   directories:
-    - $HOME/cmake-3.8.1-Linux-x86_64/bin
-    - $HOME/cmake-3.8.1-Linux-x86_64/share
+    - $HOME/cmake-3.8.2-Linux-x86_64/bin
+    - $HOME/cmake-3.8.2-Linux-x86_64/share
 dist: trusty
 sudo: false
 addons: {apt: {packages: [doxygen, graphviz]}}
@@ -419,7 +419,6 @@ env:
     - numjobs=2
     - WEB=1
     - EMSCRIPTEN_SHARE_DATA=1
-    - EMSCRIPTEN_SHARE_JS=1
     - USE_CCACHE=1
     - CCACHE_SLOPPINESS=pch_defines,time_macros
     - CCACHE_COMPRESS=1
@@ -436,8 +435,8 @@ matrix:
   fast_finish: true
 before_script:
   - rake ci_timer
-  - if [[ ! -f $HOME/cmake-3.8.1-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
-  - export PATH=$HOME/cmake-3.8.1-Linux-x86_64/bin:$PATH
+  - if [[ ! -f $HOME/cmake-3.8.2-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz -O $HOME/cmake.tar.gz && tar xf $HOME/cmake.tar.gz -C $HOME && rm $HOME/cmake.tar.gz; fi
+  - export PATH=$HOME/cmake-3.8.2-Linux-x86_64/bin:$PATH
   - export TRAVIS_COMMIT=$TRAVIS_COMMIT~
   - export COMMIT_MESSAGE=$(git log --format=%B -n 1 $TRAVIS_COMMIT)
   # export TAG=$(git describe --exact-match $TRAVIS_COMMIT 2>/dev/null); if [[ $TAG =~ [[:digit:]]+\.[[:digit:]]+ ]]; then export RELEASE_TAG=$TAG; fi
@@ -466,11 +465,12 @@ env:
     - CCACHE_MAXSIZE=300M
     - URHO3D_AMALG=0
   matrix:
-    - MAKEFILE=1    URHO3D_LIB_TYPE=STATIC URHO3D_DEPLOYMENT_TARGET=generic
-    - MAKEFILE=1    URHO3D_LIB_TYPE=SHARED URHO3D_DEPLOYMENT_TARGET=generic
-    - XCODE=1       URHO3D_LIB_TYPE=STATIC CMAKE_OSX_DEPLOYMENT_TARGET=10.12 SF_DEFAULT=mac:OSX-64bit-STATIC.tar.gz
-    - XCODE=1       URHO3D_LIB_TYPE=SHARED CMAKE_OSX_DEPLOYMENT_TARGET=10.12
-    - XCODE=1 IOS=1 URHO3D_LIB_TYPE=STATIC IPHONEOS_DEPLOYMENT_TARGET=10.3 sdk=iphonesimulator
+    - MAKEFILE=1     URHO3D_LIB_TYPE=STATIC URHO3D_DEPLOYMENT_TARGET=generic
+    - MAKEFILE=1     URHO3D_LIB_TYPE=SHARED URHO3D_DEPLOYMENT_TARGET=generic
+    - XCODE=1        URHO3D_LIB_TYPE=STATIC CMAKE_OSX_DEPLOYMENT_TARGET=10.12 SF_DEFAULT=mac:OSX-64bit-STATIC.tar.gz
+    - XCODE=1        URHO3D_LIB_TYPE=SHARED CMAKE_OSX_DEPLOYMENT_TARGET=10.12
+    - XCODE=1 TVOS=1 URHO3D_LIB_TYPE=STATIC APPLETVOS_DEPLOYMENT_TARGET=10.2 sdk=appletvsimulator
+    - XCODE=1 IOS=1  URHO3D_LIB_TYPE=STATIC IPHONEOS_DEPLOYMENT_TARGET=10.3 sdk=iphonesimulator
 matrix:
   fast_finish: true
 before_script:

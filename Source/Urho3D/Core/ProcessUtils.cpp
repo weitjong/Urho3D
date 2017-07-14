@@ -34,8 +34,9 @@
 #endif
 
 #if defined(IOS)
-#include "../Math/MathDefs.h"
 #include <mach/mach_host.h>
+#elif defined(TVOS)
+extern "C" unsigned SDL_TVOS_GetActiveProcessorCount();
 #elif !defined(__linux__) && !defined(__EMSCRIPTEN__)
 #include <LibCpuId/libcpuid.h>
 #endif
@@ -158,7 +159,7 @@ static void GetCPUData(struct CpuCoreCount* data)
     }
 }
 
-#elif !defined(__EMSCRIPTEN__)
+#elif !defined(__EMSCRIPTEN__) && !defined(TVOS)
 static void GetCPUData(struct cpu_id_t* data)
 {
     if (cpu_identify(0, data) < 0)
@@ -215,7 +216,7 @@ void OpenConsoleWindow()
 
 void PrintUnicode(const String& str, bool error)
 {
-#if !defined(__ANDROID__) && !defined(IOS)
+#if !defined(__ANDROID__) && !defined(IOS) && !defined(TVOS)
 #ifdef _WIN32
     // If the output stream has been redirected, use fprintf instead of WriteConsoleW,
     // though it means that proper Unicode output will not work
@@ -244,7 +245,7 @@ void PrintUnicodeLine(const String& str, bool error)
 
 void PrintLine(const String& str, bool error)
 {
-#if !defined(__ANDROID__) && !defined(IOS)
+#if !defined(__ANDROID__) && !defined(IOS) && !defined(TVOS)
     fprintf(error ? stderr : stdout, "%s\n", str.CString());
 #endif
 }
@@ -382,7 +383,7 @@ String GetConsoleInput()
             }
         }
     }
-#elif !defined(__ANDROID__) && !defined(IOS)
+#elif !defined(__ANDROID__) && !defined(IOS) && !defined(TVOS)
     int flags = fcntl(STDIN_FILENO, F_GETFL);
     fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
     for (;;)
@@ -405,10 +406,12 @@ String GetPlatform()
     return "Android";
 #elif defined(IOS)
     return "iOS";
+#elif defined(TVOS)
+    return "tvOS";
+#elif defined(__APPLE__)
+    return "macOS";
 #elif defined(_WIN32)
     return "Windows";
-#elif defined(__APPLE__)
-    return "Mac OS X";
 #elif defined(RPI)
     return "Raspberry Pi";
 #elif defined(__EMSCRIPTEN__)
@@ -416,7 +419,7 @@ String GetPlatform()
 #elif defined(__linux__)
     return "Linux";
 #else
-    return String::EMPTY;
+    return "(?)";
 #endif
 }
 
@@ -425,11 +428,17 @@ unsigned GetNumPhysicalCPUs()
 #if defined(IOS)
     host_basic_info_data_t data;
     GetCPUData(&data);
-#if defined(TARGET_IPHONE_SIMULATOR)
+#if defined(TARGET_OS_SIMULATOR)
     // Hardcoded to dual-core on simulator mode even if the host has more
     return Min(2, data.physical_cpu);
 #else
     return data.physical_cpu;
+#endif
+#elif defined(TVOS)
+#if defined(TARGET_OS_SIMULATOR)
+    return Min(2, SDL_TVOS_GetActiveProcessorCount());
+#else
+    return SDL_TVOS_GetActiveProcessorCount();
 #endif
 #elif defined(__linux__)
     struct CpuCoreCount data;
@@ -453,10 +462,16 @@ unsigned GetNumLogicalCPUs()
 #if defined(IOS)
     host_basic_info_data_t data;
     GetCPUData(&data);
-#if defined(TARGET_IPHONE_SIMULATOR)
+#if defined(TARGET_OS_SIMULATOR)
     return Min(2, data.logical_cpu);
 #else
     return data.logical_cpu;
+#endif
+#elif defined(TVOS)
+#if defined(TARGET_OS_SIMULATOR)
+    return Min(2, SDL_TVOS_GetActiveProcessorCount());
+#else
+    return SDL_TVOS_GetActiveProcessorCount();
 #endif
 #elif defined(__linux__)
     struct CpuCoreCount data;
@@ -525,14 +540,14 @@ String GetLoginName()
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     struct passwd *p = getpwuid(getuid());
-    if (p) 
+    if (p != NULL) 
         return p->pw_name;
 #elif defined(_WIN32)
     char name[UNLEN + 1];
     DWORD len = UNLEN + 1;
     if (GetUserName(name, &len))
         return name;
-#elif defined(__APPLE__) && !defined(IOS)
+#elif defined(__APPLE__) && !defined(IOS) && !defined(TVOS)
     SCDynamicStoreRef s = SCDynamicStoreCreate(NULL, CFSTR("GetConsoleUser"), NULL, NULL);
     if (s != NULL)
     {
@@ -550,7 +565,7 @@ String GetLoginName()
         }
     }
 #endif
-    return "(?)"; 
+    return "(?)";
 }
 
 String GetHostName() 
@@ -565,10 +580,11 @@ String GetHostName()
     if (GetComputerName(buffer, &len))
         return buffer;
 #endif
-    return String::EMPTY; 
+    return "(?)";
 }
 
-#if defined(_WIN32)
+// Disable Windows OS version functionality when compiling mini version for Web, see https://github.com/urho3d/Urho3D/issues/1998
+#if defined(_WIN32) && defined(HAVE_RTL_OSVERSIONINFOW) && !defined(MINI_URHO)
 typedef NTSTATUS (WINAPI *RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 
 static void GetOS(RTL_OSVERSIONINFOW *r)
@@ -589,7 +605,7 @@ String GetOSVersion()
     struct utsname u;
     if (uname(&u) == 0)
         return String(u.sysname) + " " + u.release; 
-#elif defined(_WIN32)
+#elif defined(_WIN32) && defined(HAVE_RTL_OSVERSIONINFOW) && !defined(MINI_URHO)
     RTL_OSVERSIONINFOW r;
     GetOS(&r); 
     // https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
@@ -610,7 +626,7 @@ String GetOSVersion()
     else if (r.dwMajorVersion == 10 && r.dwMinorVersion == 0) 
         return "Windows 10/Windows Server 2016"; 
     else 
-        return "Windows Unidentified";
+        return "Windows Unknown";
 #elif defined(__APPLE__)
     char kernel_r[256]; 
     size_t size = sizeof(kernel_r); 
@@ -686,7 +702,7 @@ String GetOSVersion()
         return version + " (Darwin kernel " + kernel_version[0] + "." + kernel_version[1] + "." + kernel_version[2] + ")"; 
     }
 #endif
-    return String::EMPTY; 
+    return "(?)";
 }
 
 }
