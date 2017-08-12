@@ -65,6 +65,7 @@ Urho3D development, contributions and bugfixes by:
 - Nathanial Lydick
 - Xavier Maupeu
 - Iain Merrick
+- Justin Miller
 - Jonne Nauha
 - Huy Nguyen
 - Paul Noome
@@ -198,6 +199,7 @@ Urho3D uses the following third-party libraries:
 - stb_rect_pack 0.08 (https://nothings.org)
 - stb_vorbis 1.09 (https://nothings.org)
 - tolua++ 1.0.93 (defunct - http://www.codenix.com/~tolua)
+- WebP (https://chromium.googlesource.com/webm/libwebp)
 
 DXT / ETC1 / PVRTC decompression code based on the Squish library and the Oolong
 Engine.

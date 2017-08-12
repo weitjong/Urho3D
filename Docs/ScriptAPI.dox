@@ -1536,11 +1536,6 @@ namespace Urho3D
 - %Max %Layers : int
 - %Draw %Obstacles : bool
 
-### IKConstraint
-- %Stiffness : float
-- %Stretchiness : float
-- %Length %Constraints : Vector2
-
 ### IKEffector
 - %Target %Node : String
 - %Chain %Length : int
@@ -1556,10 +1551,12 @@ namespace Urho3D
 - %Algorithm : int
 - %Max %Iterations : int
 - %Convergence %Tolerance : float
-- %Bone %Rotations : bool
-- %Target %Rotation : bool
-- %Continuous %Solving : bool
-- %Update %Pose : bool
+- %Joint %Rotations : bool
+- %Target %Rotations : bool
+- %Update %Original %Pose : bool
+- %Update %Active %Pose : bool
+- %Use %Original %Pose : bool
+- %Enable %Constraints : bool
 - %Auto %Solve : bool
 
 ### Light
@@ -2724,7 +2721,6 @@ namespace Urho3D
 <a href="#Class_Geometry"><b>Geometry</b></a>
 <a href="#Class_Graphics"><b>Graphics</b></a>
 <a href="#Class_HttpRequest"><b>HttpRequest</b></a>
-<a href="#Class_IKConstraint"><b>IKConstraint</b></a>
 <a href="#Class_IKEffector"><b>IKEffector</b></a>
 <a href="#Class_IKSolver"><b>IKSolver</b></a>
 <a href="#Class_Image"><b>Image</b></a>
@@ -6640,6 +6636,8 @@ Methods:
 - Vector4 ReadVector4()
 - VectorBuffer ReadVectorBuffer(uint)
 - uint Seek(uint)
+- uint SeekRelative(int)
+- uint Tell() const
 
 Properties:
 
@@ -7211,7 +7209,9 @@ Methods:
 - Vector4 ReadVector4()
 - VectorBuffer ReadVectorBuffer(uint)
 - uint Seek(uint)
+- uint SeekRelative(int)
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
+- uint Tell() const
 - uint Write(uint8[]@)
 - bool WriteBool(bool)
 - bool WriteBoundingBox(const BoundingBox&)
@@ -7545,6 +7545,8 @@ Methods:
 - Vector4 ReadVector4()
 - VectorBuffer ReadVectorBuffer(uint)
 - uint Seek(uint)
+- uint SeekRelative(int)
+- uint Tell() const
 
 Properties:
 
@@ -7560,65 +7562,6 @@ Properties:
 - HttpRequestState state // readonly
 - String url // readonly
 - String verb // readonly
-- int weakRefs // readonly
-
-<a name="Class_IKConstraint"></a>
-
-### IKConstraint
-
-Methods:
-
-- void ApplyAttributes()
-- void DrawDebugGeometry(DebugRenderer@, bool)
-- Variant GetAttribute(const String&) const
-- ValueAnimation@ GetAttributeAnimation(const String&) const
-- float GetAttributeAnimationSpeed(const String&) const
-- float GetAttributeAnimationTime(const String&) const
-- WrapMode GetAttributeAnimationWrapMode(const String&) const
-- Variant GetAttributeDefault(const String&) const
-- bool GetInterceptNetworkUpdate(const String&) const
-- bool HasSubscribedToEvent(Object@, const String&)
-- bool HasSubscribedToEvent(const String&)
-- bool Load(File@, bool = false)
-- bool Load(VectorBuffer&, bool = false)
-- bool LoadJSON(const JSONValue&, bool = false)
-- bool LoadXML(const XMLElement&, bool = false)
-- void MarkNetworkUpdate() const
-- void Remove()
-- void RemoveAttributeAnimation(const String&)
-- void RemoveInstanceDefault()
-- void RemoveObjectAnimation()
-- void ResetToDefault()
-- bool Save(File@) const
-- bool Save(VectorBuffer&) const
-- bool SaveJSON(JSONValue&) const
-- bool SaveXML(XMLElement&) const
-- void SendEvent(const String&, VariantMap& = VariantMap ( ))
-- void SetAnimationTime(float)
-- bool SetAttribute(const String&, const Variant&)
-- void SetAttributeAnimation(const String&, ValueAnimation@, WrapMode = WM_LOOP, float = 1.0f)
-- void SetAttributeAnimationSpeed(const String&, float)
-- void SetAttributeAnimationTime(const String&, float)
-- void SetAttributeAnimationWrapMode(const String&, WrapMode)
-- void SetInterceptNetworkUpdate(const String&, bool)
-
-Properties:
-
-- bool animationEnabled
-- Variant[] attributeDefaults // readonly
-- AttributeInfo[] attributeInfos // readonly
-- Variant[] attributes
-- String category // readonly
-- bool enabled
-- bool enabledEffective // readonly
-- uint id // readonly
-- Node@ node // readonly
-- uint numAttributes // readonly
-- ObjectAnimation@ objectAnimation
-- int refs // readonly
-- bool temporary
-- StringHash type // readonly
-- String typeName // readonly
 - int weakRefs // readonly
 
 <a name="Class_IKEffector"></a>
@@ -7673,7 +7616,6 @@ Properties:
 - bool enabled
 - bool enabledEffective // readonly
 - uint id // readonly
-- bool inheritParentRotation
 - Node@ node // readonly
 - uint numAttributes // readonly
 - ObjectAnimation@ objectAnimation
@@ -7689,7 +7631,6 @@ Properties:
 - String typeName // readonly
 - int weakRefs // readonly
 - float weight
-- bool weightedNlerp
 
 <a name="Class_IKSolver"></a>
 
@@ -7697,7 +7638,13 @@ Properties:
 
 Methods:
 
+- void ApplyActivePoseToScene()
 - void ApplyAttributes()
+- void ApplyOriginalPoseToActivePose()
+- void ApplyOriginalPoseToScene()
+- void ApplySceneToActivePose()
+- void ApplySceneToInitialPose()
+- void CalculateJointRotations()
 - void DrawDebugGeometry(DebugRenderer@, bool)
 - void DrawDebugGeometry(bool)
 - Variant GetAttribute(const String&) const
@@ -7714,12 +7661,13 @@ Methods:
 - bool LoadJSON(const JSONValue&, bool = false)
 - bool LoadXML(const XMLElement&, bool = false)
 - void MarkNetworkUpdate() const
+- void RebuildChainTrees()
+- void RecalculateSegmentLengths()
 - void Remove()
 - void RemoveAttributeAnimation(const String&)
 - void RemoveInstanceDefault()
 - void RemoveObjectAnimation()
 - void ResetToDefault()
-- void ResetToInitialPose()
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
 - bool SaveJSON(JSONValue&) const
@@ -7733,19 +7681,22 @@ Methods:
 - void SetAttributeAnimationWrapMode(const String&, WrapMode)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void Solve()
-- void UpdateInitialPose()
 
 Properties:
 
+- bool AUTO_SOLVE
+- bool CONSTRAINTS
+- bool JOINT_ROTATIONS
+- bool TARGET_ROTATIONS
+- bool UPDATE_ACTIVE_POSE
+- bool UPDATE_ORIGINAL_POSE
+- bool USE_ORIGINAL_POSE
 - IKAlgorithm algorithm
 - bool animationEnabled
 - Variant[] attributeDefaults // readonly
 - AttributeInfo[] attributeInfos // readonly
 - Variant[] attributes
-- bool autoSolve
-- bool boneRotations
 - String category // readonly
-- bool continuousSolving
 - bool enabled
 - bool enabledEffective // readonly
 - uint id // readonly
@@ -7754,12 +7705,10 @@ Properties:
 - uint numAttributes // readonly
 - ObjectAnimation@ objectAnimation
 - int refs // readonly
-- bool targetRotation
 - bool temporary
 - float tolerance
 - StringHash type // readonly
 - String typeName // readonly
-- bool updatePose
 - int weakRefs // readonly
 
 <a name="Class_Image"></a>
@@ -7795,6 +7744,7 @@ Methods:
 - bool SaveJPG(const String&, int) const
 - bool SavePNG(const String&) const
 - bool SaveTGA(const String&) const
+- bool SaveWEBP(const String&, float = 0.0f) const
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
 - void SetPixel(int, int, const Color&)
 - void SetPixel(int, int, int, const Color&)
@@ -9158,7 +9108,9 @@ Methods:
 - Vector4 ReadVector4()
 - VectorBuffer ReadVectorBuffer(uint)
 - uint Seek(uint)
+- uint SeekRelative(int)
 - void SendEvent(const String&, VariantMap& = VariantMap ( ))
+- uint Tell() const
 - uint Write(uint8[]@)
 - bool WriteBool(bool)
 - bool WriteBoundingBox(const BoundingBox&)
@@ -14264,6 +14216,7 @@ Methods:
 - Variant GetAttributeDefault(const String&) const
 - bool GetInterceptNetworkUpdate(const String&) const
 - TileMapLayer2D@ GetLayer(uint) const
+- TileMapObject2D@[]@ GetTileCollisionShapes(int) const
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - bool Load(File@, bool = false)
@@ -15145,7 +15098,9 @@ Methods:
 - VectorBuffer ReadVectorBuffer(uint)
 - void Resize(uint)
 - uint Seek(uint)
+- uint SeekRelative(int)
 - void SetData(Deserializer@, uint)
+- uint Tell() const
 - uint Write(uint8[]@)
 - bool WriteBool(bool)
 - bool WriteBoundingBox(const BoundingBox&)
@@ -16164,6 +16119,8 @@ Properties:
 
 ### IKAlgorithm
 
+- ONE_BONE
+- TWO_BONE
 - FABRIK
 
 

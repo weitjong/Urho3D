@@ -2016,9 +2016,11 @@ Methods:
 
 - VectorBuffer Read(unsigned size)
 - unsigned Seek(unsigned position)
+- unsigned SeekRelative(int delta)
 - const String GetName() const
 - unsigned GetChecksum()
 - unsigned GetPosition() const
+- unsigned Tell() const
 - unsigned GetSize() const
 - bool IsEof() const
 - int ReadInt()
@@ -2254,9 +2256,11 @@ Methods:
 - bool IsPackaged() const
 - VectorBuffer Read(unsigned size)
 - unsigned Seek(unsigned position)
+- unsigned SeekRelative(int delta)
 - const String GetName() const
 - unsigned GetChecksum()
 - unsigned GetPosition() const
+- unsigned Tell() const
 - unsigned GetSize() const
 - bool IsEof() const
 - int ReadInt()
@@ -2764,10 +2768,6 @@ Methods:
 - void SetRotationWeight(float weight)
 - float GetRotationDecay() const
 - void SetRotationDecay(float decay)
-- bool WeightedNlerpEnabled() const
-- void EnableWeightedNlerp(bool enable)
-- bool InheritParentRotationEnabled() const
-- void EnableInheritParentRotation(bool enable)
 
 Properties:
 
@@ -2779,32 +2779,23 @@ Properties:
 - float weight
 - float rotationWeight
 - float rotationDecay
+- bool WEIGHT_NLERP
+- bool INHERIT_PARENT_ROTATION
 
 <a name="Class_IKSolver"></a>
 ### IKSolver : Component
 
 Methods:
 
-- IKSolver::Algorithm GetAlgorithm() const
-- void SetAlgorithm(IKSolver::Algorithm algorithm)
-- unsigned GetMaximumIterations() const
-- void SetMaximumIterations(unsigned iterations)
-- float GetTolerance() const
-- void SetTolerance(float tolerance)
-- bool BoneRotationsEnabled() const
-- void EnableBoneRotations(bool enable)
-- bool TargetRotationEnabled() const
-- void EnableTargetRotation(bool enable)
-- bool ContinuousSolvingEnabled() const
-- void EnableContinuousSolving(bool enable)
-- bool UpdatePoseEnabled() const
-- void EnableUpdatePose(bool enable)
-- bool AutoSolveEnabled() const
-- void EnableAutoSolve(bool enable)
+- void RebuildChainTrees()
+- void RecalculateSegmentLengths()
+- void CalculateJointRotations()
 - void Solve()
-- void ResetToInitialPose()
-- void UpdateInitialPose()
-- void MarkSolverTreeDirty()
+- void ApplyOriginalPoseToScene()
+- void ApplySceneToOriginalPose()
+- void ApplyActivePoseToScene()
+- void ApplySceneToActivePose()
+- void ApplyOriginalPoseToActivePose()
 - void DrawDebugGeometry(bool depthTest)
 
 Properties:
@@ -2812,6 +2803,13 @@ Properties:
 - IKSolver::Algorithm algorithm
 - unsigned maximumIterations
 - float tolerance
+- bool JOINT_ROTATIONS
+- bool TARGET_ROTATIONS
+- bool UPDATE_ORIGINAL_POSE
+- bool UPDATE_ACTIVE_POSE
+- bool USE_ORIGINAL_POSE
+- bool CONSTRAINTS
+- bool AUTO_SOLVE
 
 <a name="Class_Image"></a>
 ### Image : Resource
@@ -2839,6 +2837,7 @@ Methods:
 - bool SaveTGA(const String fileName) const
 - bool SaveJPG(const String fileName, int quality) const
 - bool SaveDDS(const String fileName) const
+- bool SaveWEBP(const String fileName, float compression = 0.0f) const
 - Color GetPixel(int x, int y) const
 - Color GetPixel(int x, int y, int z) const
 - unsigned GetPixelInt(int x, int y) const
@@ -5729,6 +5728,7 @@ Methods:
 - Node* Instantiate(const String fileName, const Vector3& position, const Quaternion& rotation, CreateMode mode = REPLICATED)
 - Node* InstantiateXML(File* source, const Vector3& position, const Quaternion& rotation, CreateMode mode = REPLICATED)
 - Node* InstantiateXML(const String fileName, const Vector3& position, const Quaternion& rotation, CreateMode mode = REPLICATED)
+- Node* InstantiateJSON(const String fileName, const Vector3& position, const Quaternion& rotation, CreateMode mode = REPLICATED)
 - bool LoadAsync(File* file, LoadMode mode = LOAD_SCENE_AND_RESOURCES)
 - bool LoadAsyncXML(File* file, LoadMode mode = LOAD_SCENE_AND_RESOURCES)
 - bool LoadAsync(const String fileName, LoadMode mode = LOAD_SCENE_AND_RESOURCES)
@@ -7599,9 +7599,11 @@ Methods:
 - void* GetModifiableData()
 - VectorBuffer Read(unsigned size)
 - unsigned Seek(unsigned position)
+- unsigned SeekRelative(int delta)
 - const String GetName() const
 - unsigned GetChecksum()
 - unsigned GetPosition() const
+- unsigned Tell() const
 - unsigned GetSize() const
 - bool IsEof() const
 - int ReadInt()
@@ -8016,6 +8018,8 @@ Properties:
 
 ### Algorithm
 
+- int ONE_BONE
+- int TWO_BONE
 - int FABRIK
 
 ### AnimationBlendMode
@@ -8187,6 +8191,21 @@ Properties:
 - int FC_LOOKAT_Y
 - int FC_LOOKAT_MIXED
 - int FC_DIRECTION
+
+### Feature
+
+- int WEIGHT_NLERP
+- int INHERIT_PARENT_ROTATION
+
+### Feature
+
+- int JOINT_ROTATIONS
+- int TARGET_ROTATIONS
+- int UPDATE_ORIGINAL_POSE
+- int UPDATE_ACTIVE_POSE
+- int USE_ORIGINAL_POSE
+- int CONSTRAINTS
+- int AUTO_SOLVE
 
 ### FileMode
 
