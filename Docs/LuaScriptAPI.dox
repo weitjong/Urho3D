@@ -209,6 +209,7 @@ namespace Urho3D
 <a href="#Class_ToolTip"><b>ToolTip</b></a>
 <a href="#Class_TouchState"><b>TouchState</b></a>
 <a href="#Class_UI"><b>UI</b></a>
+<a href="#Class_UIComponent"><b>UIComponent</b></a>
 <a href="#Class_UIElement"><b>UIElement</b></a>
 <a href="#Class_ValueAnimation"><b>ValueAnimation</b></a>
 <a href="#Class_Variant"><b>Variant</b></a>
@@ -745,6 +746,7 @@ Methods:
 - BoundingBox Transformed(const Matrix3& transform) const
 - BoundingBox Transformed(const Matrix3x4& transform) const
 - Rect Projected(const Matrix4& projection) const
+- float DistanceToPoint(const Vector3& point) const
 - Intersection IsInside(const Vector3& point) const
 - Intersection IsInside(const BoundingBox& box) const
 - Intersection IsInsideFast(const BoundingBox& box) const
@@ -2990,12 +2992,16 @@ Methods:
 - IntRect* new()
 - IntRect(int left, int top, int right, int bottom) (GC)
 - IntRect* new(int left, int top, int right, int bottom)
+- IntRect(const IntVector2& min, const IntVector2& max) (GC)
+- IntRect* new(const IntVector2& min, const IntVector2& max)
 - void delete()
 - bool operator==(const IntRect& rhs) const
 - IntVector2 Size() const
 - int Width() const
 - int Height() const
 - Intersection IsInside(const IntVector2& point) const
+- void Clip(const IntRect& rect)
+- void Merge(const IntRect& rect)
 
 Properties:
 
@@ -3026,7 +3032,9 @@ Methods:
 - IntVector2 operator-() const
 - IntVector2 operator-(const IntVector2& rhs) const
 - IntVector2 operator*(int rhs) const
+- IntVector2 operator*(const IntVector2& rhs) const
 - IntVector2 operator/(int rhs) const
+- IntVector2 operator/(const IntVector2& rhs) const
 - String ToString() const
 - unsigned ToHash() const
 - float Length() const
@@ -3036,6 +3044,11 @@ Properties:
 - int x
 - int y
 - const IntVector2 ZERO
+- const IntVector2 LEFT
+- const IntVector2 RIGHT
+- const IntVector2 UP
+- const IntVector2 DOWN
+- const IntVector2 ONE
 
 <a name="Class_IntVector3"></a>
 ### IntVector3
@@ -3055,7 +3068,9 @@ Methods:
 - IntVector3 operator-() const
 - IntVector3 operator-(const IntVector3& rhs) const
 - IntVector3 operator*(int rhs) const
+- IntVector3 operator*(const IntVector3& rhs) const
 - IntVector3 operator/(int rhs) const
+- IntVector3 operator/(const IntVector3& rhs) const
 - String ToString() const
 - unsigned ToHash() const
 - float Length() const
@@ -3917,8 +3932,17 @@ Methods:
 - void SetDetailSampleMaxError(float error)
 - void SetPadding(const Vector3& padding)
 - void SetAreaCost(unsigned areaID, float cost)
+- bool Allocate(const BoundingBox& boundingBox, unsigned maxTiles)
 - bool Build()
 - bool Build(const BoundingBox& boundingBox)
+- bool Build(const IntVector2& from, const IntVector2& to)
+- VectorBuffer GetTileData(const IntVector2& tile) const
+- bool AddTile(const VectorBuffer& tileData)
+- void RemoveTile(const IntVector2& tile)
+- void RemoveAllTiles()
+- bool HasTile(const IntVector2& tile) const
+- BoundingBox GetTileBoudningBox(const IntVector2& tile) const
+- IntVector2 GetTileIndex(const Vector3& position) const
 - void SetPartitionType(NavmeshPartitionType aType)
 - void SetDrawOffMeshConnections(bool enable)
 - void SetDrawNavAreas(bool enable)
@@ -5298,6 +5322,7 @@ Methods:
 - void ReloadShaders()
 - unsigned GetNumViewports() const
 - Viewport* GetViewport(unsigned index) const
+- Viewport* GetViewportForScene(Scene* scene, unsigned index) const
 - RenderPath* GetDefaultRenderPath() const
 - Technique* GetDefaultTechnique() const
 - bool GetHDRRendering() const
@@ -7092,6 +7117,23 @@ Properties:
 - float scale
 - IntVector2& customSize
 
+<a name="Class_UIComponent"></a>
+### UIComponent : Component
+
+Methods:
+
+- UIComponent() (GC)
+- UIComponent* new()
+- UIElement* GetRoot() const
+- Material* GetMaterial() const
+- Texture2D* GetTexture() const
+
+Properties:
+
+- UIElement* root (readonly)
+- Material* material (readonly)
+- Texture2D* texture (readonly)
+
 <a name="Class_UIElement"></a>
 ### UIElement : Animatable
 
@@ -7453,7 +7495,6 @@ Methods:
 - Vector2 operator*(float rhs) const
 - Vector2 operator*(const Vector2& rhs) const
 - Vector2 operator/(float rhs) const
-- Vector2 operator/(const Vector2& rhs) const
 - Vector2 operator/(const Vector2& rhs) const
 - void Normalize()
 - float Length() const
@@ -8717,8 +8758,8 @@ Properties:
 - Time* GetTime()
 - long GetTotalMemory()
 - UI* GetUI()
-- bool HasSubscribedToEvent(Object* sender, const String eventName)
 - bool HasSubscribedToEvent(const String eventName)
+- bool HasSubscribedToEvent(Object* sender, const String eventName)
 - float InverseLerp(float lhs, float rhs, float x)
 - bool IsAbsolutePath(const String pathName)
 - bool IsAlpha(unsigned ch)
@@ -8727,6 +8768,7 @@ Properties:
 - bool IsPowerOfTwo(unsigned value)
 - float Lerp(float lhs, float rhs, float t)
 - float Ln(float x)
+- unsigned LogBaseTwo(unsigned value)
 - float Max(float lhs, float rhs)
 - int MaxInt(int lhs, int rhs)
 - float Min(float lhs, float rhs)
@@ -8741,8 +8783,8 @@ Properties:
 - float Random(float min, float max)
 - float Random()
 - float Random(float range)
-- int RandomInt(int min, int max)
 - int RandomInt(int range)
+- int RandomInt(int min, int max)
 - float RandomNormal(float meanValue, float variance)
 - void RegisterEventName(const String eventName)
 - String RemoveTrailingSlash(const String pathName)
@@ -8759,9 +8801,9 @@ Properties:
 - float Sin(float angle)
 - float SmoothStep(float lhs, float rhs, float t)
 - float Sqrt(float x)
-- float StableRandom(float seed)
-- float StableRandom(const Vector2& seed)
 - float StableRandom(const Vector3& seed)
+- float StableRandom(const Vector2& seed)
+- float StableRandom(float seed)
 - void SubscribeToEvent(void* sender, const String eventName, void* functionOrFunctionName)
 - void SubscribeToEvent(const String eventName, void* functionOrFunctionName)
 - float Tan(float angle)
@@ -8792,31 +8834,31 @@ Properties:
 - void UnsubscribeFromEvent(Object* sender, const String eventName)
 - void UnsubscribeFromEvent(const String eventName)
 - void UnsubscribeFromEvents(Object* sender)
+- Vector2 VectorCeil(const Vector2& vec)
 - Vector4 VectorCeil(const Vector4& vec)
 - Vector3 VectorCeil(const Vector3& vec)
-- Vector2 VectorCeil(const Vector2& vec)
-- IntVector3 VectorCeilToInt(const Vector3& vec)
 - IntVector2 VectorCeilToInt(const Vector2& vec)
-- Vector4 VectorFloor(const Vector4& vec)
+- IntVector3 VectorCeilToInt(const Vector3& vec)
 - Vector3 VectorFloor(const Vector3& vec)
 - Vector2 VectorFloor(const Vector2& vec)
+- Vector4 VectorFloor(const Vector4& vec)
 - IntVector2 VectorFloorToInt(const Vector2& vec)
 - IntVector3 VectorFloorToInt(const Vector3& vec)
 - Vector2 VectorLerp(const Vector2& lhs, const Vector2& rhs, const Vector2& t)
-- Vector3 VectorLerp(const Vector3& lhs, const Vector3& rhs, const Vector3& t)
 - Vector4 VectorLerp(const Vector4& lhs, const Vector4& rhs, const Vector4& t)
+- Vector3 VectorLerp(const Vector3& lhs, const Vector3& rhs, const Vector3& t)
 - Vector3 VectorMax(const Vector3& lhs, const Vector3& rhs)
-- IntVector3 VectorMax(const IntVector3& lhs, const IntVector3& rhs)
-- Vector2 VectorMax(const Vector2& lhs, const Vector2& rhs)
 - Vector4 VectorMax(const Vector4& lhs, const Vector4& rhs)
 - IntVector2 VectorMax(const IntVector2& lhs, const IntVector2& rhs)
-- Vector4 VectorMin(const Vector4& lhs, const Vector4& rhs)
+- IntVector3 VectorMax(const IntVector3& lhs, const IntVector3& rhs)
+- Vector2 VectorMax(const Vector2& lhs, const Vector2& rhs)
 - Vector3 VectorMin(const Vector3& lhs, const Vector3& rhs)
-- Vector2 VectorMin(const Vector2& lhs, const Vector2& rhs)
 - IntVector3 VectorMin(const IntVector3& lhs, const IntVector3& rhs)
+- Vector2 VectorMin(const Vector2& lhs, const Vector2& rhs)
+- Vector4 VectorMin(const Vector4& lhs, const Vector4& rhs)
 - IntVector2 VectorMin(const IntVector2& lhs, const IntVector2& rhs)
-- Vector4 VectorRound(const Vector4& vec)
 - Vector2 VectorRound(const Vector2& vec)
+- Vector4 VectorRound(const Vector4& vec)
 - Vector3 VectorRound(const Vector3& vec)
 - IntVector3 VectorRoundToInt(const Vector3& vec)
 - IntVector2 VectorRoundToInt(const Vector2& vec)

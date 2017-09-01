@@ -306,6 +306,20 @@ namespace Urho3D
 - %BoundsMin : Vector3
 - %BoundsMax : Vector3
 
+### NavigationTileAdded
+- %Node : Node pointer
+- %Mesh : NavigationMesh pointer
+- %Tile : IntVector2
+
+### NavigationTileRemoved
+- %Node : Node pointer
+- %Mesh : NavigationMesh pointer
+- %Tile : IntVector2
+
+### NavigationAllTilesRemoved
+- %Node : Node pointer
+- %Mesh : NavigationMesh pointer
+
 ### CrowdAgentFormation
 - %Node : Node pointer
 - %CrowdAgent : CrowdAgent pointer
@@ -2840,6 +2854,7 @@ namespace Urho3D
 <a href="#Class_ToolTip"><b>ToolTip</b></a>
 <a href="#Class_TouchState"><b>TouchState</b></a>
 <a href="#Class_UI"><b>UI</b></a>
+<a href="#Class_UIComponent"><b>UIComponent</b></a>
 <a href="#Class_UIElement"><b>UIElement</b></a>
 <a href="#Class_ValueAnimation"><b>ValueAnimation</b></a>
 <a href="#Class_Variant"><b>Variant</b></a>
@@ -3405,10 +3420,10 @@ Properties:
 
 - Variant defaultValue
 - String[]@ enumNames // readonly
+- VariantMap metadata
 - uint mode
 - String name
 - VariantType type
-- String[]@ variantStructureElementNames // readonly
 
 <a name="Class_Audio"></a>
 
@@ -3770,6 +3785,7 @@ Methods:
 - void Define(const Vector3&, const Vector3&)
 - void Define(float, float)
 - bool Defined() const
+- float DistanceToPoint(const Vector3&) const
 - Intersection IsInside(const BoundingBox&) const
 - Intersection IsInside(const Sphere&) const
 - Intersection IsInside(const Vector3&) const
@@ -7041,9 +7057,12 @@ Properties:
 
 Methods:
 
+- bool AddTile(const VectorBuffer&) const
+- bool Allocate(const BoundingBox&, uint)
 - void ApplyAttributes()
 - bool Build()
 - bool Build(const BoundingBox&)
+- bool Build(const IntVector2&, const IntVector2&)
 - void DrawDebugGeometry(DebugRenderer@, bool)
 - void DrawDebugGeometry(bool)
 - Vector3 FindNearestPoint(const Vector3&, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ))
@@ -7059,8 +7078,12 @@ Methods:
 - bool GetInterceptNetworkUpdate(const String&) const
 - Vector3 GetRandomPoint()
 - Vector3 GetRandomPointInCircle(const Vector3&, float, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ))
+- BoundingBox GetTileBoudningBox(const IntVector2&) const
+- VectorBuffer GetTileData(const IntVector2&) const
+- IntVector2 GetTileIndex(const Vector3&) const
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
+- bool HasTile(const IntVector2&) const
 - bool Load(File@, bool = false)
 - bool Load(VectorBuffer&, bool = false)
 - bool LoadJSON(const JSONValue&, bool = false)
@@ -7069,9 +7092,11 @@ Methods:
 - Vector3 MoveAlongSurface(const Vector3&, const Vector3&, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ), int = 3)
 - Vector3 Raycast(const Vector3&, const Vector3&, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ))
 - void Remove()
+- void RemoveAllTiles()
 - void RemoveAttributeAnimation(const String&)
 - void RemoveInstanceDefault()
 - void RemoveObjectAnimation()
+- void RemoveTile(const IntVector2&)
 - void ResetToDefault()
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
@@ -7880,7 +7905,9 @@ Properties:
 
 Methods:
 
+- int Clip(const IntRect&)
 - Intersection IsInside(const IntVector2&) const
+- int Merge(const IntRect&)
 
 Properties:
 
@@ -9289,9 +9316,12 @@ Properties:
 
 Methods:
 
+- bool AddTile(const VectorBuffer&) const
+- bool Allocate(const BoundingBox&, uint)
 - void ApplyAttributes()
 - bool Build()
 - bool Build(const BoundingBox&)
+- bool Build(const IntVector2&, const IntVector2&)
 - void DrawDebugGeometry(DebugRenderer@, bool)
 - void DrawDebugGeometry(bool)
 - Vector3 FindNearestPoint(const Vector3&, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ))
@@ -9307,8 +9337,12 @@ Methods:
 - bool GetInterceptNetworkUpdate(const String&) const
 - Vector3 GetRandomPoint()
 - Vector3 GetRandomPointInCircle(const Vector3&, float, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ))
+- BoundingBox GetTileBoudningBox(const IntVector2&) const
+- VectorBuffer GetTileData(const IntVector2&) const
+- IntVector2 GetTileIndex(const Vector3&) const
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
+- bool HasTile(const IntVector2&) const
 - bool Load(File@, bool = false)
 - bool Load(VectorBuffer&, bool = false)
 - bool LoadJSON(const JSONValue&, bool = false)
@@ -9317,9 +9351,11 @@ Methods:
 - Vector3 MoveAlongSurface(const Vector3&, const Vector3&, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ), int = 3)
 - Vector3 Raycast(const Vector3&, const Vector3&, const Vector3& = Vector3 ( 1.0 , 1.0 , 1.0 ))
 - void Remove()
+- void RemoveAllTiles()
 - void RemoveAttributeAnimation(const String&)
 - void RemoveInstanceDefault()
 - void RemoveObjectAnimation()
+- void RemoveTile(const IntVector2&)
 - void ResetToDefault()
 - bool Save(File@) const
 - bool Save(VectorBuffer&) const
@@ -10835,6 +10871,7 @@ Properties:
 Methods:
 
 - void DrawDebugGeometry(bool) const
+- Viewport@ GetViewportForScene(Scene@, uint)
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - void ReloadShaders() const
@@ -13658,7 +13695,7 @@ Methods:
 - void SetFixedSize(int, int)
 - void SetFixedWidth(int)
 - bool SetFont(Font@, float)
-- bool SetFont(const String&, int)
+- bool SetFont(const String&, float)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
 - void SetMaxAnchor(float, float)
@@ -14682,6 +14719,67 @@ Properties:
 - bool useMutableGlyphs
 - bool useScreenKeyboard
 - bool useSystemClipboard
+- int weakRefs // readonly
+
+<a name="Class_UIComponent"></a>
+
+### UIComponent
+
+Methods:
+
+- void ApplyAttributes()
+- Variant GetAttribute(const String&) const
+- ValueAnimation@ GetAttributeAnimation(const String&) const
+- float GetAttributeAnimationSpeed(const String&) const
+- float GetAttributeAnimationTime(const String&) const
+- WrapMode GetAttributeAnimationWrapMode(const String&) const
+- Variant GetAttributeDefault(const String&) const
+- bool GetInterceptNetworkUpdate(const String&) const
+- bool HasSubscribedToEvent(Object@, const String&)
+- bool HasSubscribedToEvent(const String&)
+- bool Load(File@, bool = false)
+- bool Load(VectorBuffer&, bool = false)
+- bool LoadJSON(const JSONValue&, bool = false)
+- bool LoadXML(const XMLElement&, bool = false)
+- void MarkNetworkUpdate() const
+- void Remove()
+- void RemoveAttributeAnimation(const String&)
+- void RemoveInstanceDefault()
+- void RemoveObjectAnimation()
+- void ResetToDefault()
+- bool Save(File@) const
+- bool Save(VectorBuffer&) const
+- bool SaveJSON(JSONValue&) const
+- bool SaveXML(XMLElement&) const
+- void SendEvent(const String&, VariantMap& = VariantMap ( ))
+- void SetAnimationTime(float)
+- bool SetAttribute(const String&, const Variant&)
+- void SetAttributeAnimation(const String&, ValueAnimation@, WrapMode = WM_LOOP, float = 1.0f)
+- void SetAttributeAnimationSpeed(const String&, float)
+- void SetAttributeAnimationTime(const String&, float)
+- void SetAttributeAnimationWrapMode(const String&, WrapMode)
+- void SetInterceptNetworkUpdate(const String&, bool)
+
+Properties:
+
+- bool animationEnabled
+- Variant[] attributeDefaults // readonly
+- AttributeInfo[] attributeInfos // readonly
+- Variant[] attributes
+- String category // readonly
+- bool enabled
+- bool enabledEffective // readonly
+- uint id // readonly
+- Material@ material // readonly
+- Node@ node // readonly
+- uint numAttributes // readonly
+- ObjectAnimation@ objectAnimation
+- int refs // readonly
+- UIElement@ root // readonly
+- bool temporary
+- Texture2D@ texture // readonly
+- StringHash type // readonly
+- String typeName // readonly
 - int weakRefs // readonly
 
 <a name="Class_UIElement"></a>
@@ -16564,6 +16662,7 @@ Properties:
 - String Join(String[]&, const String&)
 - float Lerp(float, float, float)
 - float Ln(float)
+- uint LogBaseTwo(uint)
 - void MarkNetworkUpdate()
 - float Max(float, float)
 - int Max(int, int)
