@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@
 #include <Bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 #include <Bullet/BulletCollision/CollisionShapes/btBoxShape.h>
 #include <Bullet/BulletCollision/CollisionShapes/btSphereShape.h>
+#include <Bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 #include <Bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
 #include <Bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 
@@ -56,7 +57,6 @@ const char* PHYSICS_CATEGORY = "Physics";
 extern const char* SUBSYSTEM_CATEGORY;
 
 static const int MAX_SOLVER_ITERATIONS = 256;
-static const int DEFAULT_FPS = 60;
 static const Vector3 DEFAULT_GRAVITY = Vector3(0.0f, -9.81f, 0.0f);
 
 PhysicsWorldConfig PhysicsWorld::config;
@@ -79,13 +79,40 @@ void InternalTickCallback(btDynamicsWorld* world, btScalar timeStep)
 static bool CustomMaterialCombinerCallback(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0,
     int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
 {
-    btAdjustInternalEdgeContacts(cp, colObj1Wrap, colObj0Wrap, partId1, index1);
+    // Ensure that shape type of colObj1Wrap is either btScaledBvhTriangleMeshShape or btBvhTriangleMeshShape
+    // because btAdjustInternalEdgeContacts doesn't check types properly. Bug in the Bullet?
+    const int shapeType = colObj1Wrap->getCollisionObject()->getCollisionShape()->getShapeType();
+    if (shapeType == SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE || shapeType == TRIANGLE_SHAPE_PROXYTYPE
+        || shapeType == MULTIMATERIAL_TRIANGLE_MESH_PROXYTYPE)
+    {
+        btAdjustInternalEdgeContacts(cp, colObj1Wrap, colObj0Wrap, partId1, index1);
+    }
 
     cp.m_combinedFriction = colObj0Wrap->getCollisionObject()->getFriction() * colObj1Wrap->getCollisionObject()->getFriction();
     cp.m_combinedRestitution =
         colObj0Wrap->getCollisionObject()->getRestitution() * colObj1Wrap->getCollisionObject()->getRestitution();
 
     return true;
+}
+
+void RemoveCachedGeometryImpl(CollisionGeometryDataCache& cache, Model* model)
+{
+    for (auto i = cache.Begin(); i != cache.End();)
+    {
+        auto current = i++;
+        if (current->first_.first_ == model)
+            cache.Erase(current);
+    }
+}
+
+void CleanupGeometryCacheImpl(CollisionGeometryDataCache& cache)
+{
+    for (auto i = cache.Begin(); i != cache.End();)
+    {
+        auto current = i++;
+        if (current->second_.Refs() == 1)
+            cache.Erase(current);
+    }
 }
 
 /// Callback for physics world queries.
@@ -99,10 +126,10 @@ struct PhysicsQueryCallback : public btCollisionWorld::ContactResultCallback
     }
 
     /// Add a contact result.
-    virtual btScalar addSingleResult(btManifoldPoint&, const btCollisionObjectWrapper* colObj0Wrap, int, int,
+    btScalar addSingleResult(btManifoldPoint&, const btCollisionObjectWrapper* colObj0Wrap, int, int,
         const btCollisionObjectWrapper* colObj1Wrap, int, int) override
     {
-        RigidBody* body = reinterpret_cast<RigidBody*>(colObj0Wrap->getCollisionObject()->getUserPointer());
+        auto* body = reinterpret_cast<RigidBody*>(colObj0Wrap->getCollisionObject()->getUserPointer());
         if (body && !result_.Contains(body) && (body->GetCollisionLayer() & collisionMask_))
             result_.Push(body);
         body = reinterpret_cast<RigidBody*>(colObj1Wrap->getCollisionObject()->getUserPointer());
@@ -117,20 +144,9 @@ struct PhysicsQueryCallback : public btCollisionWorld::ContactResultCallback
     unsigned collisionMask_;
 };
 
-
 PhysicsWorld::PhysicsWorld(Context* context) :
     Component(context),
-    collisionConfiguration_(nullptr),
     fps_(DEFAULT_FPS),
-    maxSubSteps_(0),
-    timeAcc_(0.0f),
-    maxNetworkAngularVelocity_(DEFAULT_MAX_NETWORK_ANGULAR_VELOCITY),
-    updateEnabled_(true),
-    interpolation_(true),
-    internalEdge_(true),
-    applyingTransforms_(false),
-    simulating_(false),
-    debugRenderer_(nullptr),
     debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits)
 {
     gContactAddedCallback = CustomMaterialCombinerCallback;
@@ -141,6 +157,8 @@ PhysicsWorld::PhysicsWorld(Context* context) :
         collisionConfiguration_ = new btDefaultCollisionConfiguration();
 
     collisionDispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
+    btGImpactCollisionAlgorithm::registerAlgorithm(static_cast<btCollisionDispatcher*>(collisionDispatcher_.Get()));
+
     broadphase_ = new btDbvtBroadphase();
     solver_ = new btSequentialImpulseConstraintSolver();
     world_ = new btDiscreteDynamicsWorld(collisionDispatcher_.Get(), broadphase_.Get(), solver_.Get(), collisionConfiguration_);
@@ -153,7 +171,6 @@ PhysicsWorld::PhysicsWorld(Context* context) :
     world_->setInternalTickCallback(InternalTickCallback, static_cast<void*>(this), false);
     world_->setSynchronizeAllMotionStates(true);
 }
-
 
 PhysicsWorld::~PhysicsWorld()
 {
@@ -422,12 +439,12 @@ void PhysicsWorld::RaycastSingleSegmented(PhysicsRaycastResult& result, const Ra
     btVector3 start = ToBtVector3(ray.origin_);
     btVector3 end;
     btVector3 direction = ToBtVector3(ray.direction_);
-    float distance;
+    float remainingDistance = maxDistance;
+    auto count = RoundToInt(maxDistance / segmentDistance);
 
-    for (float remainingDistance = maxDistance; remainingDistance > 0; remainingDistance -= segmentDistance)
+    for (auto i = 0; i < count; ++i)
     {
-        distance = Min(remainingDistance, segmentDistance);
-
+        float distance = Min(remainingDistance, segmentDistance);     // The last segment may be shorter
         end = start + distance * direction;
 
         btCollisionWorld::ClosestRayResultCallback rayCallback(start, end);
@@ -449,6 +466,7 @@ void PhysicsWorld::RaycastSingleSegmented(PhysicsRaycastResult& result, const Ra
 
         // Use the end position as the new start position
         start = end;
+        remainingDistance -= segmentDistance;
     }
 
     // Didn't hit anything
@@ -510,7 +528,7 @@ void PhysicsWorld::ConvexCast(PhysicsRaycastResult& result, CollisionShape* shap
     }
 
     // If shape is attached in a rigidbody, set its collision group temporarily to 0 to make sure it is not returned in the sweep result
-    RigidBody* bodyComp = shape->GetComponent<RigidBody>();
+    auto* bodyComp = shape->GetComponent<RigidBody>();
     btRigidBody* body = bodyComp ? bodyComp->GetBody() : nullptr;
     btBroadphaseProxy* proxy = body ? body->getBroadphaseProxy() : nullptr;
     short group = 0;
@@ -591,20 +609,9 @@ void PhysicsWorld::ConvexCast(PhysicsRaycastResult& result, btCollisionShape* sh
 
 void PhysicsWorld::RemoveCachedGeometry(Model* model)
 {
-    for (HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator i = triMeshCache_.Begin();
-         i != triMeshCache_.End();)
-    {
-        HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator current = i++;
-        if (current->first_.first_ == model)
-            triMeshCache_.Erase(current);
-    }
-    for (HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator i = convexCache_.Begin();
-         i != convexCache_.End();)
-    {
-        HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator current = i++;
-        if (current->first_.first_ == model)
-            convexCache_.Erase(current);
-    }
+    RemoveCachedGeometryImpl(triMeshCache_, model);
+    RemoveCachedGeometryImpl(convexCache_, model);
+    RemoveCachedGeometryImpl(gimpactTrimeshCache_, model);
 }
 
 void PhysicsWorld::GetRigidBodies(PODVector<RigidBody*>& result, const Sphere& sphere, unsigned collisionMask)
@@ -743,7 +750,7 @@ void PhysicsWorld::AddDelayedWorldTransform(const DelayedWorldTransform& transfo
 
 void PhysicsWorld::DrawDebugGeometry(bool depthTest)
 {
-    DebugRenderer* debug = GetComponent<DebugRenderer>();
+    auto* debug = GetComponent<DebugRenderer>();
     DrawDebugGeometry(debug, depthTest);
 }
 
@@ -760,20 +767,9 @@ void PhysicsWorld::SetDebugDepthTest(bool enable)
 void PhysicsWorld::CleanupGeometryCache()
 {
     // Remove cached shapes whose only reference is the cache itself
-    for (HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator i = triMeshCache_.Begin();
-         i != triMeshCache_.End();)
-    {
-        HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator current = i++;
-        if (current->second_.Refs() == 1)
-            triMeshCache_.Erase(current);
-    }
-    for (HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator i = convexCache_.Begin();
-         i != convexCache_.End();)
-    {
-        HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >::Iterator current = i++;
-        if (current->second_.Refs() == 1)
-            convexCache_.Erase(current);
-    }
+    CleanupGeometryCacheImpl(triMeshCache_);
+    CleanupGeometryCacheImpl(convexCache_);
+    CleanupGeometryCacheImpl(gimpactTrimeshCache_);
 }
 
 void PhysicsWorld::OnSceneSet(Scene* scene)
@@ -809,7 +805,7 @@ void PhysicsWorld::PreStep(float timeStep)
 
     // Start profiling block for the actual simulation step
 #ifdef URHO3D_PROFILING
-    Profiler* profiler = GetSubsystem<Profiler>();
+    auto* profiler = GetSubsystem<Profiler>();
     if (profiler)
         profiler->BeginBlock("StepSimulation");
 #endif
@@ -818,7 +814,7 @@ void PhysicsWorld::PreStep(float timeStep)
 void PhysicsWorld::PostStep(float timeStep)
 {
 #ifdef URHO3D_PROFILING
-    Profiler* profiler = GetSubsystem<Profiler>();
+    auto* profiler = GetSubsystem<Profiler>();
     if (profiler)
         profiler->EndBlock();
 #endif
@@ -858,8 +854,8 @@ void PhysicsWorld::SendCollisionEvents()
             const btCollisionObject* objectA = contactManifold->getBody0();
             const btCollisionObject* objectB = contactManifold->getBody1();
 
-            RigidBody* bodyA = static_cast<RigidBody*>(objectA->getUserPointer());
-            RigidBody* bodyB = static_cast<RigidBody*>(objectB->getUserPointer());
+            auto* bodyA = static_cast<RigidBody*>(objectA->getUserPointer());
+            auto* bodyB = static_cast<RigidBody*>(objectB->getUserPointer());
             // If it's not a rigidbody, maybe a ghost object
             if (!bodyA || !bodyB)
                 continue;
