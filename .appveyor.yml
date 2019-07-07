@@ -1,0 +1,18 @@
+version: '{build}'
+shallow_clone: true
+image: Visual Studio 2019
+platform:
+  - x86
+  - x64
+build_script:
+  - ruby --version
+  - rake --version
+  - cmake --version
+  - node --version
+  - npm --version
+  - uname -a
+  - echo %PATH%
+  - bash -c 'df -h; ls -ltr /'
+  - bash -c 'ls -ltrR /mingw64'
+
+# vi: set ts=2 sw=2 expandtab:
