@@ -721,12 +721,6 @@ else ()
             set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcolor-diagnostics")
             set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
         endif ()
-        if ((NOT APPLE AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.1) OR (APPLE AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0))
-            # Workaround for Clang 7.0.1 and above until the Bullet upstream has fixed the Clang 7 diagnostic checks issue (see https://github.com/bulletphysics/bullet3/issues/2114)
-            # ditto for AppleClang 11.0.0 and above
-            set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-argument-outside-range")
-            set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-argument-outside-range")
-        endif ()
     else ()
         # GCC-specific
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9.1)
