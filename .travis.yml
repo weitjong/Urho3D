@@ -31,6 +31,9 @@ env:
     - numjobs=4
     - URHO3D_DEPLOYMENT_TARGET=generic
     - DBE_TAG=latest
+    - BT_USE_DOUBLE_PRECISION=1
+    - BT_THREADSAFE=1
+    - BT_USE_OPENMP=1
   matrix:
     # Linux native 64-bit
     - LINUX=1 URHO3D_LIB_TYPE=STATIC URHO3D_UPDATE_SOURCE_TREE=1 SF_DEFAULT=linux:Linux-64bit-STATIC.tar.gz   # GCC
@@ -125,6 +128,9 @@ environment:
   URHO3D_D3D11: 1
   URHO3D_LUAJIT: 1
   MINGW: 1
+  BT_USE_DOUBLE_PRECISION: 1
+  BT_THREADSAFE: 1
+  BT_USE_OPENMP: 1
   # MinGW-w64 on Windows is NOT multilib capable but we are installing the ones that support C++14 standard
   x86_64-posix-seh: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/6.3.0/threads-posix/seh/x86_64-6.3.0-release-posix-seh-rt_v5-rev1.7z
   i686-posix-dwarf: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/6.3.0/threads-posix/dwarf/i686-6.3.0-release-posix-dwarf-rt_v5-rev1.7z
@@ -224,6 +230,9 @@ env:
     - ORG_GRADLE_PROJECT_URHO3D_LUAJIT=1
     - HOT=$HOME/urho3d_home_dir/.ccache/.hot
     - DBE_TAG=latest
+    - BT_USE_DOUBLE_PRECISION=1
+    - BT_THREADSAFE=1
+    - BT_USE_OPENMP=1
   matrix:
     - ORG_GRADLE_PROJECT_URHO3D_LIB_TYPE=STATIC
     - ORG_GRADLE_PROJECT_URHO3D_LIB_TYPE=SHARED
@@ -254,6 +263,9 @@ env:
     - numjobs=4
     - RPI=1
     - DBE_TAG=latest
+    - BT_USE_DOUBLE_PRECISION=1
+    - BT_THREADSAFE=1
+    - BT_USE_OPENMP=1
   matrix:
     # RPI 1
     - URHO3D_LIB_TYPE=STATIC
@@ -286,6 +298,9 @@ env:
     - numjobs=4
     - ARM=1
     - DBE_TAG=latest
+    - BT_USE_DOUBLE_PRECISION=1
+    - BT_THREADSAFE=1
+    - BT_USE_OPENMP=1
   matrix:
     # ODROID-C2
     - URHO3D_LIB_TYPE=STATIC ARM_ABI_FLAGS='-mcpu=cortex-a53'
@@ -323,6 +338,9 @@ env:
     - WEB=1
     - HOT=/home/travis/urho3d_home_dir/.ccache/.hot
     - DBE_TAG=latest
+    - BT_USE_DOUBLE_PRECISION=1
+    - BT_THREADSAFE=1
+    - BT_USE_OPENMP=1
   matrix:
     - EMSCRIPTEN_SHARE_DATA=1
     - EMSCRIPTEN_SHARE_DATA=0
@@ -357,6 +375,9 @@ env:
     - OSX=1
     - CCACHE_SLOPPINESS=pch_defines,time_macros
     - CCACHE_COMPRESS=1
+    - BT_USE_DOUBLE_PRECISION=1
+    - BT_THREADSAFE=1
+    - BT_USE_OPENMP=1
   matrix:
     - XCODE=1 TVOS=1 URHO3D_LIB_TYPE=STATIC APPLETVOS_DEPLOYMENT_TARGET=13.0 sdk=appletvsimulator
     - XCODE=1 IOS=1 URHO3D_LIB_TYPE=STATIC IPHONEOS_DEPLOYMENT_TARGET=13.0 sdk=iphonesimulator
