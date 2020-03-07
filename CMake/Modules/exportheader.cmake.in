@@ -32,6 +32,10 @@
 #cmakedefine URHO3D_LUAJIT
 #cmakedefine URHO3D_TESTING
 
+#cmakedefine BT_USE_DOUBLE_PRECISION
+#cmakedefine01 BT_THREADSAFE
+#cmakedefine01 BT_USE_OPENMP
+
 #cmakedefine CLANG_PRE_STANDARD
 
 #ifdef @STATIC_DEFINE@

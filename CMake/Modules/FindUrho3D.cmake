@@ -42,6 +42,10 @@
 #  URHO3D_LUAJIT
 #  URHO3D_TESTING
 #
+#  BT_USE_DOUBLE_PRECISION
+#  BT_THREADSAFE
+#  BT_USE_OPENMP
+#
 # WIN32 only:
 #  URHO3D_LIBRARIES_REL
 #  URHO3D_LIBRARIES_DBG
@@ -54,7 +58,8 @@
 #  URHO3D_STATIC_RUNTIME
 #
 
-set (AUTO_DISCOVER_VARS URHO3D_OPENGL URHO3D_D3D11 URHO3D_SSE URHO3D_DATABASE_ODBC URHO3D_DATABASE_SQLITE URHO3D_LUAJIT URHO3D_TESTING URHO3D_STATIC_RUNTIME)
+set (AUTO_DISCOVER_VARS URHO3D_OPENGL URHO3D_D3D11 URHO3D_SSE URHO3D_DATABASE_ODBC URHO3D_DATABASE_SQLITE URHO3D_LUAJIT URHO3D_TESTING URHO3D_STATIC_RUNTIME
+        BT_USE_DOUBLE_PRECISION BT_THREADSAFE BT_USE_OPENMP)
 set (PATH_SUFFIX Urho3D)
 if (CMAKE_PROJECT_NAME STREQUAL Urho3D AND TARGET Urho3D)
     # A special case where library location is already known to be in the build tree of Urho3D project
@@ -262,7 +267,7 @@ else ()
                 set (URHO3D_64BIT ${ABI_64BIT} CACHE BOOL "Enable 64-bit build, the value is auto-discovered based on the found Urho3D library" FORCE) # Force it as it is more authoritative than user-specified option
                 set (URHO3D_LIB_TYPE ${URHO3D_LIB_TYPE} CACHE STRING "Urho3D library type, the value is auto-discovered based on the found Urho3D library" FORCE) # Use the Force, Luke
                 foreach (VAR ${AUTO_DISCOVER_VARS})
-                    if (EXPORT_HEADER MATCHES "#define ${VAR}")
+                    if (EXPORT_HEADER MATCHES "#define ${VAR}(\n| 1)")
                         set (AUTO_DISCOVERED_${VAR} 1)
                     else ()
                         set (AUTO_DISCOVERED_${VAR} 0)

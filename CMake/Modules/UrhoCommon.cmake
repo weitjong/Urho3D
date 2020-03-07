@@ -223,6 +223,15 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
         # Find GNU Readline development library for Lua interpreter and SQLite's isql
         find_package (Readline)
     endif ()
+    # Bullet-specific build options
+    if (URHO3D_PHYSICS)
+        find_package (OpenMP QUIET)
+        cmake_dependent_option (BT_USE_DOUBLE_PRECISION "Use double precision" OFF "NOT MINGW" OFF)
+        option (BT_THREADSAFE "Build Bullet libraries with mutex locking around certain operations (required for multi-threading)" OFF)
+        cmake_dependent_option (BT_USE_OPENMP "Build Bullet with support for multi-threading with OpenMP (requires a compiler with OpenMP support)" OFF "BT_THREADSAFE;OPENMP_FOUND" OFF)
+        cmake_dependent_option (BULLET_USE_TBB_MULTITHREADING "Build Bullet with support for multi-threading with Intel Threading Building Blocks (requires the TBB library to be already installed)" OFF BT_THREADSAFE OFF)
+        cmake_dependent_option (BULLET_USE_PPL_MULTITHREADING "Build Bullet with support for multi-threading with Microsoft Parallel Patterns Library (requires MSVC compiler)" OFF "BT_THREADSAFE;MSVC" OFF)
+    endif ()
     if (CPACK_SYSTEM_NAME STREQUAL Linux)
         cmake_dependent_option (URHO3D_USE_LIB64_RPM "Enable 64-bit RPM CPack generator using /usr/lib64 and disable all other generators (Debian-based host only)" FALSE "URHO3D_64BIT AND NOT HAS_LIB64" FALSE)
         cmake_dependent_option (URHO3D_USE_LIB_DEB "Enable 64-bit DEB CPack generator using /usr/lib and disable all other generators (Redhat-based host only)" FALSE "URHO3D_64BIT AND HAS_LIB64" FALSE)
@@ -745,6 +754,12 @@ if (URHO3D_LUAJIT)
         # Note: this implies that loading such modules on Windows platform may only work with SHARED library type
         set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-E")
     endif ()
+endif ()
+# Bullet-specific - extra compiler flags for linking against multithreading libs
+if (BT_USE_OPENMP)
+    # This module can be invoked by Library user, so ensure the user's build environment has what is required
+    find_package (OpenMP REQUIRED)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif ()
 # Trim the leading white space in the compiler/linker flags, if any
 foreach (TYPE C CXX EXE_LINKER SHARED_LINKER)

@@ -23,6 +23,17 @@
 # Define target name
 set (TARGET_NAME Bullet)
 
+# Define preprocessor macros
+if (BT_USE_DOUBLE_PRECISION)
+    add_definitions (-DBT_USE_DOUBLE_PRECISION)
+endif ()
+if (BT_THREADSAFE)
+    add_definitions (-DBT_THREADSAFE=1)
+endif ()
+if (BT_USE_OPENMP)
+    add_definitions (-DBT_USE_OPENMP=1)
+endif ()
+
 # Define source files
 define_source_files (RECURSE GLOB_CPP_PATTERNS src/*.cpp GLOB_H_PATTERNS src/*.h src/*.hpp)
 
