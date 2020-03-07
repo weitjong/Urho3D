@@ -24,21 +24,7 @@
 set (TARGET_NAME Bullet)
 
 # Define source files
-file (GLOB CPP_FILES src/BulletCollision/BroadphaseCollision/*.cpp
-    src/BulletCollision/CollisionDispatch/*.cpp src/BulletCollision/CollisionShapes/*.cpp
-    src/BulletCollision/Gimpact/*.cpp src/BulletCollision/NarrowPhaseCollision/*.cpp
-    src/BulletDynamics/Character/*.cpp src/BulletDynamics/ConstraintSolver/*.cpp
-    src/BulletDynamics/Dynamics/*.cpp src/BulletDynamics/Featherstone/*.cpp
-    src/BulletDynamics/MLCPSolvers/*.cpp src/BulletDynamics/Vehicle/*.cpp src/BulletSoftBody/*.cpp
-    src/LinearMath/*.cpp)
-file (GLOB H_FILES *.h src/BulletCollision/BroadphaseCollision/*.h
-    src/BulletCollision/CollisionDispatch/*.h src/BulletCollision/CollisionShapes/*.h
-    src/BulletCollision/Gimpact/*.h src/BulletCollision/NarrowPhaseCollision/*.h
-    src/BulletDynamics/Character/*.h src/BulletDynamics/ConstraintSolver/*.h
-    src/BulletDynamics/Dynamics/*.h src/BulletDynamics/Featherstone/*.h
-    src/BulletDynamics/MLCPSolvers/*.h src/BulletDynamics/Vehicle/*.h src/BulletSoftBody/*.h
-    src/LinearMath/*.h)
-set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+define_source_files (RECURSE GLOB_CPP_PATTERNS src/*.cpp GLOB_H_PATTERNS src/*.h src/*.hpp)
 
 # Define dependency libs
 set (INCLUDE_DIRS src)
